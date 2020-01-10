@@ -61,6 +61,7 @@ const str = qs.stringify({
 console.log(str);
 
 // 2 实现flatten函数 null 和 undefined 丢弃
+// 受onelineModules中arr-flatten的影响
 // 输入
 // {
 //   a: 1,
@@ -86,7 +87,11 @@ function flat(input, outerKey, res) {
   if (input && input instanceof Array) {
     for (let index = 0; index < input.length; index++) {
       const element = input[index];
-      if (typeof element === "number" || typeof element === "string") {
+      if (
+        typeof element === "number" ||
+        typeof element === "string" ||
+        typeof element === "boolean"
+      ) {
         res[outerKey + "[" + index + "]"] = element;
       } else {
         flat(element, outerKey + "[" + index + "]", res);
