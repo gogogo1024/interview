@@ -1,4 +1,37 @@
-//1. 实现简单的解析请求参数
+// 1. 实现函数_curry(fn)使之具有以下功能：fn是一个二元函数，fn(a, b,c)，
+// const _fn = _curry(fn);
+//_fn(a)(b)(c) 的结果和 fn(a, b, c)的结果一致
+//  两种写法
+// 第一种
+function curry(f) {
+  return function(a) {
+    return function(b) {
+      return function(c) {
+        return f(a, b, c);
+      };
+    };
+  };
+}
+// 第二种 箭头函数
+const _curry = f => a => b => c => f(a, b, c);
+//  推广到一般 fn是一个多元函数，fn(a,b,c ...)
+function recursive(fn, ...args) {
+  if (args.length >= fn.length) {
+    return fn(...args);
+  }
+  return function(...args2) {
+    return recursive(fn, ...args, ...args2);
+  };
+}
+function sum(a, b, c) {
+  return a + b + c;
+}
+console.log(curry(sum)(1)(3)(6));
+console.log(_curry(sum)(1)(4)(7));
+let curryFunc = recursive(sum)(1)(2);
+console.log(curryFunc(3));
+
+//2. 实现简单的解析请求参数
 // stringfy 实现
 // {
 //   foo: "bar",             ==>   "foo=bar&abc=xyz&abc=123"
@@ -60,7 +93,7 @@ const str = qs.stringify({
 });
 console.log(str);
 
-// 2 实现flatten函数 null 和 undefined 丢弃
+// 3 实现flatten函数 null 和 undefined 丢弃
 // 受onelineModules中arr-flatten的影响
 // 输入
 // {
