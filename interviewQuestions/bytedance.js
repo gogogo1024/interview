@@ -19,6 +19,17 @@ test().then();
 //     setTimeout(resolve(fn), delay);
 //   });
 // }
+ function retryTask(task,delay,times){
+   return new Promise(resolve =>{
+     let count = 0;
+     if (count < times) {
+      resolve(task);
+      await sleep(delay);
+     }else{
+       resolve()
+     }
+   })
+ }
 // async function retryTask(task, delay, times) {
 //   if (times > 0) {
 //     // const result = await sleep(task, delay).catch(e => e);
