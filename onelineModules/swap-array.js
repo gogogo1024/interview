@@ -21,4 +21,3 @@ const swapArray = (Arr, Caller, Target) => {
 const SomeArray = ["thats", "cool", "dude"];
 
 console.log(swapArray(SomeArray, 0, 2));
-// 最简单的还是直接用mid
