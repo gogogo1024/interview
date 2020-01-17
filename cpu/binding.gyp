@@ -3,7 +3,7 @@
     "targets": [
         {
             "target_name": "merge",
-            "sources": ["Merge.cc"]
+            "sources": ["merge.cc"]
         }
     ]
 }
