@@ -4,7 +4,7 @@ node 方向总结
 
 1.  express
 
-- Middleware
+      Middleware
 
 2. interviewQuestions
 
@@ -16,11 +16,11 @@ node 方向总结
    
 4.  cpu
 
-   node处理cpu密集场景的方法
+    node处理cpu密集场景的方法
 
-   可以使用 Addons 特性通过 C/C++扩展来大幅度提高性能
+    可以使用 Addons 特性通过 C/C++扩展来大幅度提高性能
 
-   运行`node-gyp configure build` 编译c++代码得到动态链接库build/Release/merge.node
+    运行`node-gyp configure build` 编译c++代码得到动态链接库build/Release/merge.node
 
    
 
