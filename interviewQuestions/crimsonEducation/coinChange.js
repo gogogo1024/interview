@@ -1,5 +1,5 @@
 /**
- * 
+ *  背包问题
  * @param {*} number 拼凑数字之和
  * @param {*} array  可用的数组
  * @param {*} m 数组长度
