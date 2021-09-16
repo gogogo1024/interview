@@ -2,7 +2,7 @@
  * @author [gogogo1024]
  * @email [jxycbjhc@163.com]
  * @create date 2021-08-26 23:36:51
- * @modify date 2021-08-26 23:37:23
+ * @modify date 2021-09-16 22:34:56
  * @desc [description] 字节一面第三题，脑子抽了当时，写的一团糟
  */
 var obj = {
@@ -16,15 +16,15 @@ function getNameById(id, nodes) {
         return nodes['name'];
     }
     else {
-        var result_1 = "";
+        var result = "";
         if (Array.isArray(nodes.children) && nodes.children.length > 0) {
             nodes.children.forEach(function (item) {
                 var name = getNameById(id, item);
                 if (name) {
-                    return result_1 = name;
+                    return result = name;
                 }
             });
-            return result_1;
+            return result;
         }
     }
 }
