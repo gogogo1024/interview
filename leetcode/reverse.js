@@ -41,3 +41,4 @@ var reverse = function (x) {
     }
     return next;
 };
+console.log(reverse(-124));
