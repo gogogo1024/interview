@@ -2,7 +2,7 @@
  * @author [gogogo1024]
  * @email [jxycbjhc@163.com]
  * @create date 2021-12-28 06:58:34
- * @modify date 2021-12-28 07:03:35
+ * @modify date 2022-01-04 08:21:38
  * @desc [description] 根据数组对象的字段作排序
  */
 
@@ -37,7 +37,7 @@ function sortByCondition(arr) {
 }
 
 /**
- * 设计版本版本 根据salary升序, age降序
+ * 升级版本 根据salary升序, age降序
  * @param {*} arr  [{salary: 100,age:21},{alary: 120,age:22}]
  * @param {*} arr1  ["salary","age"]
  * @param {*} arr2  [1,-1]
