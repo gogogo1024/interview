@@ -1,4 +1,4 @@
-// 找出给定树字并且是3或者5倍数的数字集合，求集合的数字之和
+// 找出给定数字并且是3或者5倍数的数字集合，求集合的数字之和
 function solution(maxNumber) {
     let i3 = 0;
     let i5 = 0;
@@ -23,6 +23,6 @@ function solution(maxNumber) {
     return result.reduce((accumulator, currentValue) => accumulator + currentValue,0);
 }
 
-const result = solution(0);
+const result = solution(10);
 console.log(result);
 

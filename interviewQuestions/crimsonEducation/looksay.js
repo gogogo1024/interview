@@ -15,5 +15,5 @@ function lookSay(number) {
     }
     return (result.join(""));
 }
-console.log(look(11342556) === "211314122516") // true
-console.log(look(1) === "11") // true
+console.log(lookSay(11342556) === "211314122516") // true
+console.log(lookSay(1) === "11") // true
