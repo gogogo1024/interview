@@ -2,14 +2,15 @@
  * @author [gogogo1024]
  * @email [jxycbjhc@163.com]
  * @create date 2021-12-28 06:58:34
- * @modify date 2022-01-04 08:21:38
+ * @modify date 2022-01-04 08:22:31
  * @desc [description] 根据数组对象的字段作排序
  */
 
 // 当时没写出来,面试官给我看了下他写的,没看懂,太复杂,现在突然想起来了,当时他写的很烂
 
-//eg :  [{salary: 100,age:21},{alary: 120,age:22}] ,["salary", "age"], [1, -1]
-//  按照salary升序,age降序
+// eg : [{salary: 100,age:21},{alary: 120,age:22}] ,["salary", "age"], [1, -1]
+// 按照salary升序,age降序
+
 /**
 * 基础版本 根据salary升序, age降序
 * @param {*} arr  [{salary: 100,age:21},{alary: 120,age:22}]

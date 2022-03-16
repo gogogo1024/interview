@@ -32,7 +32,7 @@ PaginationHelper.prototype.pageItemCount = function (pageIndex) {
     if (pageIndex + 1 < this.countPage) {
         return this.itemsPerPage;
     } else if (pageIndex + 1 == this.countPage) {
-        return pageIndex * (this.itemsPerPage + 1) - this.countItem
+        return this.itemCount() % this.itemsPerPage
 
     }
     return -1;
@@ -41,7 +41,7 @@ PaginationHelper.prototype.pageItemCount = function (pageIndex) {
 // determines what page an item is on. Zero based indexes
 // this method should return -1 for itemIndex values that are out of range
 PaginationHelper.prototype.pageIndex = function (itemIndex) {
-    if (itemIndex < this.collection.length && itemIndex >= 0) {
+    if (itemIndex < this.itemCount() && itemIndex >= 0) {
         return Math.floor(itemIndex / this.itemsPerPage)
     } else {
         return -1;
