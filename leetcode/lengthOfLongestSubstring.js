@@ -30,16 +30,22 @@
  */
 var lengthOfLongestSubstring = function (s) {
     const len = s.length;
-    const stringToArray = s.split('');
-    let obj = {};
-    let l = 0, r = 0, result = 0;
-    for (; r < len; r++) {
-        if (obj[stringToArray[r]]>=0) {
-            l = Math.max(l, obj[stringToArray[r]] + 1);
+    const set = new Set();
+    // r 右指针， result最大的长度
+    let rp = -1, result = 0;
+    // i 充当左指针
+    for (let i = 0; i < len; i++) {
+        if (i != 0) {
+            // 左指针向右移动一格，移除一个字符
+            set.delete(s.charAt(i - 1))
         }
-        obj[s.charAt(r)] = r;
-        result = Math.max(result, r - l + 1);
-
+        while (rp + 1 < len && !set.has(s.charAt(rp + 1))) {
+            // 不断地移动右指针
+            set.add(s.charAt(rp + 1));
+            ++rp;
+        }
+        // 第 i 到 rk 个字符是一个极长的无重复字符子串
+        result = Math.max(result, rp - i + 1);
     }
     return result;
 };
