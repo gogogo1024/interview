@@ -16,6 +16,9 @@ I 可以放在 V(5) 和 X(10) 的左边，来表示 4 和 9。
 X 可以放在 L(50) 和 C(100) 的左边，来表示 40 和 90。 
 C 可以放在 D(500) 和 M(1000) 的左边，来表示 400 和 900。
 给你一个整数，将其转为罗马数字。
+
+提示：
+1 <= num <= 3999
 */
 
 
@@ -78,8 +81,27 @@ var intToRoman = function (num) {
         return map.get(1000).toString().repeat(num / 1000) + intToRoman(num % 1000)
     }
 };
+var intToRomanUpdate = function(num) {
+    // 通过数组索引找到对应的字符串。 关键 1 <= num <= 3999
+    const thousands = ["", "M", "MM", "MMM"];
+    const hundreds = ["", "C", "CC", "CCC", "CD", "D", "DC", "DCC", "DCCC", "CM"];
+    const tens = ["", "X", "XX", "XXX", "XL", "L", "LX", "LXX", "LXXX", "XC"];
+    const ones = ["", "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX"];
+    const roman = [];
+    roman.push(thousands[Math.floor(num / 1000)]);
+    roman.push(hundreds[Math.floor(num % 1000 / 100)]);
+    roman.push(tens[Math.floor(num % 100 / 10)]);
+    roman.push(ones[num % 10]);
+    return roman.join('');
+}
 console.log(intToRoman(20))
 console.log(intToRoman(4) == "IV")
 console.log(intToRoman(9) == "IX")
 console.log(intToRoman(58) == "LVIII")
 console.log(intToRoman(1994) == "MCMXCIV")
+
+console.log(intToRomanUpdate(20))
+console.log(intToRomanUpdate(4) == "IV")
+console.log(intToRomanUpdate(9) == "IX")
+console.log(intToRomanUpdate(58) == "LVIII")
+console.log(intToRomanUpdate(1994) == "MCMXCIV")
