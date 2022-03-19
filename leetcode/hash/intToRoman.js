@@ -1,3 +1,11 @@
+/**
+ * @author [gogogo1024]
+ * @email [jxycbjhc@163.com]
+ * @create date 2022-03-19 22:44:34
+ * @modify date 2022-03-19 22:44:35
+ * @desc [description]
+ */
+
 /*
 整数转罗马数字
 罗马数字包含以下七种字符： I， V， X， L，C，D 和 M。
@@ -27,7 +35,7 @@ C 可以放在 D(500) 和 M(1000) 的左边，来表示 400 和 900。
  * @return {string}
  */
 var intToRoman = function (num) {
-    if(num == 0) return ''
+    if (num == 0) return ''
     const map = new Map([
         [1, 'I'],
         [4, 'IV'],
@@ -81,7 +89,8 @@ var intToRoman = function (num) {
         return map.get(1000).toString().repeat(num / 1000) + intToRoman(num % 1000)
     }
 };
-var intToRomanUpdate = function(num) {
+
+var intToRomanUpdate = function (num) {
     // 通过数组索引找到对应的字符串。 关键 1 <= num <= 3999
     const thousands = ["", "M", "MM", "MMM"];
     const hundreds = ["", "C", "CC", "CCC", "CD", "D", "DC", "DCC", "DCCC", "CM"];
