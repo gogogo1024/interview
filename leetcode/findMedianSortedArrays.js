@@ -2,7 +2,7 @@
  * @author [gogogo1024]
  * @email [jxycbjhc@163.com]
  * @create date 2022-03-19 22:44:43
- * @modify date 2022-03-19 22:44:43
+ * @modify date 2022-03-20 13:40:32
  * @desc [description]
  */
 
@@ -21,6 +21,7 @@ var findMedianSortedArrays = function (nums1, nums2) {
     // 不管哪个指针移动一次 ，count都加1
     for (count = 0; count <= mid; count++) {
         if (isEven) {
+            // p2用来保存mid-1
             p2 = p1
         }
         if (i != len1 && j != len2) {
@@ -42,4 +43,4 @@ let ar2 = [5, 8, 10, 20]
 
 console.log(findMedianSortedArrays([900], [5, 8, 10, 20]))
 console.log(findMedianSortedArrays([1, 3], [2]))
-console.log(findMedianSortedArrays([1, 2], [2, 4]))
+console.log(findMedianSortedArrays([1, 2], [3, 4]))
