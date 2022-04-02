@@ -1,0 +1,16 @@
+{
+  "name": "largestabsincr",
+  "version": "1.0.0",
+  "description": "find the largest absolute increase from its first recording to its last recording.",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "author": "gogogo1024",
+  "license": "MIT",
+  "dependencies": {
+    "csvtojson": "^2.0.10",
+    "stream-chain": "^2.2.5",
+    "stream-csv-as-json": "^1.0.4"
+  }
+}
