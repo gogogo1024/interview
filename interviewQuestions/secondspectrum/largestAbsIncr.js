@@ -2,7 +2,7 @@
  * @author [gogogo1024]
  * @email [jxycbjhc@163.com]
  * @create date 2022-04-02 20:37:17
- * @modify date 2022-04-02 20:37:18
+ * @modify date 2022-04-03 15:05:16
  * @desc [description]
  */
 
@@ -13,21 +13,22 @@ const processCsvData = function (inputData) {
     // 处理不规范的value，change
     inputData = inputData.filter(item => !isNaN(item.Value) && item.Change != "UNKNOWN");
 
-    // 按照特定的字段来分组
-    function groupBy(array, f) {
-        let groups = {};
-        array.forEach(function (o) {
-            let group = f(o);
-            groups[group[0]] = groups[group[0]] || [];
-            groups[group[0]].push(o);
-        });
-        return Object.keys(groups).map(function (group) {
-            return groups[group];
-        });
+    // 按照特定的字段pro来分组arr
+    const groupByProperty = function (arr, pro) {
+        const byProperty = arr.reduce((pre, cur) => {
+            if (!pre[cur[pro]]) {
+                pre[cur[pro]] = [];
+            }
+            pre[cur[pro]].push(cur);
+
+            return pre;
+        }, {});
+
+        return Object.keys(byProperty).map(item =>
+            byProperty[item]
+        );
     }
-    const groupInputData = groupBy(inputData, function (item) {
-        return [item.Name];
-    });
+    inputData = groupByProperty(inputData, "Name")
     const sortDataByDate = function (a, b) {
         if (new Date(a.Date).getTime() < new Date(b.Date).getTime()) {
             return -1
@@ -36,7 +37,7 @@ const processCsvData = function (inputData) {
         }
         return 0
     }
-    groupInputData.map(item => {
+    inputData.map(item => {
         item.sort(sortDataByDate)
         return item
     })
@@ -53,7 +54,7 @@ const processCsvData = function (inputData) {
     }
     let finalMax = 0
     let maxName = ""
-    groupInputData.forEach(item => {
+    inputData.forEach(item => {
         let temp = maxFunc(item)
         finalMax = Math.max(finalMax, temp.max)
         if (temp.max == finalMax && finalMax > 0) {
