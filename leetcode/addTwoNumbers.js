@@ -35,7 +35,7 @@ var addTwoNumbers = function (l1, l2) {
             l2 = l2.next;
         }
         let sum = x + y + carry;
-        carry = parseInt(sum / 10);
+        carry = parseInt((sum / 10).toString());
         tailNode.next = new ListNode(sum % 10);
         // 移动当前所指向的节点到下一个节点
         tailNode = tailNode.next;
