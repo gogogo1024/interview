@@ -9,7 +9,10 @@
   "author": "gogogo1024",
   "license": "MIT",
   "dependencies": {
+    "@types/mathjs": "^9.4.2",
     "csvtojson": "^2.0.10",
+    "mathjs": "^10.4.2",
+    "papaparse": "^5.3.2",
     "stream-chain": "^2.2.5",
     "stream-csv-as-json": "^1.0.4"
   }
