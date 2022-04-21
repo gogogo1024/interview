@@ -2,7 +2,7 @@
  * @author [gogogo1024]
  * @email [jxycbjhc@163.com]
  * @create date 2022-04-21 01:19:32
- * @modify date 2022-04-21 02:31:49
+ * @modify date 2022-04-21 04:04:37
  * @desc [description]
  */
 
@@ -51,7 +51,50 @@ var findSubstring = function (s, words) {
     }
     return result;
 };
-let arr = [
+// var findSubstring = function (s, words) {
+//     const len = s.length, wsl = words.length, wl = words[0].length, map = new Map(), arr = [];
+//     let l = 0, r = 0, i = 0, m = new Map(), count = 0;
+//     words.forEach(val => {
+//         if (map.has(val)) {
+//             map.set(val, map.get(val) + 1);
+//         } else {
+//             map.set(val, 1);
+//         }
+//     });
+//     while (i < wl) {
+//         l = r = i;
+//         m = new Map();
+//         count = 0;
+//         while (r <= len - wl) {
+//             const str = s.slice(r, r + wl);
+//             r += wl;
+//             if (!map.has(str)) {
+//                 m = new Map();
+//                 count = 0;
+//                 l = r;
+//             } else {
+//                 if (m.has(str)) {
+//                     m.set(str, m.get(str) + 1);
+//                 } else {
+//                     m.set(str, 1);
+//                 }
+//                 count += 1;
+//                 while (m.get(str) > map.get(str)) {
+//                     const temp = s.slice(l, l + wl);
+//                     m.set(temp, m.get(temp) - 1);
+//                     count -= 1;
+//                     l += wl;
+//                 }
+//                 if (count === wsl) {
+//                     arr.push(l);
+//                 }
+//             }
+//         }
+//         i += 1;
+//     }
+//     return arr;
+// };
+let arr1 = [
     {
         s: "barfoothefoobarman",
         words: ["foo", "bar"]
@@ -79,7 +122,7 @@ let arr = [
 ];
 
 console.time('test')
-for (let index = 0; index < arr.length; index++) {
-    console.log(findSubstring(arr[index]['s'], arr[index]['words']))
+for (let index = 0; index < arr1.length; index++) {
+    console.log(findSubstring(arr1[index]['s'], arr1[index]['words']))
 }
 console.timeEnd('test')
