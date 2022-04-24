@@ -75,11 +75,11 @@ function openCsvInputStream(inputFilePath) {
                 }
                 return 0;
             })
+            let str = "nil"
             if (result[keys[0]]['largest'] > 0) {
-                console.log(`公司: ${keys[0]}, 股价增值: ${result[keys[0]]['largest'].toFixed(6)}`)
-            } else {
-                console.log("nil");
+                str = `公司: ${keys[0]}, 股价增值: ${result[keys[0]]['largest'].toFixed(6)}`
             }
+            console.log(str)
             console.timeEnd('quick')
             printMemoryUsage()
             function printMemoryUsage() {
@@ -89,6 +89,8 @@ function openCsvInputStream(inputFilePath) {
                 }
                 console.log('rss=%s, heapTotal=%s, heapUsed=%s', mb(info.rss), mb(info.heapTotal), mb(info.heapUsed));
             }
+            csvInputStream.emit("completed", str);
+            csvInputStream.push(null);
         },
 
         error: (err) => { // An error has occurred.
