@@ -1,4 +1,6 @@
 #history
 .history
+.vscode/*
 build/
 interviewQuestions/secondspectrum/node_modules
+interviewQuestions/*/node_modules
