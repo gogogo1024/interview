@@ -2,11 +2,16 @@
  * @author [gogogo1024]
  * @email [jxycbjhc@163.com]
  * @create date 2022-05-18 02:04:02
- * @modify date 2022-05-18 03:30:07
+ * @modify date 2022-05-22 12:49:20
  * @desc [description]
  */
 
 const { sleepTimeout } = require("./util");
+
+
+// 优点：能够已固定处理速率来应对请求
+// 缺点：1. 当突增的流量会导致请求迅速堵满桶容量，导致后续的请求被丢弃，
+//      2. 并且桶大小和令牌的流出速率是固定的，所以调整到合适的值比较难
 
 /**
  * 漏桶（往固定容量为capacity桶中以任意速率流入水，
