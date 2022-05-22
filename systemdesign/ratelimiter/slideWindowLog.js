@@ -2,7 +2,7 @@
  * @author [gogogo1024]
  * @email [jxycbjhc@163.com]
  * @create date 2022-05-22 18:43:39
- * @modify date 2022-05-22 21:26:09
+ * @modify date 2022-05-22 23:41:55
  * @desc [description]
  */
 
@@ -19,7 +19,7 @@ const { sleepTimeout } = require("./util");
  * 滑动窗口日志
  * @param {*} rateOfMinutes 允许通过的最大请求每分钟多少个
  */
-function fixWindowCounter(rateOfMinutes = 2) {
+function slideWindowLog(rateOfMinutes = 2) {
     let redisSimulator = [];
     return function () {
         const now = Date.now();
@@ -49,7 +49,7 @@ function fixWindowCounter(rateOfMinutes = 2) {
     }
 }
 
-const lb = fixWindowCounter();
+const lb = slideWindowLog();
 (async () => {
     const now = Date.now();
     console.log(`now:${now}`)
