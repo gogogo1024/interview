@@ -4,3 +4,8 @@
 build/
 interviewQuestions/secondspectrum/node_modules
 interviewQuestions/*/node_modules
+distribute_system_in_nodejs/node_modules
+distribute_system_in_nodejs/grpc/node_modules
+distribute_system_in_nodejs/*/node_modules
+
+
