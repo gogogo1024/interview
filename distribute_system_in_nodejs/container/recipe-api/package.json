@@ -1,0 +1,20 @@
+{
+  "name": "container",
+  "version": "1.0.0",
+  "description": "## 容易变动的层放在dockerfile的尾部，能够让之前的层重用",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+   "dependencies": {
+    "fastify": "^3.29.0",
+    "ioredis": "4.17",
+    "middie": "5.1",
+    "node-fetch": "2.6",
+    "pg": "8.3",
+    "statsd-client": "^0.4.4",
+    "zipkin-lite": "^0.1.1"
+  },
+  "author": "gogogo1024",
+  "license": "MIT"
+}
