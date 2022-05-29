@@ -1,19 +1,25 @@
 const server = require('fastify')();
-// import fetch from "node-fetch";
+const fetch = require('node-fetch');
 const HOST = process.env.HOST || '127.0.0.1';
 const PORT = process.env.PORT || 3000;
-const TARGET = process.env.TARGET || 'localhost:4000';
-server.get('/', async () => {
-    const req = await fetch(`http://${TARGET}/recipes/42`);
-    const producer_data = await req.json();
-    return {
-        consumer_pid: process.pid,
-        producer_data
-    };
+const TARGET = process.env.TARGET || '127.0.0.1:4000';
+const ZIPKIN = process.env.ZIPKIN || '127.0.0.1:9411';
+const Zipkin = require('zipkin-lite');
+const zipkin = new Zipkin({
+    zipkinHost: ZIPKIN,
+    serviceName: 'web-api', servicePort: PORT, serviceIp: HOST,
+    init: 'short'
 });
-server.get('/health', async () => {
-    console.log('health check');
-    return 'OK';
+server.addHook('onRequest', zipkin.onRequest());
+server.addHook('onResponse', zipkin.onResponse());
+server.get('/', async (req) => {
+    req.zipkin.setName('get_root');
+    const url = `http://${TARGET}/recipes/42`;
+    const zreq = req.zipkin.prepare();
+    const recipe = await fetch(url, { headers: zreq.headers });
+    zreq.complete('GET', url);
+    const producer_data = await recipe.json();
+    return { pid: process.pid, producer_data, trace: req.zipkin.trace };
 });
 server.listen(PORT, HOST, () => {
     console.log(`Consumer running at http://${HOST}:${PORT}/`);

@@ -16,3 +16,17 @@ services:
       ZIPKIN: zipkin:9411
     depends_on:
       - zipkin
+## note the two space indent
+  web-api:
+    build:
+      context: ./web-api
+      dockerfile: Dockerfile-zipkin
+    ports:
+      - "127.0.0.1:3000:3000"
+    environment:
+      TARGET: recipe-api:4000
+      ZIPKIN: zipkin:9411
+      HOST: 0.0.0.0
+    depends_on:
+      - zipkin
+      - recipe-api

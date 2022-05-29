@@ -1,7 +1,8 @@
 {
   "name": "container",
   "version": "1.0.0",
-  "description": "",
+  "description": "## 容易变动的层放在dockerfile的尾部，能够让之前的层重用",
+  "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },

@@ -2,6 +2,7 @@
 FROM node:14.8.0-alpine3.12
 WORKDIR /srv
 COPY package*.json ./
-RUN npm ci --only=production
+# RUN npm ci --only=production
+RUN npm i
 COPY . .
-CMD [ "node", "consumer-http-zipkin.js" ] # change for web-api
+CMD [ "node", "consumer-http-zipkin.js" ]
