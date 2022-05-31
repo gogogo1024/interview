@@ -36,3 +36,4 @@
       - each node periodically send heartbeats to a set of random node
       - once nodes receive heartbeats, membership list is updated to the latest info
       - if the heartbeat has not increased for more than predefined periods,the member is considered as offline
+   sloppy quorum and hinted handoff and merkle tree

@@ -1,9 +1,12 @@
 {
     "cSpell.words": [
         "bignumber",
+        "datacenter",
+        "datacenters",
         "farmhash",
         "fastify",
         "nums",
-        "papaparse"
+        "papaparse",
+        "sequencenumber"
     ]
 }

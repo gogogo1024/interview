@@ -18,3 +18,7 @@
 5. distribute_system_in_nodejs
 
    nodejs在分布式系统中的应用
+
+6. system_design
+
+    系统设计第二版
