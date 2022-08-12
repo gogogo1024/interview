@@ -29,7 +29,7 @@ Promise.resolve().then(
 );
 // break CPU-heavy operations up across multiple stacks(don't starve the event loop)
 // 1. use setImmediate break problem into many pieces
-// 2 .use  child process
+// 2. use child process
 
 
 // When exposing a method that takes a callback, that callback should always be run asynchronously
