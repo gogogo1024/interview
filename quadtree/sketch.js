@@ -1,8 +1,3 @@
-// Daniel Shiffman
-// https://thecodingtrain.com/CodingChallenges/098.1-quadtree.html
-// https://thecodingtrain.com/CodingChallenges/098.2-quadtree.html
-// https://thecodingtrain.com/CodingChallenges/098.3-quadtree.html
-
 let qtree;
 
 function setup() {
@@ -10,12 +5,15 @@ function setup() {
     background(255);
     let boundary = new Rectangle(width / 2, height / 2, width / 2, height / 2);
     qtree = QuadTree.create();
-    for (let i = 0; i < 300; i++) {
+    for (let i = 0; i < 10; i++) {
         let x = randomGaussian(width / 2, width / 8);
         let y = randomGaussian(height / 2, height / 8);
         let p = new Point(x, y);
         qtree.insert(p);
     }
+
+    console.log(JSON.stringify(qtree.toJSON(), null, 2))
+
 }
 
 function draw() {
@@ -23,7 +21,7 @@ function draw() {
 
     let range = new Circle(mouseX, mouseY, 64);
     show(qtree, range);
-    stroke("pink");
+    stroke("yellow");
     ellipse(range.x, range.y, range.r * 2);
 
     let points = qtree.query(range);

@@ -1,9 +1,3 @@
-// Daniel Shiffman
-// http://codingtra.in
-// http://patreon.com/codingtrain
-
-// QuadTree
-
 class Point {
     constructor(x, y, data) {
         this.x = x;
@@ -25,6 +19,8 @@ class Point {
     }
 }
 
+// x,y 矩形坐标，w,h 矩形长宽
+// left,right,top,bottom 分别为矩形的左边界x坐标，右边界x坐标，上边界y坐标，下边界y坐标
 class Rectangle {
     constructor(x, y, w, h) {
         this.x = x;
@@ -37,6 +33,7 @@ class Rectangle {
         this.bottom = y + h / 2;
     }
 
+    // 矩形包含点
     contains(point) {
         return (
             this.left <= point.x && point.x <= this.right &&
@@ -44,6 +41,7 @@ class Rectangle {
         );
     }
 
+    // 矩形是否相交
     intersects(range) {
         return !(
             this.right < range.left || range.right < this.left ||
@@ -51,6 +49,7 @@ class Rectangle {
         );
     }
 
+    // 分裂
     subdivide(quadrant) {
         switch (quadrant) {
             case 'ne':
@@ -64,6 +63,7 @@ class Rectangle {
         }
     }
 
+    // 点距离矩形竖边框最近距离（排除点在矩形内部）
     xDistanceFrom(point) {
         if (this.left <= point.x && point.x <= this.right) {
             return 0;
@@ -75,6 +75,7 @@ class Rectangle {
         );
     }
 
+    // 点距离矩形横边框最近距离（排除点在矩形内部）
     yDistanceFrom(point) {
         if (this.top <= point.y && point.y <= this.bottom) {
             return 0;
@@ -86,7 +87,7 @@ class Rectangle {
         );
     }
 
-    // Skips Math.sqrt for faster comparisons
+    // 求以点和矩形长宽边组成的最小直角三角形的斜边长的平方和
     sqDistanceFrom(point) {
         const dx = this.xDistanceFrom(point);
         const dy = this.yDistanceFrom(point);
@@ -94,13 +95,13 @@ class Rectangle {
         return dx * dx + dy * dy;
     }
 
-    // Pythagorus: a^2 = b^2 + c^2
+    // 直接三角形边长
     distanceFrom(point) {
         return Math.sqrt(this.sqDistanceFrom(point));
     }
 }
 
-// circle class for a circle shaped query
+// 以x,y为坐标,r为半径组成的圆
 class Circle {
     constructor(x, y, r) {
         this.x = x;
@@ -109,10 +110,9 @@ class Circle {
         this.rSquared = this.r * this.r;
     }
 
+    // 点是否在圆内
     contains(point) {
-        // check if the point is in the circle by checking if the euclidean distance of
-        // the point and the center of the circle if smaller or equal to the radius of
-        // the circle
+        // 距离圆心距离和圆半径判断
         let d = Math.pow((point.x - this.x), 2) + Math.pow((point.y - this.y), 2);
         return d <= this.rSquared;
     }
@@ -144,7 +144,7 @@ class Circle {
 }
 
 class QuadTree {
-    DEFAULT_CAPACITY = 8;
+    DEFAULT_CAPACITY = 4;
     MAX_DEPTH = 8;
 
     constructor(boundary, capacity = this.DEFAULT_CAPACITY, _depth = 0) {
@@ -370,6 +370,7 @@ class QuadTree {
         return found;
     }
 
+    // 最近的maxDistance个
     closest(searchPoint, maxCount = 1, maxDistance = Infinity) {
         if (typeof searchPoint === "undefined") {
             throw TypeError("Method 'closest' needs a point");
@@ -465,5 +466,10 @@ class QuadTree {
 }
 
 if (typeof module !== "undefined") {
-    module.exports = { Point, Rectangle, QuadTree, Circle };
+    module.exports = {
+        Point,
+        Rectangle,
+        QuadTree,
+        Circle
+    };
 }
