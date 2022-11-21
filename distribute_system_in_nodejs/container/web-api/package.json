@@ -7,7 +7,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
    "dependencies": {
-    "fastify": "^3.29.0",
+    "fastify": "^3.29.4",
     "ioredis": "4.17",
     "middie": "5.1",
     "node-fetch": "2.6",
