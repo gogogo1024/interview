@@ -7,7 +7,7 @@
   "author": "gogogo1024",
   "license": "MIT",
   "dependencies": {
-    "fastify": "^3.29.0",
+    "fastify": "^3.29.4",
     "ioredis": "4.17",
     "middie": "5.1",
     "node-fetch": "2.6",
