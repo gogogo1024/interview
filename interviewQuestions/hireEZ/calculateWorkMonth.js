@@ -1,7 +1,7 @@
 // 计算候选人的工作经历总月份
 // 1. 不能计算重复月份
 // 2. endDate为"present"的算在职，也不参与计算
-// 3. 下面数据输出月份为16
+// 3. 下面数据输出月份为29
 // 数据默认已经按照先startDate升序，后endDate升序;endDate > startDate
 let inputData = [
     {
@@ -11,6 +11,10 @@ let inputData = [
     {
         "startDate": "2018-03",
         "endDate": "2018-12"
+    },
+    {
+        "startDate": "2018-09",
+        "endDate": "2019-05"
     },
     {
         "startDate": "2019-06",
@@ -35,9 +39,7 @@ let inputData = [
 ]
 // 对date结构转换成number
 function changeDateToNumber(inputData) {
-    let filterData = inputData.filter(item => item.endDate != "present")
-
-    return filterData.map((item) => {
+    return inputData.filter(item => item.endDate != "present").map((item) => {
         let startYearAndMonth = item.startDate.split("-")
         item.startYear = Number(startYearAndMonth[0])
         item.startMonth = Number(startYearAndMonth[1])
