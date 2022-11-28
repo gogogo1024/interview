@@ -1,12 +1,13 @@
 {
-    "cSpell.words": [
-        "bignumber",
-        "datacenter",
-        "datacenters",
-        "farmhash",
-        "fastify",
-        "nums",
-        "papaparse",
-        "sequencenumber"
-    ]
+  "cSpell.words": [
+    "bignumber",
+    "datacenter",
+    "datacenters",
+    "farmhash",
+    "fastify",
+    "nums",
+    "papaparse",
+    "sequencenumber",
+    "snoy"
+  ]
 }
