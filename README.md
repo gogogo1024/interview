@@ -26,5 +26,3 @@
 6. system_design
 
    系统设计第二版
-
-7. 测试 fig
