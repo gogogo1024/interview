@@ -1,0 +1,13 @@
+{
+  "name": "typescript_version",
+  "version": "1.0.0",
+  "description": "typescript relation",
+  "scripts": {
+    "start": "tsc"
+  },
+  "author": "gogogo1024",
+  "license": "MIT",
+  "dependencies": {
+    "typescript": "^5.0.2"
+  }
+}
