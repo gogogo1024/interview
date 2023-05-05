@@ -4,6 +4,7 @@
  * @create date 2023-03-29 02:13:58
  * @modify date 2023-03-29 02:13:58
  * @desc [description] ctx上的变量全局共享，但是不同的ctx上的数据相互独立
+ * 设计一个类型友好的ctx (koa or express framework) 关键是IoC
  */
 
 import { strict as assert } from "node:assert";
@@ -70,7 +71,7 @@ const ctx2 = createCtx();
 ctx1.inject(num);
 ctx2.inject(num);
 
-const values = [];
+const values: Array<number> = [];
 
 const x = ctx1.get(num);
 values.push(x);
