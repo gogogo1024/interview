@@ -19,7 +19,7 @@
 // 当前dp[x,y]的最大值，是由上一步的最大值加上当前grid[x,y]的值
 // 而上一步的最大值max。只需要比较正上方向和左方向，即dp[x-1,y], dp[x,y-1]
 */
-let maxValue = function(grid) {
+let maxValue = function (grid) {
   let row = grid.length, column = grid[0].length;
   let dp = new Array(row + 1).fill(new Array(column + 1).fill(0));
   for (let i = 1; i <= row; i++) {
@@ -30,5 +30,5 @@ let maxValue = function(grid) {
   return dp[row][column];
 }
 let giftValueGrid = [[1, 3, 1], [1, 5, 1], [4, 2, 1]];
-let vlaue = maxValue(giftValueGrid);
-console.log(vlaue);
+let value = maxValue(giftValueGrid);
+console.log(value);

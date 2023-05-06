@@ -2,10 +2,9 @@
  * 动态规划处理用最少硬币数凑齐目标钱数
  * @param {*} coinArr  硬币的种类
  * @param {*} target   目标钱数
- * @returns 
+ * @returns 最少硬币数
  */
 function coinChange(coinArr, target) {
-
     let f = new Array(target + 1);
     let len = coinArr.length;
     f[0] = 0;
@@ -21,7 +20,5 @@ function coinChange(coinArr, target) {
         f[target] = -1;
     }
     return f[target];
-
-
 }
 console.log(coinChange([1, 2, 5], 27));
