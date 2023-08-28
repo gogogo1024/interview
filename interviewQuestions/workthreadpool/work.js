@@ -3,7 +3,7 @@ import { parentPort, threadId } from 'node:worker_threads';
 
 parentPort.on('message', (task) => {
     const { num } = task
-    console.log(`running task on thread: ${threadId}`)
+    // console.log(`running task on thread: ${threadId}`)
     parentPort.postMessage(getFib(num))
 })
 

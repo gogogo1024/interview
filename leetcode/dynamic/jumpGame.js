@@ -2,7 +2,7 @@
  * @author [gogogo1024]
  * @email [jxycbjhc@gmail.com]
  * @create date 2023-05-06 15:51:51
- * @modify date 2023-05-06 16:23:25
+ * @modify date 2023-05-07 00:48:10
  * @desc [description]
  */
 /**
@@ -17,7 +17,7 @@
  * 输出: true
  * 输入: a =[3,2,1,0,4]
  * 输出: false
- * 输入: a =3, 3, 1, 0, 4]
+ * 输入: a = [3, 3, 1, 0, 4]
  * 输出: true
  */
 function jumpGame(A) {
