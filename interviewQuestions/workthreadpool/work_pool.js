@@ -97,4 +97,5 @@ export default class WorkerPool extends EventEmitter {
     close() {
         for (const worker of this.workers) worker.terminate();
     }
+ 
 }

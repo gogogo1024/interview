@@ -13,7 +13,11 @@
     "node-fetch": "2.6",
     "pg": "8.11",
     "statsd-client": "^0.4.4",
-    "zipkin-lite": "^0.1.1"
+    "zipkin-lite": "^0.1.1",
+    "protobufjs": ">=7.2.5"
+  },
+  "devDependencies": {
+    "protobufjs": ">=7.2.5"
   },
   "main": "",
   "description": ""

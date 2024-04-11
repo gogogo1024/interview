@@ -44,7 +44,7 @@ var lengthOfLongestSubstring = function (s) {
             set.add(s.charAt(rp + 1));
             ++rp;
         }
-        // 第 i 到 rk 个字符是一个极长的无重复字符子串
+        // 第 i 到 rp 个字符是一个极长的无重复字符子串
         result = Math.max(result, rp - i + 1);
     }
     return result;

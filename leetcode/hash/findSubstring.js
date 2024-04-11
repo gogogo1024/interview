@@ -7,13 +7,13 @@
  */
 
 /**
- * @param {string} s
- * @param {string[]} words
+ * @param {string} s "barfoothefoobarman" 12
+ * @param words  ["foo", "bar"] 2*3 = 6
  * @return {number[]}
  */
 var findSubstring = function (s, words) {
-    if (s.length == 0 || words.length == 0) return []
-    let sLen = s.length, wLen = words.length, oneWordLen = words[0].length;
+    if (s.length === 0 || words.length === 0) return []
+    let sLen = s.length, wLen = words.length, perWordLen = words[0].length;
     let obj = Object.create(null);
     words.forEach(item => {
         if (obj[item]) {
@@ -24,13 +24,13 @@ var findSubstring = function (s, words) {
     })
 
     let result = []
-    for (let i = 0; i < sLen;) {
+    for (let i = 0; i <= sLen - wLen * perWordLen;) {
         let flag = true
         let _obj = Object.assign({}, obj);
-        for (let j = 0; j < wLen && (i + (wLen - 1) * oneWordLen) < sLen; j++) {
+        for (let j = 0; j < wLen && (i + (wLen - 1) * perWordLen) < sLen; j++) {
             // for (let j = 0; j < wLen; j++) {
 
-            const wd = s.slice(i + j * oneWordLen, i + (j + 1) * oneWordLen)
+            const wd = s.slice(i + j * perWordLen, i + (j + 1) * perWordLen)
             if (!obj[wd]) {
                 i++
                 flag = false
@@ -94,32 +94,19 @@ var findSubstring = function (s, words) {
 //     }
 //     return arr;
 // };
-let arr1 = [
-    {
-        s: "barfoothefoobarman",
-        words: ["foo", "bar"]
-    },
-    {
-        s: "wordgoodgoodgoodbestword",
-        words: ["word", "good", "best", "word"]
-    },
-    {
-        s: "barfoofoobarthefoobarman",
-        words: ["bar", "foo", "the"]
-    },
-    {
-        s: "lingmindraboofooowingdingbarrwingmonkeypoundcake",
-        words: ["fooo", "barr", "wing", "ding", "wing"]
-    },
-    {
-        s: "a",
-        words: ["a"]
-    },
-    {
-        s: "aaaaaaaaaaaaaa",
-        words: ["aa", "aa"]
-    }
-];
+let arr1 = [{
+    s: "barfoothefoobarman", words: ["foo", "bar"]
+}, {
+    s: "wordgoodgoodgoodbestword", words: ["word", "good", "best", "word"]
+}, {
+    s: "barfoofoobarthefoobarman", words: ["bar", "foo", "the"]
+}, {
+    s: "lingmindraboofooowingdingbarrwingmonkeypoundcake", words: ["fooo", "barr", "wing", "ding", "wing"]
+}, {
+    s: "a", words: ["a"]
+}, {
+    s: "aaaaaaaaaaaaaa", words: ["aa", "aa"]
+}];
 
 console.time('test')
 for (let index = 0; index < arr1.length; index++) {
