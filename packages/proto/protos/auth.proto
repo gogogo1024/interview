@@ -1,0 +1,65 @@
+syntax = "proto3";
+package chirp.auth;
+
+import "common.proto";
+
+service AuthService {
+  rpc Register(RegisterRequest) returns (AuthResponse);
+  rpc Login(LoginRequest) returns (AuthResponse);
+  rpc Logout(LogoutRequest) returns (LogoutResponse);
+  rpc GetCurrentUser(GetCurrentUserRequest) returns (UserResponse);
+  rpc ValidateSession(ValidateSessionRequest) returns (ValidateSessionResponse);
+}
+
+message RegisterRequest {
+  string email = 1;
+  string username = 2;
+  string display_name = 3;
+  string password = 4;
+}
+
+message LoginRequest {
+  string email = 1;
+  string password = 2;
+}
+
+message AuthResponse {
+  bool success = 1;
+  string user_id = 2;
+  string session_token = 3;
+  optional string error = 4;
+}
+
+message LogoutRequest {
+  string session_token = 1;
+}
+
+message LogoutResponse {
+  bool success = 1;
+}
+
+message GetCurrentUserRequest {
+  string session_token = 1;
+}
+
+message ValidateSessionRequest {
+  string session_token = 1;
+}
+
+message ValidateSessionResponse {
+  bool valid = 1;
+  string user_id = 2;
+  string username = 3;
+  string role = 4;
+}
+
+message UserResponse {
+  string id = 1;
+  string email = 2;
+  string username = 3;
+  string display_name = 4;
+  optional string avatar_url = 5;
+  optional string bio = 6;
+  string role = 7;
+  chirp.common.Timestamp created_at = 8;
+}
