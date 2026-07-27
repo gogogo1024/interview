@@ -24,22 +24,23 @@ import { notificationsHandler } from "./handlers/notifications.handler";
 import { postsHandler } from "./handlers/posts.handler";
 import { searchHandler } from "./handlers/search.handler";
 import { usersHandler } from "./handlers/users.handler";
+import { wrapGrpcHandler } from "./wrapHandler";
 
 export function startGrpcServer(port: number): Promise<Server> {
 	const server = new Server();
 
-	// Register all service handlers
-	server.addService(...adaptService(AuthService, authHandler));
-	server.addService(...adaptService(PostsService, postsHandler));
-	server.addService(...adaptService(CommentsService, commentsHandler));
-	server.addService(...adaptService(LikesService, likesHandler));
-	server.addService(...adaptService(FollowsService, followsHandler));
-	server.addService(...adaptService(FeedService, feedHandler));
-	server.addService(...adaptService(SearchService, searchHandler));
-	server.addService(...adaptService(UsersService, usersHandler));
-	server.addService(...adaptService(AdminService, adminHandler));
-	server.addService(...adaptService(NotificationsService, notificationsHandler));
-	server.addService(...adaptService(BookmarksService, bookmarksHandler));
+	// Register all service handlers with tracing/logging wrapper
+	server.addService(...adaptService(AuthService, wrapGrpcHandler(authHandler, "AuthService")));
+	server.addService(...adaptService(PostsService, wrapGrpcHandler(postsHandler, "PostsService")));
+	server.addService(...adaptService(CommentsService, wrapGrpcHandler(commentsHandler, "CommentsService")));
+	server.addService(...adaptService(LikesService, wrapGrpcHandler(likesHandler, "LikesService")));
+	server.addService(...adaptService(FollowsService, wrapGrpcHandler(followsHandler, "FollowsService")));
+	server.addService(...adaptService(FeedService, wrapGrpcHandler(feedHandler, "FeedService")));
+	server.addService(...adaptService(SearchService, wrapGrpcHandler(searchHandler, "SearchService")));
+	server.addService(...adaptService(UsersService, wrapGrpcHandler(usersHandler, "UsersService")));
+	server.addService(...adaptService(AdminService, wrapGrpcHandler(adminHandler, "AdminService")));
+	server.addService(...adaptService(NotificationsService, wrapGrpcHandler(notificationsHandler, "NotificationsService")));
+	server.addService(...adaptService(BookmarksService, wrapGrpcHandler(bookmarksHandler, "BookmarksService")));
 
 	return new Promise((resolve, reject) => {
 		server.bindAsync(`0.0.0.0:${port}`, ServerCredentials.createInsecure(), (error, boundPort) => {
