@@ -1,4 +1,5 @@
 import { createHash } from "crypto";
+import bcrypt from "bcryptjs";
 
 /**
  * Generate a simple ID
@@ -7,21 +8,32 @@ export function generateId(): string {
 	return `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
 }
 
+const BCRYPT_PREFIX = "bcrypt$";
+const BCRYPT_ROUNDS = 10;
+const LEGACY_SALT = "salt";
+
 /**
- * Hash password using SHA-256 (in production, use bcrypt)
+ * Hash password using bcrypt and prefix to indicate algorithm
  */
 export async function hashPassword(password: string): Promise<string> {
-	const hash = createHash("sha256");
-	hash.update(password + "salt");
-	return hash.digest("hex");
+	const bcryptHash = await bcrypt.hash(password, BCRYPT_ROUNDS);
+	return `${BCRYPT_PREFIX}${bcryptHash}`;
 }
 
 /**
- * Verify password against hash
+ * Verify password against hash. Supports legacy SHA-256 hashes for migration.
  */
 export async function verifyPassword(password: string, hashedPassword: string): Promise<boolean> {
-	const hash = await hashPassword(password);
-	return hash === hashedPassword;
+	if (hashedPassword.startsWith(BCRYPT_PREFIX)) {
+		const bcryptHash = hashedPassword.slice(BCRYPT_PREFIX.length);
+		return bcrypt.compare(password, bcryptHash);
+	}
+
+	// Legacy SHA-256 verification
+	const hash = createHash("sha256");
+	hash.update(password + LEGACY_SALT);
+	const computed = hash.digest("hex");
+	return computed === hashedPassword;
 }
 
 /**

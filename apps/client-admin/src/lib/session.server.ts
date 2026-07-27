@@ -4,6 +4,7 @@ export interface AdminSessionData {
 	userId: string;
 	username: string;
 	role: "admin" | "moderator";
+	sessionToken?: string;
 }
 
 // Session secret - in production, use environment variable

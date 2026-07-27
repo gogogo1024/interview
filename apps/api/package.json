@@ -27,10 +27,12 @@
 		"drizzle-orm": "^0.45.1",
 		"elysia": "^1.2.25",
 		"@elysiajs/node": "^1.2.25",
-		"jsonwebtoken": "^9.0.2"
+ 		"jsonwebtoken": "^9.0.2",
+ 		"bcryptjs": "^2.4.3"
 	},
 	"devDependencies": {
 		"@types/jsonwebtoken": "^9.0.9",
+		"@types/bcryptjs": "^2.4.2",
 		"@types/node": "^22.10.2",
 		"drizzle-kit": "^0.31.8",
 		"tsx": "^4.21.0",

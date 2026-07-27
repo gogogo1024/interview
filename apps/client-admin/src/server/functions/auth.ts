@@ -39,11 +39,12 @@ export const loginAdmin = createServerFn({ method: "POST" })
 		}
 
 		// Store admin session in cookie
-		await setAdminSessionData({
-			userId: loginResponse.userId,
-			username: validateResponse.username,
-			role: role as "admin" | "moderator",
-		});
+			await setAdminSessionData({
+				userId: loginResponse.userId,
+				username: validateResponse.username,
+				role: role as "admin" | "moderator",
+				sessionToken: loginResponse.sessionToken,
+			});
 
 		return { success: true, userId: loginResponse.userId, role };
 	});

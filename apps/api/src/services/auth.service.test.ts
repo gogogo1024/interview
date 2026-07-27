@@ -1,5 +1,6 @@
 import { eq } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
+import { createHash } from "crypto";
 import { createTestUser } from "../../tests/helpers";
 import { db, schema } from "../db";
 import { getCurrentUser, loginUser, registerUser } from "./auth.service";
@@ -53,6 +54,35 @@ describe("AuthService", () => {
 				}),
 			).rejects.toThrow("Username already taken");
 		});
+	});
+
+	it("migrates legacy SHA-256 password to bcrypt on login", async () => {
+		// Create a user with legacy SHA-256 hash (matches previous implementation)
+		const id = `legacy-${Date.now()}`;
+		const email = `legacy-${Date.now()}@example.com`;
+		const username = `legacyuser-${Date.now()}`;
+		const password = "legacy-pass-123";
+
+		const legacyHash = createHash("sha256").update(password + "salt").digest("hex");
+
+		await db.insert(users).values({
+			id,
+			email,
+			username,
+			displayName: "Legacy User",
+			passwordHash: legacyHash,
+			role: "user",
+		});
+
+		const result = await loginUser({ email, password });
+
+		expect(result.userId).toBeDefined();
+		expect(result.sessionToken).toBeDefined();
+
+		// Verify password hash was upgraded to bcrypt prefix
+		const updated = await db.select().from(users).where(eq(users.id, result.userId)).get();
+		expect(updated).toBeDefined();
+		expect(updated?.passwordHash.startsWith("bcrypt$")).toBe(true);
 	});
 
 	describe("loginUser", () => {

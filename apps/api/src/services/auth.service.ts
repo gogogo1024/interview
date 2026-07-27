@@ -79,6 +79,12 @@ export async function loginUser(input: LoginInput) {
 		throw new Error("Invalid email or password");
 	}
 
+	// If user has a legacy SHA-256 hash, upgrade to bcrypt on successful login
+	if (!user.passwordHash.startsWith("bcrypt$")) {
+		const newHash = await hashPassword(input.password);
+		await db.update(users).set({ passwordHash: newHash }).where(eq(users.id, user.id));
+	}
+
 	// Create session token
 	const sessionToken = createSessionToken({
 		userId: user.id,

@@ -3,6 +3,7 @@ import { useSession } from "@tanstack/react-start/server";
 export interface SessionData {
 	userId: string;
 	username: string;
+	sessionToken?: string;
 }
 
 // Session secret - in production, use environment variable
