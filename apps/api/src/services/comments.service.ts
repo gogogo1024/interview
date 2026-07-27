@@ -1,10 +1,11 @@
-import { and, eq, isNull, sql } from "drizzle-orm";
+import { and, eq, isNull, inArray } from "drizzle-orm";
 import { db, schema } from "../db";
 import { processMentions } from "./mentions.service";
 import { createNotification } from "./notifications.service";
 import { generateId } from "./utils";
+import { getCommentLikesForIds } from "./commentMetrics.service";
 
-const { comments, users, likes, posts } = schema;
+const { comments, users, posts } = schema;
 
 export interface CreateCommentInput {
 	postId: string;
@@ -13,28 +14,7 @@ export interface CreateCommentInput {
 	parentId?: string;
 }
 
-async function getCommentLikeInfo(commentId: string, userId?: string) {
-	const likesResult = await db
-		.select({ count: sql<number>`count(*)` })
-		.from(likes)
-		.where(eq(likes.commentId, commentId))
-		.get();
-
-	let isLiked = false;
-	if (userId) {
-		const likeStatus = await db
-			.select()
-			.from(likes)
-			.where(and(eq(likes.commentId, commentId), eq(likes.userId, userId)))
-			.get();
-		isLiked = !!likeStatus;
-	}
-
-	return {
-		likeCount: likesResult?.count || 0,
-		isLiked,
-	};
-}
+// Comment like info is provided by commentMetrics service (batch)
 
 export async function createComment(input: CreateCommentInput) {
 	if (!input.content || input.content.length === 0) {
@@ -109,45 +89,41 @@ export async function getPostComments(postId: string, userId?: string) {
 		.leftJoin(users, eq(comments.authorId, users.id))
 		.where(and(eq(comments.postId, postId), isNull(comments.parentId)));
 
-	// Get all comments with their replies
-	const commentsWithReplies = await Promise.all(
-		topLevelComments.map(async (comment) => {
-			const likeInfo = await getCommentLikeInfo(comment.id, userId);
+	// Collect all comment IDs (top-level + replies) to batch fetch like info
+	const topLevelIds = topLevelComments.map((c) => c.id);
 
-			// Get replies
-			const replies = await db
-				.select({
-					id: comments.id,
-					content: comments.content,
-					createdAt: comments.createdAt,
-					parentId: comments.parentId,
-					author: {
-						id: users.id,
-						username: users.username,
-						displayName: users.displayName,
-						avatarUrl: users.avatarUrl,
-					},
-				})
-				.from(comments)
-				.leftJoin(users, eq(comments.authorId, users.id))
-				.where(eq(comments.parentId, comment.id));
+	// Fetch replies for all top-level comments in one query
+	const replies = await db
+		.select({
+			id: comments.id,
+			content: comments.content,
+			createdAt: comments.createdAt,
+			parentId: comments.parentId,
+			author: {
+				id: users.id,
+				username: users.username,
+				displayName: users.displayName,
+				avatarUrl: users.avatarUrl,
+			},
+		})
+		.from(comments)
+		.leftJoin(users, eq(comments.authorId, users.id))
+		.where(inArray(comments.parentId, topLevelIds));
 
-			const repliesWithLikes = await Promise.all(
-				replies.map(async (reply) => {
-					const replyLikeInfo = await getCommentLikeInfo(reply.id, userId);
-					return { ...reply, ...replyLikeInfo, replies: [] };
-				}),
-			);
+	const allIds = [...topLevelIds, ...replies.map((r) => r.id)];
+	const likeInfoMap = await getCommentLikesForIds(allIds, userId);
 
-			return {
-				...comment,
-				...likeInfo,
-				replies: repliesWithLikes,
-			};
-		}),
-	);
+	const repliesByParent: Record<string, any[]> = {};
+	replies.forEach((r) => {
+		repliesByParent[r.parentId] = repliesByParent[r.parentId] || [];
+		repliesByParent[r.parentId].push({ ...r, ...likeInfoMap[r.id], replies: [] });
+	});
 
-	return commentsWithReplies;
+	return topLevelComments.map((comment) => ({
+		...comment,
+		...likeInfoMap[comment.id],
+		replies: repliesByParent[comment.id] || [],
+	}));
 }
 
 export async function deleteComment(commentId: string, userId: string) {
