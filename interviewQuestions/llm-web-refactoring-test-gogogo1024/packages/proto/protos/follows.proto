@@ -1,0 +1,37 @@
+syntax = "proto3";
+package chirp.follows;
+
+service FollowsService {
+  rpc ToggleFollow(ToggleFollowRequest) returns (FollowResponse);
+  rpc GetFollowStatus(GetFollowStatusRequest) returns (FollowStatusResponse);
+  rpc GetFollowerCount(GetCountRequest) returns (CountResponse);
+  rpc GetFollowingCount(GetCountRequest) returns (CountResponse);
+}
+
+message ToggleFollowRequest {
+  string session_token = 1;
+  string username = 2;
+}
+
+message FollowResponse {
+  bool success = 1;
+  bool following = 2;
+  optional string error = 3;
+}
+
+message GetFollowStatusRequest {
+  string session_token = 1;
+  string username = 2;
+}
+
+message FollowStatusResponse {
+  bool following = 1;
+}
+
+message GetCountRequest {
+  string username = 1;
+}
+
+message CountResponse {
+  int32 count = 1;
+}

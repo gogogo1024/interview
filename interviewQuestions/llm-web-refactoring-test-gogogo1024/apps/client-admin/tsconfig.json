@@ -1,0 +1,18 @@
+{
+	"extends": "../../tooling/typescript/tsconfig.react.json",
+	"include": ["**/*.ts", "**/*.tsx"],
+	"exclude": ["node_modules"],
+	"compilerOptions": {
+		"types": ["vite/client"],
+		"verbatimModuleSyntax": false,
+		"noUncheckedSideEffectImports": true,
+		"noUncheckedIndexedAccess": false,
+		"skipLibCheck": true,
+		"declaration": false,
+		"declarationMap": false,
+		"baseUrl": ".",
+		"paths": {
+			"@/*": ["./src/*"]
+		}
+	}
+}

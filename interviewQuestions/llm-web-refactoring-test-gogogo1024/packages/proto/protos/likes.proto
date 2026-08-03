@@ -1,0 +1,39 @@
+syntax = "proto3";
+package chirp.likes;
+
+service LikesService {
+  rpc TogglePostLike(TogglePostLikeRequest) returns (LikeResponse);
+  rpc ToggleCommentLike(ToggleCommentLikeRequest) returns (LikeResponse);
+  rpc GetPostLikeStatus(GetLikeStatusRequest) returns (LikeStatusResponse);
+  rpc GetCommentLikeStatus(GetCommentLikeStatusRequest) returns (LikeStatusResponse);
+}
+
+message TogglePostLikeRequest {
+  string session_token = 1;
+  string post_id = 2;
+}
+
+message ToggleCommentLikeRequest {
+  string session_token = 1;
+  string comment_id = 2;
+}
+
+message LikeResponse {
+  bool success = 1;
+  bool liked = 2;
+  optional string error = 3;
+}
+
+message GetLikeStatusRequest {
+  string session_token = 1;
+  string post_id = 2;
+}
+
+message GetCommentLikeStatusRequest {
+  string session_token = 1;
+  string comment_id = 2;
+}
+
+message LikeStatusResponse {
+  bool liked = 1;
+}

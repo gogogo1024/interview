@@ -1,0 +1,33 @@
+name: Run tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: read
+  issues: write
+  checks: write
+
+jobs:
+  run-unit-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out Git repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+        timeout-minutes: 6
+
+      - name: Run sanity check tests
+        uses: speechify-recruiting/llm-test-action@main
+        id: llm-test-action
+        with:
+          test-type: "llm-web-refactoring-test"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        timeout-minutes: 5
