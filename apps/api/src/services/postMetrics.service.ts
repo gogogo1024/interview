@@ -9,6 +9,13 @@ export interface PostCounts {
   isLiked: boolean;
 }
 
+type IdRow = { postId: string | null };
+type CountRow = IdRow & { count: number };
+
+function hasStringId<T extends IdRow>(row: T): row is T & { postId: string } {
+  return row.postId !== null && row.postId !== undefined;
+}
+
 /**
  * Fetch like/comment counts and like-status for a batch of post IDs in O(1) queries.
  */
@@ -30,7 +37,7 @@ export async function getCountsForPostIds(postIds: string[], userId?: string) {
     .groupBy(comments.postId);
 
   // liked-by-requester map
-  let likedByRequester: Array<{ postId: string }> = [];
+  let likedByRequester: Array<IdRow> = [];
   if (userId) {
     likedByRequester = await db
       .select({ postId: likes.postId })
@@ -39,16 +46,18 @@ export async function getCountsForPostIds(postIds: string[], userId?: string) {
   }
 
   const likeCountMap: Record<string, number> = {};
-  likeCounts.forEach((r: any) => {
-    likeCountMap[r.postId] = r.count || 0;
-  });
+  for (const row of likeCounts as CountRow[]) {
+    if (!hasStringId(row)) continue;
+    likeCountMap[row.postId] = row.count || 0;
+  }
 
   const commentCountMap: Record<string, number> = {};
-  commentCounts.forEach((r: any) => {
-    commentCountMap[r.postId] = r.count || 0;
-  });
+  for (const row of commentCounts as CountRow[]) {
+    if (!hasStringId(row)) continue;
+    commentCountMap[row.postId] = row.count || 0;
+  }
 
-  const likedSet = new Set(likedByRequester.map((r) => r.postId));
+  const likedSet = new Set(likedByRequester.filter(hasStringId).map((r) => r.postId));
 
   const result: Record<string, PostCounts> = {};
   for (const id of postIds) {

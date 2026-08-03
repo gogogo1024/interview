@@ -1,6 +1,7 @@
 import { eq } from "drizzle-orm";
 import { db, schema } from "../db";
 import { type AuthContext, createSessionToken } from "../middleware/auth";
+import { badRequest, forbidden, notFound, unauthorized } from "../observability/errors";
 import { generateId, hashPassword, verifyPassword } from "./utils";
 
 const { users } = schema;
@@ -22,7 +23,7 @@ export async function registerUser(input: RegisterInput) {
 	const existingEmail = await db.select().from(users).where(eq(users.email, input.email)).get();
 
 	if (existingEmail) {
-		throw new Error("User with this email already exists");
+		throw badRequest("User with this email already exists");
 	}
 
 	// Check if username already exists
@@ -33,7 +34,7 @@ export async function registerUser(input: RegisterInput) {
 		.get();
 
 	if (existingUsername) {
-		throw new Error("Username already taken");
+		throw badRequest("Username already taken");
 	}
 
 	// Hash password
@@ -65,18 +66,18 @@ export async function loginUser(input: LoginInput) {
 	const user = await db.select().from(users).where(eq(users.email, input.email)).get();
 
 	if (!user) {
-		throw new Error("Invalid email or password");
+		throw unauthorized("Invalid email or password");
 	}
 
 	// Check if user is banned
 	if (user.bannedAt) {
-		throw new Error(`Account banned: ${user.bannedReason || "No reason provided"}`);
+		throw forbidden(`Account banned: ${user.bannedReason || "No reason provided"}`);
 	}
 
 	// Verify password
 	const valid = await verifyPassword(input.password, user.passwordHash);
 	if (!valid) {
-		throw new Error("Invalid email or password");
+		throw unauthorized("Invalid email or password");
 	}
 
 	// If user has a legacy SHA-256 hash, upgrade to bcrypt on successful login
@@ -112,7 +113,7 @@ export async function getCurrentUser(userId: string) {
 		.get();
 
 	if (!user) {
-		throw new Error("User not found");
+		throw notFound("User not found");
 	}
 
 	return user;

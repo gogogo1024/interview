@@ -1,4 +1,4 @@
-import { and, desc, eq, like, or } from "drizzle-orm";
+import { desc, eq, like, or } from "drizzle-orm";
 import { db, schema } from "../db";
 import { getCountsForPostIds } from "./postMetrics.service";
 

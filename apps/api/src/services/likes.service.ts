@@ -1,5 +1,6 @@
 import { and, eq } from "drizzle-orm";
 import { db, schema } from "../db";
+import { notFound } from "../observability/errors";
 import { createNotification } from "./notifications.service";
 import { generateId } from "./utils";
 
@@ -10,7 +11,7 @@ export async function togglePostLike(postId: string, userId: string) {
 	const post = await db.select().from(posts).where(eq(posts.id, postId)).get();
 
 	if (!post) {
-		throw new Error("Post not found");
+		throw notFound("Post not found");
 	}
 
 	// Check if already liked
@@ -49,7 +50,7 @@ export async function toggleCommentLike(commentId: string, userId: string) {
 	const comment = await db.select().from(comments).where(eq(comments.id, commentId)).get();
 
 	if (!comment) {
-		throw new Error("Comment not found");
+		throw notFound("Comment not found");
 	}
 
 	// Check if already liked

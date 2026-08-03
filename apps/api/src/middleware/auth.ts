@@ -1,5 +1,6 @@
 import type { GrpcSessionPayload } from "@chirp/shared-types";
 import jwt from "jsonwebtoken";
+import { forbidden, unauthorized } from "../observability/errors";
 
 const JWT_SECRET = process.env.GRPC_JWT_SECRET || "chirp-grpc-jwt-secret-key-at-least-32-chars";
 
@@ -21,7 +22,7 @@ export function validateSessionToken(token: string): AuthContext {
 			role: decoded.role,
 		};
 	} catch (error) {
-		throw new Error("Invalid or expired session token");
+		throw unauthorized("Invalid or expired session token");
 	}
 }
 
@@ -48,7 +49,7 @@ export function createSessionToken(
  */
 export function requireAuth(token: string | undefined): AuthContext {
 	if (!token) {
-		throw new Error("Authentication required");
+		throw unauthorized("Authentication required");
 	}
 	return validateSessionToken(token);
 }
@@ -58,7 +59,7 @@ export function requireAuth(token: string | undefined): AuthContext {
  */
 export function requireAdmin(context: AuthContext): void {
 	if (context.role !== "admin" && context.role !== "moderator") {
-		throw new Error("Admin access required");
+		throw forbidden("Admin access required");
 	}
 }
 
@@ -67,7 +68,7 @@ export function requireAdmin(context: AuthContext): void {
  */
 export function requireSuperAdmin(context: AuthContext): void {
 	if (context.role !== "admin") {
-		throw new Error("Super admin access required");
+		throw forbidden("Super admin access required");
 	}
 }
 

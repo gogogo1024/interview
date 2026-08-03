@@ -30,3 +30,15 @@ export function notFound(msg: string) {
 export function unauthorized(msg: string) {
     return new ApiError(Codes.Unauthorized, msg);
 }
+
+export function forbidden(msg: string) {
+    return new ApiError(Codes.Forbidden, msg);
+}
+
+export function conflict(msg: string) {
+    return new ApiError(Codes.Conflict, msg);
+}
+
+export function internal(msg: string) {
+    return new ApiError(Codes.Internal, msg);
+}

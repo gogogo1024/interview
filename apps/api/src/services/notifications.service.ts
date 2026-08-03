@@ -1,5 +1,6 @@
 import { and, desc, eq, sql } from "drizzle-orm";
 import { db, schema } from "../db";
+import { notFound, unauthorized } from "../observability/errors";
 import { generateId } from "./utils";
 
 const { notifications, users, posts, comments } = schema;
@@ -99,6 +100,13 @@ export async function getUserNotifications(userId: string, limit = 20, offset = 
 }
 
 /**
+ * Convenience alias for the notification listing API.
+ */
+export async function getNotifications(userId: string, limit = 20, offset = 0) {
+	return getUserNotifications(userId, limit, offset);
+}
+
+/**
  * Get unread notification count for a user
  */
 export async function getUnreadCount(userId: string) {
@@ -122,16 +130,23 @@ export async function markAsRead(notificationId: string, userId: string) {
 		.get();
 
 	if (!notification) {
-		throw new Error("Notification not found");
+		throw notFound("Notification not found");
 	}
 
 	if (notification.userId !== userId) {
-		throw new Error("Unauthorized");
+		throw unauthorized("Unauthorized");
 	}
 
 	await db.update(notifications).set({ read: true }).where(eq(notifications.id, notificationId));
 
 	return { success: true };
+}
+
+/**
+ * Convenience alias for the notification read API.
+ */
+export async function markNotificationAsRead(notificationId: string, userId: string) {
+	return markAsRead(notificationId, userId);
 }
 
 /**
@@ -154,11 +169,11 @@ export async function deleteNotification(notificationId: string, userId: string)
 		.get();
 
 	if (!notification) {
-		throw new Error("Notification not found");
+		throw notFound("Notification not found");
 	}
 
 	if (notification.userId !== userId) {
-		throw new Error("Unauthorized");
+		throw unauthorized("Unauthorized");
 	}
 
 	await db.delete(notifications).where(eq(notifications.id, notificationId));

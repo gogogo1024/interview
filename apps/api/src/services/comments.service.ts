@@ -1,5 +1,6 @@
 import { and, eq, isNull, inArray } from "drizzle-orm";
 import { db, schema } from "../db";
+import { badRequest, forbidden, notFound } from "../observability/errors";
 import { processMentions } from "./mentions.service";
 import { createNotification } from "./notifications.service";
 import { generateId } from "./utils";
@@ -18,14 +19,14 @@ export interface CreateCommentInput {
 
 export async function createComment(input: CreateCommentInput) {
 	if (!input.content || input.content.length === 0) {
-		throw new Error("Comment content is required");
+		throw badRequest("Comment content is required");
 	}
 
 	// Verify post exists
 	const post = await db.select().from(posts).where(eq(posts.id, input.postId)).get();
 
 	if (!post) {
-		throw new Error("Post not found");
+		throw notFound("Post not found");
 	}
 
 	// If parentId provided, verify parent comment exists
@@ -37,12 +38,12 @@ export async function createComment(input: CreateCommentInput) {
 			.get();
 
 		if (!parentComment) {
-			throw new Error("Parent comment not found");
+			throw notFound("Parent comment not found");
 		}
 
 		// Only allow one level of nesting
 		if (parentComment.parentId) {
-			throw new Error("Cannot reply to a reply");
+			throw badRequest("Cannot reply to a reply");
 		}
 	}
 
@@ -115,8 +116,10 @@ export async function getPostComments(postId: string, userId?: string) {
 
 	const repliesByParent: Record<string, any[]> = {};
 	replies.forEach((r) => {
-		repliesByParent[r.parentId] = repliesByParent[r.parentId] || [];
-		repliesByParent[r.parentId].push({ ...r, ...likeInfoMap[r.id], replies: [] });
+		if (!r.parentId) return;
+		const parentReplies = repliesByParent[r.parentId] || [];
+		parentReplies.push({ ...r, ...likeInfoMap[r.id], replies: [] });
+		repliesByParent[r.parentId] = parentReplies;
 	});
 
 	return topLevelComments.map((comment) => ({
@@ -130,11 +133,11 @@ export async function deleteComment(commentId: string, userId: string) {
 	const comment = await db.select().from(comments).where(eq(comments.id, commentId)).get();
 
 	if (!comment) {
-		throw new Error("Comment not found");
+		throw notFound("Comment not found");
 	}
 
 	if (comment.authorId !== userId) {
-		throw new Error("You can only delete your own comments");
+		throw forbidden("You can only delete your own comments");
 	}
 
 	await db.delete(comments).where(eq(comments.id, commentId));

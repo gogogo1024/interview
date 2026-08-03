@@ -71,7 +71,10 @@ export const authHandler: IAuthService = {
 				createdAt: toProtoTimestamp(user.createdAt),
 			};
 		} catch (error) {
-			throw new Error(error instanceof Error ? error.message : "Failed to get user");
+			if (error instanceof Error) {
+				throw error;
+			}
+			throw new Error("Failed to get user");
 		}
 	},
 

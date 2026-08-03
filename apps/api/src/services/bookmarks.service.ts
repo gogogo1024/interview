@@ -1,9 +1,10 @@
-import { and, desc, eq, inArray, sql } from "drizzle-orm";
+import { and, desc, eq, inArray } from "drizzle-orm";
 import { db, schema } from "../db";
+import { notFound } from "../observability/errors";
 import { generateId } from "./utils";
 import { getCountsForPostIds } from "./postMetrics.service";
 
-const { bookmarks, posts, users, likes } = schema;
+const { bookmarks, posts, users } = schema;
 
 /**
  * Toggle bookmark for a post (create if not exists, delete if exists)
@@ -13,7 +14,7 @@ export async function toggleBookmark(postId: string, userId: string) {
 	const post = await db.select().from(posts).where(eq(posts.id, postId)).get();
 
 	if (!post) {
-		throw new Error("Post not found");
+		throw notFound("Post not found");
 	}
 
 	// Check if already bookmarked

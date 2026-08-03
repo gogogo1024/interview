@@ -8,6 +8,13 @@ export interface CommentLikeInfo {
   isLiked: boolean;
 }
 
+type IdRow = { commentId: string | null };
+type CountRow = IdRow & { count: number };
+
+function hasStringId<T extends IdRow>(row: T): row is T & { commentId: string } {
+  return row.commentId !== null && row.commentId !== undefined;
+}
+
 export async function getCommentLikesForIds(commentIds: string[], userId?: string) {
   if (!commentIds || commentIds.length === 0) return {} as Record<string, CommentLikeInfo>;
 
@@ -17,7 +24,7 @@ export async function getCommentLikesForIds(commentIds: string[], userId?: strin
     .where(inArray(likes.commentId, commentIds))
     .groupBy(likes.commentId);
 
-  let likedByRequester: Array<{ commentId: string }> = [];
+  let likedByRequester: Array<IdRow> = [];
   if (userId) {
     likedByRequester = await db
       .select({ commentId: likes.commentId })
@@ -26,11 +33,12 @@ export async function getCommentLikesForIds(commentIds: string[], userId?: strin
   }
 
   const likeCountMap: Record<string, number> = {};
-  likeCounts.forEach((r: any) => {
-    likeCountMap[r.commentId] = r.count || 0;
-  });
+  for (const row of likeCounts as CountRow[]) {
+    if (!hasStringId(row)) continue;
+    likeCountMap[row.commentId] = row.count || 0;
+  }
 
-  const likedSet = new Set(likedByRequester.map((r) => r.commentId));
+  const likedSet = new Set(likedByRequester.filter(hasStringId).map((r) => r.commentId));
 
   const result: Record<string, CommentLikeInfo> = {};
   for (const id of commentIds) {

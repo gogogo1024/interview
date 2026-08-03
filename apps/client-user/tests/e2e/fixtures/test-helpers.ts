@@ -49,11 +49,26 @@ export async function waitForHydration(page: Page): Promise<void> {
 /**
  * Login as a specific test user
  */
+async function clearBrowserState(page: Page): Promise<void> {
+	await page.evaluate(() => {
+		try {
+			window.localStorage.clear();
+			window.sessionStorage.clear();
+		} catch {
+			// Ignore storage access failures from a destroyed page.
+		}
+	});
+	await page.context().clearCookies();
+	await page.goto("about:blank");
+}
+
 export async function loginAs(
 	page: Page,
 	user: keyof typeof TEST_USERS | { email: string; password: string },
 ): Promise<void> {
 	const credentials = typeof user === "string" ? TEST_USERS[user] : user;
+
+	await clearBrowserState(page);
 
 	// Neutralize Nitro dev server error overlays via CSS for this browser context.
 	// The overlay is injected by Vite's HMR client when Nitro encounters a
@@ -74,8 +89,9 @@ export async function loginAs(
 		}
 	});
 
-	await page.goto("/auth/login", { waitUntil: "networkidle" });
+	await page.goto("/auth/login", { waitUntil: "domcontentloaded" });
 	await waitForHydration(page);
+	await page.waitForSelector('input[name="email"]', { state: "visible", timeout: 10000 });
 
 	await page.fill('input[name="email"]', credentials.email);
 	await page.fill('input[name="password"]', credentials.password);

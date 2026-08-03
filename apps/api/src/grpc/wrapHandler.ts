@@ -3,16 +3,49 @@ import { runWithNewTrace, getTraceId } from "../observability/context";
 import { logger } from "../observability/logger";
 import { generateId } from "../services/utils";
 
-type AnyHandler = Record<string, (...args: any[]) => Promise<any>>;
+type HandlerFn = (...args: any[]) => Promise<any>;
 
-export function wrapGrpcHandler<T extends AnyHandler>(handler: T, serviceName: string): T {
-    const wrapped: Partial<T> = {};
+interface MetadataSink {
+    sendMetadata(metadata: grpc.Metadata): void;
+}
 
-    for (const key of Object.keys(handler)) {
-        const orig = (handler as AnyHandler)[key];
+interface WrappedCallLike {
+    call?: MetadataSink;
+}
+
+function isMetadataSink(value: unknown): value is MetadataSink {
+    return typeof value === "object" && value !== null && "sendMetadata" in value && typeof (value as MetadataSink).sendMetadata === "function";
+}
+
+function sendTraceMetadata(args: unknown[], traceId: string) {
+    const md = new grpc.Metadata();
+    md.set("x-trace-id", traceId);
+
+    for (const arg of args) {
+        if (!arg) continue;
+        if (isMetadataSink(arg)) {
+            arg.sendMetadata(md);
+            return;
+        }
+
+        if (typeof arg === "object" && arg !== null && "call" in (arg as WrappedCallLike)) {
+            const call = (arg as WrappedCallLike).call;
+            if (call && isMetadataSink(call)) {
+                call.sendMetadata(md);
+                return;
+            }
+        }
+    }
+}
+
+export function wrapGrpcHandler<T extends object>(handler: T, serviceName: string): T {
+    const wrapped: Partial<Record<string, HandlerFn>> = {};
+
+    for (const key of Object.keys(handler as Record<string, unknown>)) {
+        const orig = (handler as Record<string, unknown>)[key];
         if (typeof orig !== "function") continue;
 
-        wrapped[key as keyof T] = (async (...args: any[]) => {
+        wrapped[key] = (async (...args: any[]) => {
             const traceId = generateId();
             return runWithNewTrace(async () => {
                 const method = `${serviceName}.${key}`;
@@ -23,38 +56,7 @@ export function wrapGrpcHandler<T extends AnyHandler>(handler: T, serviceName: s
 
                     // Try to send traceId via gRPC metadata if possible
                     try {
-                        const md = new grpc.Metadata();
-                        md.set("x-trace-id", traceId);
-
-                        // Common places where a metadata sink may exist on server-side adapters
-                        for (const a of args) {
-                            if (!a) continue;
-                            // If adaptor exposes sendMetadata
-                            if (typeof a.sendMetadata === "function") {
-                                try {
-                                    a.sendMetadata(md);
-                                    break;
-                                } catch (_) {
-                                    // ignore
-                                }
-                            }
-
-                            // grpc-js ServerUnaryCall has `call.sendMetadata` in some adapters
-                            if (a.call && typeof a.call.sendMetadata === "function") {
-                                try {
-                                    a.call.sendMetadata(md);
-                                    break;
-                                } catch (_) {}
-                            }
-
-                            // Some adaptors pass (call, callback) directly; call may be args[0]
-                            if (typeof a === "object" && typeof (a as any).metadata === "object" && typeof (a as any).sendMetadata === "function") {
-                                try {
-                                    (a as any).sendMetadata(md);
-                                    break;
-                                } catch (_) {}
-                            }
-                        }
+                        sendTraceMetadata(args, traceId);
                     } catch (_) {
                         // ignore metadata errors
                     }
