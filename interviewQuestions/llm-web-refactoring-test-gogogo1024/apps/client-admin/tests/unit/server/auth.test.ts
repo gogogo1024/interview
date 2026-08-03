@@ -108,10 +108,13 @@ describe("Admin Auth Server Functions", () => {
 			expect(result.success).toBe(true);
 			expect(result.userId).toBe("user-123");
 			expect(result.role).toBe("admin");
+			// implementation stores the server-issued sessionToken in the
+			// admin session; assert it was saved along with user info
 			expect(setAdminSessionData).toHaveBeenCalledWith({
 				userId: "user-123",
 				username: "adminuser",
 				role: "admin",
+				sessionToken: "session-token-123",
 			});
 		});
 

@@ -40,17 +40,18 @@ pnpm run dev
 
 ## Test Accounts
 
-After running the seed script:
+After running the seed script, the following accounts are available:
 
 ### Regular Users
 - alice@test.com / password123
 - bob@test.com / password123
 - charlie@test.com / password123
 - diana@test.com / password123
-- eve@test.com / password123
 
-### Admin User
-- admin@chirp.com / admin123
+### Admin / Moderator Users
+- admin@test.com / admin123
+- admin@chirp.test / admin123
+- moderator@chirp.test / mod123
 
 ## Features
 

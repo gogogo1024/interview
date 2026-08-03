@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+test.describe.configure({ mode: "serial" });
 import {
 	createPost,
 	goToProfile,

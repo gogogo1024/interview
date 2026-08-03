@@ -43,7 +43,10 @@ describe("AuthService", () => {
 		});
 
 		it("rejects duplicate username", async () => {
-			await createTestUser({ username: "takenname" });
+			await createTestUser({
+				email: "taken-username@example.com",
+				username: "takenname",
+			});
 
 			await expect(
 				registerUser({

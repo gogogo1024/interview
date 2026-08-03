@@ -8,6 +8,8 @@ import {
 } from "./fixtures/test-helpers";
 
 test.describe("Notifications - Comprehensive", () => {
+	test.describe.configure({ mode: "serial" });
+
 	test.describe("Notification Bell", () => {
 		test("should display notification bell in header when logged in", async ({ page }) => {
 			await loginAs(page, "alice");
@@ -65,17 +67,21 @@ test.describe("Notifications - Comprehensive", () => {
 			const content = `Like notification test ${uniqueId()}`;
 			await createPost(page, content);
 
+			const postLink = page.locator('a[href*="/posts/"]').filter({ hasText: content }).first();
+			await expect(postLink).toBeVisible();
+			const postUrl = await postLink.getAttribute("href");
+			expect(postUrl).toBeTruthy();
+
 			// Log out and login as bob
 			await page.click('button[title="Logout"]');
 			await waitForHydration(page);
 			await loginAs(page, "bob");
 
-			// Find alice's post and like it
-			await page.goto("/", { waitUntil: "networkidle" });
+			// Navigate directly to alice's post and like it
+			await page.goto(postUrl!, { waitUntil: "networkidle" });
 			await waitForHydration(page);
 
-			const alicePost = page.locator("article").filter({ hasText: content }).first();
-			const likeButton = alicePost.locator("button").filter({ hasText: /^\d+$/ }).first();
+			const likeButton = page.locator("article").first().locator('button[type="button"]').first();
 			await likeButton.click();
 			await waitForHydration(page);
 
@@ -101,7 +107,9 @@ test.describe("Notifications - Comprehensive", () => {
 
 			// Get the post link
 			const postLink = page.locator('a[href*="/posts/"]').filter({ hasText: content }).first();
+			await expect(postLink).toBeVisible();
 			const postUrl = await postLink.getAttribute("href");
+			expect(postUrl).toBeTruthy();
 
 			// Log out and login as bob
 			await page.click('button[title="Logout"]');
@@ -109,15 +117,13 @@ test.describe("Notifications - Comprehensive", () => {
 			await loginAs(page, "bob");
 
 			// Navigate to alice's post and comment
-			if (postUrl) {
-				await page.goto(postUrl, { waitUntil: "networkidle" });
-				await waitForHydration(page);
+			await page.goto(postUrl!, { waitUntil: "networkidle" });
+			await waitForHydration(page);
 
-				const commentContent = `Test comment ${uniqueId()}`;
-				await page.fill('textarea[placeholder*="comment"]', commentContent);
-				await page.click('button:has-text("Comment")');
-				await waitForHydration(page);
-			}
+			const commentContent = `Test comment ${uniqueId()}`;
+			await page.fill('textarea[placeholder*="comment"]', commentContent);
+			await page.click('button:has-text("Comment")');
+			await waitForHydration(page);
 
 			// Log out and login as alice to check notification
 			await page.click('button[title="Logout"]');
