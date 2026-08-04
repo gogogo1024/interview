@@ -1,0 +1,11 @@
+{
+	"extends": "../../tooling/typescript/tsconfig.base.json",
+	"include": ["src/**/*.ts"],
+	"exclude": ["src/**/*.test.ts", "src/**/__tests__/**"],
+	"compilerOptions": {
+		"outDir": "./dist",
+		"rootDir": "./src",
+		"noUncheckedIndexedAccess": false,
+		"skipLibCheck": true
+	}
+}

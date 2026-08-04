@@ -1,0 +1,53 @@
+syntax = "proto3";
+package chirp.comments;
+
+import "common.proto";
+
+service CommentsService {
+  rpc CreateComment(CreateCommentRequest) returns (CreateCommentResponse);
+  rpc GetPostComments(GetPostCommentsRequest) returns (CommentsResponse);
+  rpc DeleteComment(DeleteCommentRequest) returns (DeleteCommentResponse);
+}
+
+message CreateCommentRequest {
+  string session_token = 1;
+  string post_id = 2;
+  string content = 3;
+  optional string parent_id = 4;
+}
+
+message CreateCommentResponse {
+  bool success = 1;
+  string comment_id = 2;
+  optional string error = 3;
+}
+
+message GetPostCommentsRequest {
+  string post_id = 1;
+  optional string session_token = 2;
+}
+
+message CommentResponse {
+  string id = 1;
+  string content = 2;
+  chirp.common.Timestamp created_at = 3;
+  optional string parent_id = 4;
+  chirp.common.Author author = 5;
+  int32 like_count = 6;
+  bool is_liked = 7;
+  repeated CommentResponse replies = 8;
+}
+
+message CommentsResponse {
+  repeated CommentResponse comments = 1;
+}
+
+message DeleteCommentRequest {
+  string session_token = 1;
+  string comment_id = 2;
+}
+
+message DeleteCommentResponse {
+  bool success = 1;
+  optional string error = 2;
+}

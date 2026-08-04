@@ -1,0 +1,49 @@
+# Dependencies
+node_modules
+
+# Build outputs
+dist
+dist-ssr
+.output
+.nitro
+.vinxi
+
+# TanStack/Vite cache
+.tanstack
+.wrangler
+
+# Turborepo
+.turbo
+
+# Database
+*.db
+*.db-journal
+
+# Test outputs
+playwright-report
+test-results
+coverage
+
+# Environment
+.env
+.env.*
+*.local
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea
+*.swp
+*.swo
+
+# Generated files
+routeTree.gen.ts
+packages/proto/generated/*
+!packages/proto/generated/.gitkeep
+
+# Misc
+count.txt
+todos.json
+*.log

@@ -1,0 +1,37 @@
+syntax = "proto3";
+package chirp.bookmarks;
+
+import "common.proto";
+import "posts.proto";
+
+service BookmarksService {
+  rpc ToggleBookmark(ToggleBookmarkRequest) returns (BookmarkResponse);
+  rpc GetBookmarkStatus(GetBookmarkStatusRequest) returns (BookmarkStatusResponse);
+  rpc GetBookmarkedPosts(GetBookmarkedPostsRequest) returns (chirp.posts.PostsResponse);
+}
+
+message ToggleBookmarkRequest {
+  string session_token = 1;
+  string post_id = 2;
+}
+
+message BookmarkResponse {
+  bool success = 1;
+  bool bookmarked = 2;
+  optional string error = 3;
+}
+
+message GetBookmarkStatusRequest {
+  string session_token = 1;
+  string post_id = 2;
+}
+
+message BookmarkStatusResponse {
+  bool bookmarked = 1;
+}
+
+message GetBookmarkedPostsRequest {
+  string session_token = 1;
+  int32 limit = 2;
+  int32 offset = 3;
+}

@@ -1,0 +1,41 @@
+syntax = "proto3";
+package chirp.users;
+
+import "common.proto";
+
+service UsersService {
+  rpc GetUser(GetUserRequest) returns (UserProfileResponse);
+  rpc UpdateProfile(UpdateProfileRequest) returns (UpdateProfileResponse);
+}
+
+message GetUserRequest {
+  string username = 1;
+  optional string session_token = 2;
+}
+
+message UserProfileResponse {
+  string id = 1;
+  string email = 2;
+  string username = 3;
+  string display_name = 4;
+  optional string avatar_url = 5;
+  optional string bio = 6;
+  string role = 7;
+  chirp.common.Timestamp created_at = 8;
+  int32 follower_count = 9;
+  int32 following_count = 10;
+  int32 post_count = 11;
+  bool is_following = 12;
+}
+
+message UpdateProfileRequest {
+  string session_token = 1;
+  optional string display_name = 2;
+  optional string bio = 3;
+  optional string avatar_url = 4;
+}
+
+message UpdateProfileResponse {
+  bool success = 1;
+  optional string error = 2;
+}
