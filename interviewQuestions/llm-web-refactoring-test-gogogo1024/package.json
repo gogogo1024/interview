@@ -23,7 +23,7 @@
 		"db:seed": "turbo run db:seed",
 		"clean": "rm -rf node_modules .turbo apps/*/{.turbo,.output,.vinxi,.tanstack,dist,node_modules/.vite,node_modules/.cache,playwright-report,test-results,blob-report} packages/*/{.turbo,dist,node_modules/.cache} packages/*/generated/*.ts",
 		"setup:hooks": "git config core.hooksPath .githooks || true",
-		"ci:local": "pnpm install -w --frozen-lockfile && pnpm -w turbo run lint && pnpm -w turbo run typecheck && pnpm -w turbo run test:unit && pnpm -w turbo run build"
+		"ci:local": "pnpm install -w --frozen-lockfile && pnpm -w turbo run lint --since=origin/master && pnpm -w turbo run typecheck --since=origin/master && pnpm -w turbo run test:unit --since=origin/master && pnpm -w turbo run build --since=origin/master"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "^2.3.11",

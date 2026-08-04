@@ -31,17 +31,17 @@ jobs:
         run: pnpm install -w --frozen-lockfile
 
 
-      - name: Lint
-        run: pnpm -w turbo run lint
+      - name: Lint (affected)
+        run: pnpm -w turbo run lint --since=origin/master
 
-      - name: Typecheck
-        run: pnpm -w turbo run typecheck
+      - name: Typecheck (affected)
+        run: pnpm -w turbo run typecheck --since=origin/master
 
-      - name: Unit tests
-        run: pnpm -w turbo run test:unit
+      - name: Unit tests (affected)
+        run: pnpm -w turbo run test:unit --since=origin/master
 
-      - name: Build
-        run: pnpm -w turbo run build
+      - name: Build (affected)
+        run: pnpm -w turbo run build --since=origin/master
 
       - name: E2E (full)
         run: pnpm run test:e2e
