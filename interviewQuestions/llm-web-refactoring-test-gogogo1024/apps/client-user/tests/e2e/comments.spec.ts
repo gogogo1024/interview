@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { loginAs, waitForHydration } from "./fixtures/test-helpers";
+import { loginAs, waitForHydration, waitForCommentForm } from "./fixtures/test-helpers";
 
 test.describe("Comments", () => {
 	test.beforeEach(async ({ page }) => {
@@ -15,7 +15,8 @@ test.describe("Comments", () => {
 		await waitForHydration(page);
 
 		const commentContent = `Test comment ${Date.now()}`;
-		await page.fill('textarea[placeholder*="comment"]', commentContent);
+		const commentInput = await waitForCommentForm(page);
+		await commentInput.fill(commentContent);
 		await page.click('button:has-text("Comment")');
 
 		// Wait for comment to appear
@@ -45,7 +46,8 @@ test.describe("Comments", () => {
 
 		// Add a comment
 		const commentContent = `Deletable comment ${Date.now()}`;
-		await page.fill('textarea[placeholder*="comment"]', commentContent);
+		const commentInput2 = await waitForCommentForm(page);
+		await commentInput2.fill(commentContent);
 		await page.click('button:has-text("Comment")');
 
 		// Wait for comment to appear
@@ -79,7 +81,8 @@ test.describe("Comments", () => {
 
 		// First add a comment so we have something to like
 		const commentContent = `Likeable comment ${Date.now()}`;
-		await page.fill('textarea[placeholder*="comment"]', commentContent);
+		const commentInput3 = await waitForCommentForm(page);
+		await commentInput3.fill(commentContent);
 		await page.click('button:has-text("Comment")');
 
 		// Wait for comment to appear

@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 test.describe.configure({ mode: "serial" });
-import { createPost, loginAs, uniqueId, waitForHydration } from "./fixtures/test-helpers";
+import { createPost, loginAs, uniqueId, waitForHydration, waitForCommentForm } from "./fixtures/test-helpers";
 
 test.describe("Mentions - Comprehensive", () => {
 	test.describe("Mention Rendering in Posts", () => {
@@ -111,8 +111,7 @@ test.describe("Mentions - Comprehensive", () => {
 			await waitForHydration(page);
 
 			// Wait for comment form to be available
-			const commentInput = page.locator('textarea[placeholder*="comment"]');
-			await expect(commentInput).toBeVisible();
+			const commentInput = await waitForCommentForm(page);
 
 			// Add comment with mention
 			const commentContent = `@bob what do you think? ${uniqueId()}`;

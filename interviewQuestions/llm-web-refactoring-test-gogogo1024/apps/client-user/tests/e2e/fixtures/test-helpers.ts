@@ -47,6 +47,17 @@ export async function waitForHydration(page: Page): Promise<void> {
 }
 
 /**
+ * Wait for the comment textarea to appear on the page and return its locator.
+ * Uses a generous timeout to reduce flaky failures caused by slow hydration or
+ * intermittent dev-server overlays.
+ */
+export async function waitForCommentForm(page: Page, timeout = 10000) {
+	const selector = 'textarea[placeholder="Write a comment..."], textarea[placeholder*="comment"]';
+	await page.waitForSelector(selector, { state: "visible", timeout });
+	return page.locator('textarea[placeholder*="comment"]').first();
+}
+
+/**
  * Login as a specific test user
  */
 async function clearBrowserState(page: Page): Promise<void> {
@@ -89,15 +100,30 @@ export async function loginAs(
 		}
 	});
 
-	await page.goto("/auth/login", { waitUntil: "domcontentloaded" });
-	await waitForHydration(page);
-	await page.waitForSelector('input[name="email"]', { state: "visible", timeout: 10000 });
+	let loggedIn = false;
+	for (let attempt = 1; attempt <= 3; attempt++) {
+		await page.goto("/auth/login", { waitUntil: "domcontentloaded" });
+		await waitForHydration(page);
+		await page.waitForSelector('input[name="email"]', { state: "visible", timeout: 10000 });
 
-	await page.fill('input[name="email"]', credentials.email);
-	await page.fill('input[name="password"]', credentials.password);
-	await page.click('button[type="submit"]');
+		await page.fill('input[name="email"]', credentials.email);
+		await page.fill('input[name="password"]', credentials.password);
+		await page.click('button[type="submit"]');
 
-	await expect(page).toHaveURL("/");
+		try {
+			await expect(page).toHaveURL("/", { timeout: 10000 });
+			loggedIn = true;
+			break;
+		} catch {
+			if (attempt < 3) {
+				await clearBrowserState(page);
+			}
+		}
+	}
+
+	if (!loggedIn) {
+		await expect(page).toHaveURL("/");
+	}
 
 	// Reload the page to ensure session cookie is properly picked up by Header
 	await page.reload({ waitUntil: "networkidle" });

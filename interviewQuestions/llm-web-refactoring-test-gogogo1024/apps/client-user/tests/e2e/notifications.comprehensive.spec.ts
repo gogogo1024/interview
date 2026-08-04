@@ -5,6 +5,7 @@ import {
 	TEST_USERS,
 	uniqueId,
 	waitForHydration,
+	waitForCommentForm,
 } from "./fixtures/test-helpers";
 
 test.describe("Notifications - Comprehensive", () => {
@@ -121,7 +122,8 @@ test.describe("Notifications - Comprehensive", () => {
 			await waitForHydration(page);
 
 			const commentContent = `Test comment ${uniqueId()}`;
-			await page.fill('textarea[placeholder*="comment"]', commentContent);
+			const commentInput = await waitForCommentForm(page);
+			await commentInput.fill(commentContent);
 			await page.click('button:has-text("Comment")');
 			await waitForHydration(page);
 

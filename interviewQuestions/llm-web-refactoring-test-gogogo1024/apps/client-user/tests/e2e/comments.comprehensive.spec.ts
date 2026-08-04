@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 test.describe.configure({ mode: "serial" });
-import { loginAs, setupDialogHandler, uniqueId, waitForHydration } from "./fixtures/test-helpers";
+import { loginAs, setupDialogHandler, uniqueId, waitForHydration, waitForCommentForm } from "./fixtures/test-helpers";
 
 test.describe("Comments - Comprehensive", () => {
 	test.beforeEach(async ({ page }) => {
@@ -21,7 +21,8 @@ test.describe("Comments - Comprehensive", () => {
 			await navigateToFirstPost(page);
 
 			const content = `Test comment ${uniqueId()}`;
-			await page.fill('textarea[placeholder*="comment"]', content);
+			const commentInput = await waitForCommentForm(page);
+			await commentInput.fill(content);
 			await page.click('button:has-text("Comment")');
 			await waitForHydration(page);
 
@@ -32,7 +33,8 @@ test.describe("Comments - Comprehensive", () => {
 			await navigateToFirstPost(page);
 
 			const content = `Instant comment ${uniqueId()}`;
-			await page.fill('textarea[placeholder*="comment"]', content);
+			const commentInput = await waitForCommentForm(page);
+			await commentInput.fill(content);
 			await page.click('button:has-text("Comment")');
 			await waitForHydration(page);
 
@@ -43,11 +45,12 @@ test.describe("Comments - Comprehensive", () => {
 			await navigateToFirstPost(page);
 
 			const content = `Clear comment ${uniqueId()}`;
-			await page.fill('textarea[placeholder*="comment"]', content);
+			const commentInput = await waitForCommentForm(page);
+			await commentInput.fill(content);
 			await page.click('button:has-text("Comment")');
 			await waitForHydration(page);
 
-			await expect(page.locator('textarea[placeholder*="comment"]')).toHaveValue("");
+			await expect(commentInput).toHaveValue("");
 		});
 
 		test("should disable comment button when empty", async ({ page }) => {
@@ -61,7 +64,8 @@ test.describe("Comments - Comprehensive", () => {
 		test("should show character count for comments", async ({ page }) => {
 			await navigateToFirstPost(page);
 
-			await page.fill('textarea[placeholder*="comment"]', "Hello");
+			const commentInput = await waitForCommentForm(page);
+			await commentInput.fill('Hello');
 			// Should show character count (implementation may vary)
 			const charCount = page.getByText(/\d+\/\d+/);
 			await expect(charCount).toBeVisible();
@@ -71,7 +75,8 @@ test.describe("Comments - Comprehensive", () => {
 			await navigateToFirstPost(page);
 
 			const content = `Special: @mention #tag "quotes" ${uniqueId()}`;
-			await page.fill('textarea[placeholder*="comment"]', content);
+			const commentInput2 = await waitForCommentForm(page);
+			await commentInput2.fill(content);
 			await page.click('button:has-text("Comment")');
 			await waitForHydration(page);
 
@@ -82,7 +87,8 @@ test.describe("Comments - Comprehensive", () => {
 			await navigateToFirstPost(page);
 
 			const content = `Emoji comment 🎉 ❤️ ${uniqueId()}`;
-			await page.fill('textarea[placeholder*="comment"]', content);
+			const commentInput3 = await waitForCommentForm(page);
+			await commentInput3.fill(content);
 			await page.click('button:has-text("Comment")');
 			await waitForHydration(page);
 
@@ -105,7 +111,8 @@ test.describe("Comments - Comprehensive", () => {
 
 			// Add a comment first
 			const content = `Author test ${uniqueId()}`;
-			await page.fill('textarea[placeholder*="comment"]', content);
+			const commentInput4 = await waitForCommentForm(page);
+			await commentInput4.fill(content);
 			await page.click('button:has-text("Comment")');
 			await waitForHydration(page);
 
@@ -118,7 +125,8 @@ test.describe("Comments - Comprehensive", () => {
 
 			// Add a comment
 			const content = `Time test ${uniqueId()}`;
-			await page.fill('textarea[placeholder*="comment"]', content);
+			const commentInput5 = await waitForCommentForm(page);
+			await commentInput5.fill(content);
 			await page.click('button:has-text("Comment")');
 			await waitForHydration(page);
 
@@ -144,7 +152,8 @@ test.describe("Comments - Comprehensive", () => {
 
 			// Create a comment to delete
 			const content = `Delete me ${uniqueId()}`;
-			await page.fill('textarea[placeholder*="comment"]', content);
+			const commentInput6 = await waitForCommentForm(page);
+			await commentInput6.fill(content);
 			await page.click('button:has-text("Comment")');
 			await waitForHydration(page);
 
@@ -183,7 +192,8 @@ test.describe("Comments - Comprehensive", () => {
 
 			// Add a comment first
 			const content = `Likeable comment ${uniqueId()}`;
-			await page.fill('textarea[placeholder*="comment"]', content);
+			const commentInput7 = await waitForCommentForm(page);
+			await commentInput7.fill(content);
 			await page.click('button:has-text("Comment")');
 			await waitForHydration(page);
 
@@ -204,7 +214,8 @@ test.describe("Comments - Comprehensive", () => {
 
 			// Add and like a comment
 			const content = `Unlike test ${uniqueId()}`;
-			await page.fill('textarea[placeholder*="comment"]', content);
+			const commentInput8 = await waitForCommentForm(page);
+			await commentInput8.fill(content);
 			await page.click('button:has-text("Comment")');
 			await waitForHydration(page);
 
@@ -231,7 +242,8 @@ test.describe("Comments - Comprehensive", () => {
 
 			// Add a parent comment
 			const parentContent = `Parent comment ${uniqueId()}`;
-			await page.fill('textarea[placeholder*="comment"]', parentContent);
+			const commentInput9 = await waitForCommentForm(page);
+			await commentInput9.fill(parentContent);
 			await page.click('button:has-text("Comment")');
 			await waitForHydration(page);
 

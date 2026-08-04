@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 test.describe.configure({ mode: "serial" });
-import { createPost, loginAs, uniqueId, waitForHydration } from "./fixtures/test-helpers";
+import { createPost, loginAs, uniqueId, waitForHydration, waitForCommentForm } from "./fixtures/test-helpers";
 
 test.describe("Feed - Comprehensive", () => {
 	test.describe("Home Feed", () => {
@@ -151,7 +151,8 @@ test.describe("Feed - Comprehensive", () => {
 			await waitForHydration(page);
 
 			await expect(page).toHaveURL(/\/posts\//);
-			await expect(page.locator('textarea[placeholder*="comment"]')).toBeVisible();
+			const commentInput = await waitForCommentForm(page);
+			await expect(commentInput).toBeVisible();
 		});
 
 		test("should navigate to author profile from feed", async ({ page }) => {

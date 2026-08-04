@@ -6,6 +6,7 @@ import {
 	setupDialogHandler,
 	uniqueId,
 	waitForHydration,
+	waitForCommentForm,
 } from "./fixtures/test-helpers";
 
 test.describe("Posts - Comprehensive", () => {
@@ -137,8 +138,9 @@ test.describe("Posts - Comprehensive", () => {
 			await postLink.click();
 			await waitForHydration(page);
 
-			// Comment form should be visible
-			await expect(page.locator('textarea[placeholder*="comment"]')).toBeVisible();
+			// Comment form should be visible (use robust waiter)
+			const commentInput = await waitForCommentForm(page);
+			await expect(commentInput).toBeVisible();
 		});
 	});
 

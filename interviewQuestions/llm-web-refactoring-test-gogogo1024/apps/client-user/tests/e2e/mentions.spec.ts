@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { loginAs, waitForHydration } from "./fixtures/test-helpers";
+import { loginAs, waitForHydration, waitForCommentForm } from "./fixtures/test-helpers";
 
 test.describe("Mentions", () => {
 	test.beforeEach(async ({ page }) => {
@@ -56,7 +56,8 @@ test.describe("Mentions", () => {
 
 		// Add a comment with a mention
 		const commentContent = `@bob great post! ${Date.now()}`;
-		await page.fill('textarea[placeholder*="comment"]', commentContent);
+		const commentInput = await waitForCommentForm(page);
+		await commentInput.fill(commentContent);
 		await page.click('button:has-text("Comment")');
 		await waitForHydration(page);
 
