@@ -1,0 +1,46 @@
+name: CI
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+  push:
+    branches: [ master ]
+
+jobs:
+  validate:
+    name: Validate PR
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 9
+
+      - name: Install dependencies
+        run: pnpm install -w --frozen-lockfile
+
+      - name: Lint (fast, affected packages)
+        run: pnpm -w turbo run lint --since=origin/master
+
+      - name: Typecheck (affected)
+        run: pnpm -w turbo run typecheck --since=origin/master
+
+      - name: Unit tests (affected)
+        run: pnpm -w turbo run test:unit --since=origin/master
+
+      - name: Build (affected)
+        run: pnpm -w turbo run build --since=origin/master
+
+      - name: E2E (full)
+        run: pnpm run test:e2e
