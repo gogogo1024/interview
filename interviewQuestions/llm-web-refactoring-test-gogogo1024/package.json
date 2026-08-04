@@ -23,13 +23,13 @@
 		"db:seed": "turbo run db:seed",
 		"clean": "rm -rf node_modules .turbo apps/*/{.turbo,.output,.vinxi,.tanstack,dist,node_modules/.vite,node_modules/.cache,playwright-report,test-results,blob-report} packages/*/{.turbo,dist,node_modules/.cache} packages/*/generated/*.ts",
 		"setup:hooks": "git config core.hooksPath .githooks || true",
-		"ci:local": "pnpm install -w --frozen-lockfile && pnpm -w turbo run lint --since=origin/master && pnpm -w turbo run typecheck --since=origin/master && pnpm -w turbo run test:unit --since=origin/master && pnpm -w turbo run build --since=origin/master"
+		"ci:local": "pnpm install -w --frozen-lockfile && pnpm -w turbo run lint && pnpm -w turbo run typecheck && pnpm -w turbo run test:unit && pnpm -w turbo run build"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "^2.3.11",
 		"@playwright/test": "^1.57.0",
 		"@faker-js/faker": "^9.3.0",
-		"turbo": "^2.3.3",
+		"turbo": "^2.10.8",
 		"typescript": "^5.7.2",
 		"vitest": "^3.0.5"
 	}

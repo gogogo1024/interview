@@ -1,8 +1,8 @@
 import { and, desc, eq, inArray } from "drizzle-orm";
 import { db, schema } from "../db";
 import { notFound } from "../observability/errors";
-import { generateId } from "./utils";
 import { getCountsForPostIds } from "./postMetrics.service";
+import { generateId } from "./utils";
 
 const { bookmarks, posts, users } = schema;
 

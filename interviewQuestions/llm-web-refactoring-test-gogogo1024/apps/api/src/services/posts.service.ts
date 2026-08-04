@@ -1,9 +1,9 @@
 import { desc, eq } from "drizzle-orm";
 import { db, schema } from "../db";
-import { badRequest, notFound, forbidden } from "../observability/errors";
+import { badRequest, forbidden, notFound } from "../observability/errors";
 import { processMentions } from "./mentions.service";
-import { generateId } from "./utils";
 import { getCountsForPostIds } from "./postMetrics.service";
+import { generateId } from "./utils";
 
 const { posts, users } = schema;
 

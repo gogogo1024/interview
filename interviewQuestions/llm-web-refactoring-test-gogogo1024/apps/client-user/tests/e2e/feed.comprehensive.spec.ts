@@ -1,6 +1,14 @@
 import { expect, test } from "@playwright/test";
+
 test.describe.configure({ mode: "serial" });
-import { createPost, loginAs, uniqueId, waitForHydration, waitForCommentForm } from "./fixtures/test-helpers";
+
+import {
+	createPost,
+	loginAs,
+	uniqueId,
+	waitForCommentForm,
+	waitForHydration,
+} from "./fixtures/test-helpers";
 
 test.describe("Feed - Comprehensive", () => {
 	test.describe("Home Feed", () => {

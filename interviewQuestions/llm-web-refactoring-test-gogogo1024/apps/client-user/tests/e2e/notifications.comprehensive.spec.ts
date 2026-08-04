@@ -4,8 +4,8 @@ import {
 	loginAs,
 	TEST_USERS,
 	uniqueId,
-	waitForHydration,
 	waitForCommentForm,
+	waitForHydration,
 } from "./fixtures/test-helpers";
 
 test.describe("Notifications - Comprehensive", () => {

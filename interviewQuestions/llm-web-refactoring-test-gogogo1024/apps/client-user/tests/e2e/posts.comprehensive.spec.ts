@@ -1,12 +1,14 @@
 import { expect, test } from "@playwright/test";
+
 test.describe.configure({ mode: "serial" });
+
 import {
 	createPost,
 	loginAs,
 	setupDialogHandler,
 	uniqueId,
-	waitForHydration,
 	waitForCommentForm,
+	waitForHydration,
 } from "./fixtures/test-helpers";
 
 test.describe("Posts - Comprehensive", () => {

@@ -27,8 +27,8 @@
 		"drizzle-orm": "^0.45.1",
 		"elysia": "^1.2.25",
 		"@elysiajs/node": "^1.2.25",
- 		"jsonwebtoken": "^9.0.2",
- 		"bcryptjs": "^2.4.3"
+		"jsonwebtoken": "^9.0.2",
+		"bcryptjs": "^2.4.3"
 	},
 	"devDependencies": {
 		"@types/jsonwebtoken": "^9.0.9",

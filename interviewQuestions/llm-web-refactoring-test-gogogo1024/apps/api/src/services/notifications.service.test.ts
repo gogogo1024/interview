@@ -1,9 +1,13 @@
-import { describe, expect, it } from "vitest";
-import { db } from "../db";
 import { notifications } from "@chirp/db-schema";
+import { describe, expect, it } from "vitest";
 import { createTestUser } from "../../tests/helpers";
-import { deleteNotification, getNotifications, markNotificationAsRead } from "./notifications.service";
+import { db } from "../db";
 import { ApiError, Codes } from "../observability/errors";
+import {
+	deleteNotification,
+	getNotifications,
+	markNotificationAsRead,
+} from "./notifications.service";
 
 describe("NotificationsService", () => {
 	it("returns notifications for the current user", async () => {

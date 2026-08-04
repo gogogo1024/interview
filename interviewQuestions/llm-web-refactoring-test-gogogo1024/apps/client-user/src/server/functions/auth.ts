@@ -21,11 +21,11 @@ export const registerUser = createServerFn({ method: "POST" })
 		}
 
 		// Store session in cookie
-			await setSessionData({
-				userId: response.userId,
-				username: data.username,
-				sessionToken: response.sessionToken,
-			});
+		await setSessionData({
+			userId: response.userId,
+			username: data.username,
+			sessionToken: response.sessionToken,
+		});
 
 		return { success: true, userId: response.userId };
 	});

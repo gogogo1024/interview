@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { loginAs, waitForHydration, waitForCommentForm } from "./fixtures/test-helpers";
+import { loginAs, waitForCommentForm, waitForHydration } from "./fixtures/test-helpers";
 
 test.describe("Comments", () => {
 	test.beforeEach(async ({ page }) => {

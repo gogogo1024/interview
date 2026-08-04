@@ -1,5 +1,7 @@
 import { expect, test } from "@playwright/test";
+
 test.describe.configure({ mode: "serial" });
+
 import { loginAs, TEST_USERS, uniqueId, waitForHydration } from "./fixtures/test-helpers";
 
 test.describe("Authentication - Comprehensive", () => {

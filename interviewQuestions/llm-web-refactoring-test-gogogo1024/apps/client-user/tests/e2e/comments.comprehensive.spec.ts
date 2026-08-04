@@ -1,6 +1,14 @@
 import { expect, test } from "@playwright/test";
+
 test.describe.configure({ mode: "serial" });
-import { loginAs, setupDialogHandler, uniqueId, waitForHydration, waitForCommentForm } from "./fixtures/test-helpers";
+
+import {
+	loginAs,
+	setupDialogHandler,
+	uniqueId,
+	waitForCommentForm,
+	waitForHydration,
+} from "./fixtures/test-helpers";
 
 test.describe("Comments - Comprehensive", () => {
 	test.beforeEach(async ({ page }) => {
@@ -65,7 +73,7 @@ test.describe("Comments - Comprehensive", () => {
 			await navigateToFirstPost(page);
 
 			const commentInput = await waitForCommentForm(page);
-			await commentInput.fill('Hello');
+			await commentInput.fill("Hello");
 			// Should show character count (implementation may vary)
 			const charCount = page.getByText(/\d+\/\d+/);
 			await expect(charCount).toBeVisible();

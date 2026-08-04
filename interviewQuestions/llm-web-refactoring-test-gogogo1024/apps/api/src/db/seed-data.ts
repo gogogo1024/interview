@@ -1,5 +1,5 @@
-import { inArray } from "drizzle-orm";
 import * as schema from "@chirp/db-schema";
+import { inArray } from "drizzle-orm";
 import { hashPassword } from "../services/utils";
 
 const { users, posts, comments, likes, follows } = schema;
@@ -155,7 +155,8 @@ const seedComments = [
 		id: "seed-comment-6",
 		postId: "seed-post-5",
 		authorEmail: "bob@test.com",
-		content: "StyleX is amazing! The compile-time optimization makes such a difference in bundle size.",
+		content:
+			"StyleX is amazing! The compile-time optimization makes such a difference in bundle size.",
 	},
 	{
 		id: "seed-comment-7",
@@ -228,7 +229,12 @@ export async function seedDatabase(db: SeedDb) {
 	const seededUsers = await db
 		.select({ id: users.id, email: users.email })
 		.from(users)
-		.where(inArray(users.email, seedUsers.map((user) => user.email)));
+		.where(
+			inArray(
+				users.email,
+				seedUsers.map((user) => user.email),
+			),
+		);
 
 	const userIds = new Map(seededUsers.map((user) => [user.email, user.id]));
 

@@ -1,10 +1,10 @@
-import { and, eq, isNull, inArray } from "drizzle-orm";
+import { and, eq, inArray, isNull } from "drizzle-orm";
 import { db, schema } from "../db";
 import { badRequest, forbidden, notFound } from "../observability/errors";
+import { getCommentLikesForIds } from "./commentMetrics.service";
 import { processMentions } from "./mentions.service";
 import { createNotification } from "./notifications.service";
 import { generateId } from "./utils";
-import { getCommentLikesForIds } from "./commentMetrics.service";
 
 const { comments, users, posts } = schema;
 
