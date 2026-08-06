@@ -17,26 +17,31 @@ interface MappedComment {
 		username: string;
 		displayName: string;
 		avatarUrl: string | undefined;
-	} | null;
+	};
 	likeCount: number;
 	isLiked: boolean;
 	replies: MappedComment[];
 }
 
 function mapCommentResponse(comment: CommentResponse): MappedComment {
+	const authorSource = comment.author ?? {
+		id: "unknown",
+		username: "unknown",
+		displayName: "Unknown",
+		avatarUrl: undefined,
+	};
+
 	return {
 		id: comment.id,
 		content: comment.content,
 		createdAt: fromProtoTimestamp(comment.createdAt),
 		parentId: comment.parentId || null,
-		author: comment.author
-			? {
-					id: comment.author.id,
-					username: comment.author.username,
-					displayName: comment.author.displayName,
-					avatarUrl: comment.author.avatarUrl,
-				}
-			: null,
+		author: {
+			id: authorSource.id,
+			username: authorSource.username,
+			displayName: authorSource.displayName,
+			avatarUrl: authorSource.avatarUrl,
+		},
 		likeCount: comment.likeCount,
 		isLiked: comment.isLiked,
 		replies: comment.replies?.map(mapCommentResponse) || [],

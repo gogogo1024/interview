@@ -1,7 +1,7 @@
 import * as stylex from "@stylexjs/stylex";
 import { createFileRoute } from "@tanstack/react-router";
 import { FileText, Users, UserX } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { PostList } from "../../components/posts/PostList";
 import { LoadingSpinner } from "../../components/shared/LoadingSpinner";
 import { FollowButton } from "../../components/users/FollowButton";
@@ -19,6 +19,7 @@ import {
 	shadows,
 	spacing,
 } from "../../tokens.stylex";
+import type { Post, User } from "../../types/ui";
 
 export const Route = createFileRoute("/users/$username")({
 	component: UserProfilePage,
@@ -165,18 +166,14 @@ const styles = stylex.create({
 
 function UserProfilePage() {
 	const { username } = Route.useParams();
-	const [user, setUser] = useState<any>(null);
-	const [posts, setPosts] = useState<any[]>([]);
-	const [currentUser, setCurrentUser] = useState<any>(null);
+	const [user, setUser] = useState<User | null>(null);
+	const [posts, setPosts] = useState<Post[]>([]);
+	const [currentUser, setCurrentUser] = useState<User | null>(null);
 	const [followerCount, setFollowerCount] = useState(0);
 	const [followingCount, setFollowingCount] = useState(0);
 	const [loading, setLoading] = useState(true);
 
-	useEffect(() => {
-		loadData();
-	}, [username]);
-
-	const loadData = async () => {
+	const loadData = useCallback(async () => {
 		try {
 			const [profileUser, userPosts, currentU, followers, following] = await Promise.all([
 				getUser({ data: username }),
@@ -195,7 +192,11 @@ function UserProfilePage() {
 		} finally {
 			setLoading(false);
 		}
-	};
+	}, [username]);
+
+	useEffect(() => {
+		loadData();
+	}, [loadData]);
 
 	if (loading) {
 		return (

@@ -1,5 +1,5 @@
 import { type ChirpClient, createChirpClient } from "@chirp/grpc-client";
-import { type AdminSessionData, getAdminSessionData } from "./session.server";
+import { getAdminSessionData } from "./session.server";
 
 // gRPC API host
 const GRPC_HOST = process.env.GRPC_API_HOST || "localhost:50051";

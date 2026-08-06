@@ -1,16 +1,27 @@
 {
 	"$schema": "https://turbo.build/schema.json",
+	"globalDependencies": [
+		".env",
+		".env.local",
+		"tsconfig.json",
+		"biome.json",
+		"pnpm-workspace.yaml"
+	],
 	"tasks": {
 		"build": {
-			"dependsOn": ["^build"],
-			"outputs": ["dist/**", ".output/**", ".vinxi/**", ".tanstack/**", "generated/**"]
+			"dependsOn": ["^build", "proto:generate", "db:generate"],
+			"outputs": ["dist/**", ".output/**", ".vinxi/**", ".tanstack/**"]
 		},
 		"dev": {
 			"cache": false,
 			"persistent": true
 		},
-		"lint": {},
-		"typecheck": {},
+		"lint": {
+			"outputs": []
+		},
+		"typecheck": {
+			"outputs": []
+		},
 		"test": {
 			"dependsOn": ["^build"],
 			"outputs": ["coverage/**"]
@@ -23,13 +34,21 @@
 			"dependsOn": ["^build"]
 		},
 		"test:e2e": {
-			"dependsOn": ["build"]
+			"dependsOn": ["build"],
+			"cache": false
 		},
 		"proto:generate": {
-			"outputs": ["generated/**"]
+			"outputs": ["generated/**"],
+			"cache": false
 		},
-		"db:generate": {},
-		"db:migrate": {},
-		"db:seed": {}
+		"db:generate": {
+			"outputs": []
+		},
+		"db:migrate": {
+			"cache": false
+		},
+		"db:seed": {
+			"cache": false
+		}
 	}
 }

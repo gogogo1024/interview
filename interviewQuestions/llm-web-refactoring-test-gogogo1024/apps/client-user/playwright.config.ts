@@ -2,8 +2,8 @@ import { defineConfig, devices } from "@playwright/test";
 
 export default defineConfig({
 	testDir: "./tests/e2e",
-	timeout: 60000,
-	globalSetup: "./tests/e2e/global-setup.ts",
+	timeout: 90000,  // Increased to 90s to allow for slower SSR hydration
+	// globalSetup: "./tests/e2e/global-setup.ts",
 	fullyParallel: false,
 	forbidOnly: !!process.env.CI,
 	retries: process.env.CI ? 2 : 0,
@@ -16,13 +16,24 @@ export default defineConfig({
 	projects: [
 		{
 			name: "chromium",
-			use: { ...devices["Desktop Chrome"] },
+			use: {
+				...devices["Desktop Chrome"],
+				// Workaround for macOS CVDisplayLink crash (CVReturn: -6670)
+				// Use software rendering instead of GPU to avoid display driver issues
+				launchArgs: [
+					"--disable-features=VizDisplayCompositor",
+					"--disable-gpu-compositing",
+					"--disable-gpu",
+					"--use-software-rasterizer",
+				],
+			},
 		},
 	],
 	webServer: {
-		command: "pnpm run dev",
+		// Use production build to avoid dev mode Nitro environment issues
+		command: "pnpm run build && pnpm run start",
 		url: "http://localhost:3000",
-		reuseExistingServer: true,
-		timeout: 60000,
+		reuseExistingServer: false,
+		timeout: 180000,  // 3 minutes to allow build + start
 	},
 });

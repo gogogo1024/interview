@@ -1,0 +1,40 @@
+#!/bin/bash
+# Pre-commit hook: lint and type-check staged files
+set -e
+
+echo "🔍 Running pre-commit checks..."
+
+# Check if we're in a git repo
+if ! git rev-parse --git-dir > /dev/null 2>&1; then
+  exit 0
+fi
+
+# Get staged files
+STAGED_FILES=$(git diff --cached --name-only --diff-filter=ACM | grep -E "\.(ts|tsx|js|jsx|json)$" || true)
+
+if [ -z "$STAGED_FILES" ]; then
+  exit 0
+fi
+
+echo "📝 Files to check:"
+echo "$STAGED_FILES" | sed 's/^/   /'
+
+# Run biome check on staged files
+echo "🧹 Running Biome linter..."
+if ! pnpm exec biome check --stdin-filepath "$STAGED_FILES" --no-colors 2>/dev/null; then
+  echo "✗ Linting failed. Run 'pnpm run lint:fix' to fix issues."
+  exit 1
+fi
+
+# Run TypeScript type checker (only on TS files)
+TS_FILES=$(echo "$STAGED_FILES" | grep -E "\.(ts|tsx)$" || true)
+if [ -n "$TS_FILES" ]; then
+  echo "✓ TypeScript checking staged files..."
+  if ! pnpm exec tsc --noEmit 2>/dev/null; then
+    echo "✗ Type checking failed."
+    exit 1
+  fi
+fi
+
+echo "✓ Pre-commit checks passed!"
+exit 0

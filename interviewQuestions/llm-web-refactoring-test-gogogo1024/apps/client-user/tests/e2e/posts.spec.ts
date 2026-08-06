@@ -78,7 +78,8 @@ test.describe("Posts", () => {
 
 		// Navigate to post detail via href (avoids click race with concurrent feed updates)
 		const postHref = await page.locator("a", { hasText: postContent }).first().getAttribute("href");
-		await page.goto(postHref!, { waitUntil: "networkidle" });
+		if (!postHref) throw new Error("post href not found");
+		await page.goto(postHref, { waitUntil: "networkidle" });
 		await waitForHydration(page);
 
 		// Delete the post
@@ -107,8 +108,8 @@ test.describe("Posts", () => {
 		await waitForHydration(page);
 
 		const newCount = await likeButton.textContent();
-		expect(Number.parseInt(newCount || "0")).toBeGreaterThanOrEqual(
-			Number.parseInt(initialCount || "0"),
+		expect(Number.parseInt(newCount || "0", 10)).toBeGreaterThanOrEqual(
+			Number.parseInt(initialCount || "0", 10),
 		);
 	});
 });

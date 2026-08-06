@@ -17,6 +17,7 @@
 	},
 	"dependencies": {
 		"@chirp/grpc-client": "workspace:*",
+		"@chirp/db-schema": "workspace:*",
 		"@chirp/proto": "workspace:*",
 		"@chirp/ui": "workspace:*",
 		"@grpc/grpc-js": "^1.12.6",
@@ -54,6 +55,8 @@
 		"tsx": "^4.21.0",
 		"typescript": "^5.7.2",
 		"vite": "^7.1.7",
+		"stream-browserify": "^3.0.0",
+		"web-streams-polyfill": "^3.2.1",
 		"vitest": "^3.0.5"
 	}
 }

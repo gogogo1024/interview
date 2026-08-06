@@ -115,7 +115,8 @@ test.describe("Mentions - Comprehensive", () => {
 				.locator('article a[href*="/posts/"]')
 				.first()
 				.getAttribute("href");
-			await page.goto(postHref!, { waitUntil: "networkidle" });
+			if (!postHref) throw new Error("post href not found");
+			await page.goto(postHref, { waitUntil: "networkidle" });
 			await waitForHydration(page);
 
 			// Wait for comment form to be available
@@ -140,7 +141,8 @@ test.describe("Mentions - Comprehensive", () => {
 				.locator('article a[href*="/posts/"]')
 				.first()
 				.getAttribute("href");
-			await page.goto(postHref!, { waitUntil: "networkidle" });
+			if (!postHref) throw new Error("post href not found");
+			await page.goto(postHref, { waitUntil: "networkidle" });
 			await waitForHydration(page);
 
 			// Add comment with mention
@@ -191,7 +193,8 @@ test.describe("Mentions - Comprehensive", () => {
 				.locator('article a[href*="/posts/"]')
 				.first()
 				.getAttribute("href");
-			await page.goto(postHref!, { waitUntil: "networkidle" });
+			if (!postHref) throw new Error("post href not found");
+			await page.goto(postHref, { waitUntil: "networkidle" });
 			await waitForHydration(page);
 
 			// Add comment mentioning bob

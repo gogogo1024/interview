@@ -1,6 +1,6 @@
 import * as stylex from "@stylexjs/stylex";
 import { Bookmark } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { getBookmarkStatus, toggleBookmark } from "../../server/functions/bookmarks";
 import { colors, radii, spacing } from "../../tokens.stylex";
 
@@ -46,11 +46,7 @@ export function BookmarkButton({ postId, initialBookmarked = false }: BookmarkBu
 	const [bookmarked, setBookmarked] = useState(initialBookmarked);
 	const [loading, setLoading] = useState(false);
 
-	useEffect(() => {
-		loadBookmarkStatus();
-	}, [postId]);
-
-	const loadBookmarkStatus = async () => {
+	const loadBookmarkStatus = useCallback(async () => {
 		try {
 			const status = await getBookmarkStatus({ data: postId });
 			setBookmarked(status.bookmarked);
@@ -58,7 +54,11 @@ export function BookmarkButton({ postId, initialBookmarked = false }: BookmarkBu
 			// User might not be logged in
 			console.error("Failed to load bookmark status:", error);
 		}
-	};
+	}, [postId]);
+
+	useEffect(() => {
+		loadBookmarkStatus();
+	}, [loadBookmarkStatus]);
 
 	const handleToggle = async () => {
 		if (loading) return;

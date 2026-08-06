@@ -34,6 +34,7 @@ vi.mock("@tanstack/react-start", () => ({
 	}),
 }));
 
+import type { ChirpClient } from "@chirp/grpc-client";
 import { getAdminGrpcSessionToken, getGrpcClient } from "../../../src/lib/grpc.server";
 import {
 	clearAdminSessionData,
@@ -100,7 +101,7 @@ describe("Admin Auth Server Functions", () => {
 				},
 			};
 
-			vi.mocked(getGrpcClient).mockReturnValue(mockClient as any);
+			vi.mocked(getGrpcClient).mockReturnValue(mockClient as unknown as ChirpClient);
 			vi.mocked(setAdminSessionData).mockResolvedValue(undefined);
 
 			const result = await callLoginAdmin({ email: "admin@example.com", password: "password123" });
@@ -138,7 +139,7 @@ describe("Admin Auth Server Functions", () => {
 				},
 			};
 
-			vi.mocked(getGrpcClient).mockReturnValue(mockClient as any);
+			vi.mocked(getGrpcClient).mockReturnValue(mockClient as unknown as ChirpClient);
 			vi.mocked(setAdminSessionData).mockResolvedValue(undefined);
 
 			const result = await callLoginAdmin({ email: "mod@example.com", password: "password123" });
@@ -168,7 +169,7 @@ describe("Admin Auth Server Functions", () => {
 				},
 			};
 
-			vi.mocked(getGrpcClient).mockReturnValue(mockClient as any);
+			vi.mocked(getGrpcClient).mockReturnValue(mockClient as unknown as ChirpClient);
 
 			await expect(
 				callLoginAdmin({ email: "user@example.com", password: "password123" }),
@@ -192,7 +193,7 @@ describe("Admin Auth Server Functions", () => {
 				},
 			};
 
-			vi.mocked(getGrpcClient).mockReturnValue(mockClient as any);
+			vi.mocked(getGrpcClient).mockReturnValue(mockClient as unknown as ChirpClient);
 
 			await expect(
 				callLoginAdmin({ email: "wrong@example.com", password: "wrongpass" }),
@@ -217,7 +218,7 @@ describe("Admin Auth Server Functions", () => {
 				},
 			};
 
-			vi.mocked(getGrpcClient).mockReturnValue(mockClient as any);
+			vi.mocked(getGrpcClient).mockReturnValue(mockClient as unknown as ChirpClient);
 
 			await expect(
 				callLoginAdmin({ email: "admin@example.com", password: "password123" }),
@@ -235,7 +236,7 @@ describe("Admin Auth Server Functions", () => {
 				},
 			};
 
-			vi.mocked(getGrpcClient).mockReturnValue(mockClient as any);
+			vi.mocked(getGrpcClient).mockReturnValue(mockClient as unknown as ChirpClient);
 			vi.mocked(clearAdminSessionData).mockResolvedValue(undefined);
 
 			const result = await callLogoutAdmin();
@@ -281,7 +282,7 @@ describe("Admin Auth Server Functions", () => {
 				},
 			};
 
-			vi.mocked(getGrpcClient).mockReturnValue(mockClient as any);
+			vi.mocked(getGrpcClient).mockReturnValue(mockClient as unknown as ChirpClient);
 
 			const result = await callGetCurrentAdmin();
 
@@ -337,7 +338,7 @@ describe("Admin Auth Server Functions", () => {
 				},
 			};
 
-			vi.mocked(getGrpcClient).mockReturnValue(mockClient as any);
+			vi.mocked(getGrpcClient).mockReturnValue(mockClient as unknown as ChirpClient);
 			vi.mocked(clearAdminSessionData).mockResolvedValue(undefined);
 
 			const result = await callGetCurrentAdmin();
@@ -360,7 +361,7 @@ describe("Admin Auth Server Functions", () => {
 				},
 			};
 
-			vi.mocked(getGrpcClient).mockReturnValue(mockClient as any);
+			vi.mocked(getGrpcClient).mockReturnValue(mockClient as unknown as ChirpClient);
 			vi.mocked(clearAdminSessionData).mockResolvedValue(undefined);
 
 			const result = await callGetCurrentAdmin();

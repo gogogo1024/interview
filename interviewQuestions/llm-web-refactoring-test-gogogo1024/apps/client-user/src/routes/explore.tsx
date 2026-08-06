@@ -1,11 +1,12 @@
 import * as stylex from "@stylexjs/stylex";
 import { createFileRoute } from "@tanstack/react-router";
 import { Compass } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { PostList } from "../components/posts/PostList";
 import { getCurrentUser } from "../server/functions/auth";
 import { getExploreFeed } from "../server/functions/feed";
 import { colors, fontSize, fontWeight, radii, semanticColors, spacing } from "../tokens.stylex";
+import type { Post, User } from "../types/ui";
 
 export const Route = createFileRoute("/explore")({
 	component: ExplorePage,
@@ -58,15 +59,11 @@ const styles = stylex.create({
 });
 
 function ExplorePage() {
-	const [posts, setPosts] = useState<any[]>([]);
-	const [user, setUser] = useState<any>(null);
+	const [posts, setPosts] = useState<Post[]>([]);
+	const [user, setUser] = useState<User | null>(null);
 	const [loading, setLoading] = useState(true);
 
-	useEffect(() => {
-		loadData();
-	}, []);
-
-	const loadData = async () => {
+	const loadData = useCallback(async () => {
 		try {
 			const [currentUser, feedPosts] = await Promise.all([
 				getCurrentUser(),
@@ -79,7 +76,11 @@ function ExplorePage() {
 		} finally {
 			setLoading(false);
 		}
-	};
+	}, []);
+
+	useEffect(() => {
+		loadData();
+	}, [loadData]);
 
 	return (
 		<div {...stylex.props(styles.container)}>

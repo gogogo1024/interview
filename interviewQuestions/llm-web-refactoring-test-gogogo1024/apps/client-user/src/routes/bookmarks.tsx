@@ -1,11 +1,12 @@
 import * as stylex from "@stylexjs/stylex";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Bookmark } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { PostList } from "../components/posts/PostList";
 import { getCurrentUser } from "../server/functions/auth";
 import { getBookmarkedPosts } from "../server/functions/bookmarks";
 import { colors, radii, semanticColors, shadows, spacing } from "../tokens.stylex";
+import type { Post, User } from "../types/ui";
 
 const styles = stylex.create({
 	container: {
@@ -105,15 +106,11 @@ export const Route = createFileRoute("/bookmarks")({
 });
 
 function BookmarksPage() {
-	const [posts, setPosts] = useState<any[]>([]);
-	const [user, setUser] = useState<any>(null);
+	const [posts, setPosts] = useState<Post[]>([]);
+	const [user, setUser] = useState<User | null>(null);
 	const [loading, setLoading] = useState(true);
 
-	useEffect(() => {
-		loadData();
-	}, []);
-
-	const loadData = async () => {
+	const loadData = useCallback(async () => {
 		try {
 			const currentUser = await getCurrentUser();
 			setUser(currentUser);
@@ -127,7 +124,11 @@ function BookmarksPage() {
 		} finally {
 			setLoading(false);
 		}
-	};
+	}, []);
+
+	useEffect(() => {
+		loadData();
+	}, [loadData]);
 
 	if (loading) {
 		return (

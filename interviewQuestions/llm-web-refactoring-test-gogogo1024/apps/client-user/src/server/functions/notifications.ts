@@ -17,11 +17,18 @@ export const getNotifications = createServerFn()
 			id: n.id,
 			type: n.type,
 			read: n.read,
-			actor: n.actor,
-			postId: n.postId,
-			commentId: n.commentId,
-			postContent: n.postContent,
-			commentContent: n.commentContent,
+			actor: n.actor
+				? {
+						id: n.actor.id,
+						username: n.actor.username,
+						displayName: n.actor.displayName,
+						avatarUrl: n.actor.avatarUrl ?? undefined,
+					}
+				: undefined,
+			postId: n.postId ?? undefined,
+			commentId: n.commentId ?? undefined,
+			postContent: n.postContent ?? undefined,
+			commentContent: n.commentContent ?? undefined,
 			createdAt: fromProtoTimestamp(n.createdAt),
 		}));
 	});

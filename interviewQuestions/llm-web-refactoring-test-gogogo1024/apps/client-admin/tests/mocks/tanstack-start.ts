@@ -1,16 +1,18 @@
 // Mock @tanstack/react-start for tests
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type AnyFunction = (...args: any[]) => any;
+type AnyFunction = (...args: unknown[]) => unknown;
 
 interface ServerFnBuilder {
 	inputValidator: (validator: AnyFunction) => ServerFnBuilder;
-	handler: (handler: AnyFunction) => AnyFunction & { handler: AnyFunction };
+	handler: (handler: (opts: { data: unknown }) => unknown) => ((
+		data: unknown,
+	) => Promise<unknown>) & {
+		handler: (opts: { data: unknown }) => unknown;
+	};
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function createServerFn(_options?: { method?: string }): ServerFnBuilder {
-	let storedHandler: AnyFunction | undefined;
+	let storedHandler: ((opts: { data: unknown }) => unknown) | undefined;
 	let storedValidator: AnyFunction | undefined;
 
 	const builder: ServerFnBuilder = {
@@ -22,12 +24,14 @@ export function createServerFn(_options?: { method?: string }): ServerFnBuilder 
 			storedHandler = handler;
 			const currentHandler = storedHandler;
 			// Return a callable that also exposes the handler for direct testing
-			const fn = async (data: unknown) => {
+			const fn = (async (data: unknown) => {
 				const validatedData = storedValidator ? storedValidator(data) : data;
-				return currentHandler({ data: validatedData });
+				return currentHandler ? currentHandler({ data: validatedData }) : undefined;
+			}) as ((data: unknown) => Promise<unknown>) & {
+				handler: (opts: { data: unknown }) => unknown;
 			};
-			(fn as AnyFunction & { handler: AnyFunction }).handler = currentHandler;
-			return fn as AnyFunction & { handler: AnyFunction };
+			fn.handler = currentHandler as (opts: { data: unknown }) => unknown;
+			return fn;
 		},
 	};
 

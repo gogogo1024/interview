@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { AlertCircle, ArrowLeft, MessageCircle } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { CommentCard } from "../../components/comments/CommentCard";
 import { CommentForm } from "../../components/comments/CommentForm";
 import { PostCard } from "../../components/posts/PostCard";
@@ -8,6 +8,7 @@ import { LoadingSpinner } from "../../components/shared/LoadingSpinner";
 import { getCurrentUser } from "../../server/functions/auth";
 import { getPostComments } from "../../server/functions/comments";
 import { getPost } from "../../server/functions/posts";
+import type { Comment, Post, User } from "../../types/ui";
 
 export const Route = createFileRoute("/posts/$postId")({
 	component: PostPage,
@@ -15,16 +16,12 @@ export const Route = createFileRoute("/posts/$postId")({
 
 function PostPage() {
 	const { postId } = Route.useParams();
-	const [post, setPost] = useState<any>(null);
-	const [comments, setComments] = useState<any[]>([]);
-	const [user, setUser] = useState<any>(null);
+	const [post, setPost] = useState<Post | null>(null);
+	const [comments, setComments] = useState<Comment[]>([]);
+	const [user, setUser] = useState<User | null>(null);
 	const [loading, setLoading] = useState(true);
 
-	useEffect(() => {
-		loadData();
-	}, [postId]);
-
-	const loadData = async () => {
+	const loadData = useCallback(async () => {
 		try {
 			const [currentUser, postData, commentsData] = await Promise.all([
 				getCurrentUser(),
@@ -39,7 +36,11 @@ function PostPage() {
 		} finally {
 			setLoading(false);
 		}
-	};
+	}, [postId]);
+
+	useEffect(() => {
+		loadData();
+	}, [loadData]);
 
 	if (loading) {
 		return (
@@ -130,7 +131,7 @@ function PostPage() {
 							{comments.map((comment) => (
 								<div key={comment.id}>
 									<CommentCard comment={comment} currentUserId={user?.id} onDelete={loadData} />
-									{comment.replies?.map((reply: any) => (
+									{comment.replies?.map((reply: Comment) => (
 										<div key={reply.id} className="ml-8 pl-4 border-l-2 border-gray-100">
 											<CommentCard comment={reply} currentUserId={user?.id} onDelete={loadData} />
 										</div>

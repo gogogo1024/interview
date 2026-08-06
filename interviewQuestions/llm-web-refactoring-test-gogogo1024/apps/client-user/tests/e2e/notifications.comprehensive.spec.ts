@@ -2,7 +2,6 @@ import { expect, test } from "@playwright/test";
 import {
 	createPost,
 	loginAs,
-	TEST_USERS,
 	uniqueId,
 	waitForCommentForm,
 	waitForHydration,
@@ -71,7 +70,7 @@ test.describe("Notifications - Comprehensive", () => {
 			const postLink = page.locator('a[href*="/posts/"]').filter({ hasText: content }).first();
 			await expect(postLink).toBeVisible();
 			const postUrl = await postLink.getAttribute("href");
-			expect(postUrl).toBeTruthy();
+			if (!postUrl) throw new Error("post url not found");
 
 			// Log out and login as bob
 			await page.click('button[title="Logout"]');
@@ -79,7 +78,7 @@ test.describe("Notifications - Comprehensive", () => {
 			await loginAs(page, "bob");
 
 			// Navigate directly to alice's post and like it
-			await page.goto(postUrl!, { waitUntil: "networkidle" });
+			await page.goto(postUrl, { waitUntil: "networkidle" });
 			await waitForHydration(page);
 
 			const likeButton = page.locator("article").first().locator('button[type="button"]').first();
@@ -110,7 +109,7 @@ test.describe("Notifications - Comprehensive", () => {
 			const postLink = page.locator('a[href*="/posts/"]').filter({ hasText: content }).first();
 			await expect(postLink).toBeVisible();
 			const postUrl = await postLink.getAttribute("href");
-			expect(postUrl).toBeTruthy();
+			if (!postUrl) throw new Error("post url not found");
 
 			// Log out and login as bob
 			await page.click('button[title="Logout"]');
@@ -118,7 +117,7 @@ test.describe("Notifications - Comprehensive", () => {
 			await loginAs(page, "bob");
 
 			// Navigate to alice's post and comment
-			await page.goto(postUrl!, { waitUntil: "networkidle" });
+			await page.goto(postUrl, { waitUntil: "networkidle" });
 			await waitForHydration(page);
 
 			const commentContent = `Test comment ${uniqueId()}`;
@@ -377,7 +376,6 @@ test.describe("Notifications - Comprehensive", () => {
 			await loginAs(page, "alice");
 
 			// Check initial unread count if badge is visible
-			const badge = page.locator('a[title="Notifications"] span').filter({ hasText: /^\d+$/ });
 
 			// Go to notifications and mark all as read
 			await page.goto("/notifications", { waitUntil: "networkidle" });

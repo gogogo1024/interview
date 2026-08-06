@@ -21,7 +21,7 @@ export function validateSessionToken(token: string): AuthContext {
 			username: decoded.username,
 			role: decoded.role,
 		};
-	} catch (error) {
+	} catch (_error) {
 		throw unauthorized("Invalid or expired session token");
 	}
 }

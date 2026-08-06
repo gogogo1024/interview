@@ -194,38 +194,38 @@ export function NotificationItem({ notification, onRead, onDelete }: Notificatio
 	const preview = getPreview();
 
 	return (
-		<div
-			{...stylex.props(styles.item, !notification.read && styles.itemUnread)}
-			onClick={handleClick}
-			onKeyDown={(e) => e.key === "Enter" && handleClick()}
-			role="button"
-			tabIndex={0}
-		>
-			<div {...stylex.props(styles.avatarWrapper)}>
-				{notification.actor && (
-					<UserAvatar
-						avatarUrl={notification.actor.avatarUrl}
-						username={notification.actor.username}
-						size="sm"
-					/>
-				)}
-			</div>
-
-			<div {...stylex.props(styles.content)}>
-				<div {...stylex.props(styles.textRow)}>
-					<span {...stylex.props(styles.actorName)}>
-						{notification.actor?.displayName || "Someone"}
-					</span>
-					<span {...stylex.props(styles.message)}>{getMessage()}</span>
+		<div>
+			<button
+				type="button"
+				{...stylex.props(styles.item, !notification.read && styles.itemUnread)}
+				onClick={handleClick}
+			>
+				<div {...stylex.props(styles.avatarWrapper)}>
+					{notification.actor && (
+						<UserAvatar
+							avatarUrl={notification.actor.avatarUrl}
+							username={notification.actor.username}
+							size="sm"
+						/>
+					)}
 				</div>
 
-				{preview && <p {...stylex.props(styles.preview)}>"{preview}"</p>}
+				<div {...stylex.props(styles.content)}>
+					<div {...stylex.props(styles.textRow)}>
+						<span {...stylex.props(styles.actorName)}>
+							{notification.actor?.displayName || "Someone"}
+						</span>
+						<span {...stylex.props(styles.message)}>{getMessage()}</span>
+					</div>
 
-				<div {...stylex.props(styles.meta)}>
-					<RelativeTime date={notification.createdAt} />
-					{!notification.read && <span {...stylex.props(styles.unreadDot)} />}
+					{preview && <p {...stylex.props(styles.preview)}>"{preview}"</p>}
+
+					<div {...stylex.props(styles.meta)}>
+						<RelativeTime date={notification.createdAt} />
+						{!notification.read && <span {...stylex.props(styles.unreadDot)} />}
+					</div>
 				</div>
-			</div>
+			</button>
 
 			<button
 				type="button"

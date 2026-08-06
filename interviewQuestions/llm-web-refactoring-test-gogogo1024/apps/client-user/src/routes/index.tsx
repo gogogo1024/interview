@@ -1,12 +1,13 @@
 import * as stylex from "@stylexjs/stylex";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { MessageCircle, Sparkles } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { PostForm } from "../components/posts/PostForm";
 import { PostList } from "../components/posts/PostList";
 import { getCurrentUser } from "../server/functions/auth";
 import { getHomeFeed } from "../server/functions/feed";
 import { colors, fontSize, fontWeight, radii, semanticColors, spacing } from "../tokens.stylex";
+import type { Post, User } from "../types/ui";
 
 export const Route = createFileRoute("/")({
 	component: HomePage,
@@ -121,15 +122,11 @@ const styles = stylex.create({
 });
 
 function HomePage() {
-	const [posts, setPosts] = useState<any[]>([]);
-	const [user, setUser] = useState<any>(null);
+	const [posts, setPosts] = useState<Post[]>([]);
+	const [user, setUser] = useState<User | null>(null);
 	const [loading, setLoading] = useState(true);
 
-	useEffect(() => {
-		loadData();
-	}, []);
-
-	const loadData = async () => {
+	const loadData = useCallback(async () => {
 		try {
 			const [currentUser, feedPosts] = await Promise.all([
 				getCurrentUser(),
@@ -142,7 +139,11 @@ function HomePage() {
 		} finally {
 			setLoading(false);
 		}
-	};
+	}, []);
+
+	useEffect(() => {
+		loadData();
+	}, [loadData]);
 
 	if (!user && !loading) {
 		return (

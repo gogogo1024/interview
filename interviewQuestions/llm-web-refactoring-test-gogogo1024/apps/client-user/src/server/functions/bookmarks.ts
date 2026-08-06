@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
-import { fromProtoTimestamp, getGrpcClient, requireGrpcSessionToken } from "../../lib/grpc.server";
+import { getGrpcClient, requireGrpcSessionToken } from "../../lib/grpc.server";
+import { mapPostResponse } from "./posts";
 
 export const toggleBookmark = createServerFn({ method: "POST" })
 	.inputValidator((d: string) => d)
@@ -45,21 +46,5 @@ export const getBookmarkedPosts = createServerFn()
 			offset: data.offset || 0,
 		});
 
-		return response.posts.map((post) => ({
-			id: post.id,
-			content: post.content,
-			createdAt: fromProtoTimestamp(post.createdAt),
-			updatedAt: fromProtoTimestamp(post.updatedAt),
-			author: post.author
-				? {
-						id: post.author.id,
-						username: post.author.username,
-						displayName: post.author.displayName,
-						avatarUrl: post.author.avatarUrl,
-					}
-				: null,
-			likeCount: post.likeCount,
-			commentCount: post.commentCount,
-			isLiked: post.isLiked,
-		}));
+		return response.posts.map(mapPostResponse);
 	});

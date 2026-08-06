@@ -1,7 +1,34 @@
+
 import { expect, test } from "@playwright/test";
 import { waitForHydration } from "./fixtures/test-helpers";
 
 test.describe("Authentication", () => {
+	// Capture browser console, page errors and failed requests per test
+	test.beforeEach(async ({ page }) => {
+		// store logs on the page object to make them available in afterEach
+		(Object.assign(page, { __e2e_logs: [] }));
+		page.on("console", (msg) => {
+			// @ts-ignore
+			page.__e2e_logs.push(`[console ${msg.type()}] ${msg.text()}`);
+		});
+		page.on("requestfailed", (req) => {
+			// @ts-ignore
+			page.__e2e_logs.push(`[requestfailed] ${req.method()} ${req.url()} ${req.failure()?.errorText ?? ""}`);
+		});
+		page.on("pageerror", (err) => {
+			// @ts-ignore
+			page.__e2e_logs.push(`[pageerror] ${err?.stack ?? err?.message ?? String(err)}`);
+		});
+	});
+
+	test.afterEach(async ({ page }, testInfo) => {
+		// @ts-ignore
+		const logs: string[] = page.__e2e_logs || [];
+		if (logs.length > 0) {
+			await testInfo.attach("browser-logs.txt", { body: logs.join("\n"), contentType: "text/plain" });
+		}
+	});
+
 	test("should register a new user", async ({ page }) => {
 		await page.goto("/auth/register", { waitUntil: "networkidle" });
 		await waitForHydration(page);

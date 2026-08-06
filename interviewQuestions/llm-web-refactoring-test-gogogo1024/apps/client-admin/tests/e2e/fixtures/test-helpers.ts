@@ -42,17 +42,31 @@ export const REGULAR_USERS = {
  * Wait for the page to settle after navigation or action.
  * Uses networkidle to ensure React/TanStack hydration completes.
  */
-export async function waitForHydration(page: Page): Promise<void> {
+export async function waitForHydration(page: Page) {
 	await page.waitForLoadState("networkidle");
-	// Remove Nitro dev server error overlay if present
+
 	try {
 		await page.evaluate(() => {
-			for (const el of document.querySelectorAll("vite-error-overlay")) el.remove();
+			document
+				.querySelectorAll("vite-error-overlay")
+				.forEach(el => el.remove());
 		});
-	} catch {
-		// Context may have been destroyed by a concurrent navigation
+	} catch (err) {
+		console.error(err);
+		throw err;
 	}
 }
+// export async function waitForHydration(page: Page): Promise<void> {
+// 	await page.waitForLoadState("networkidle");
+// 	// Remove Nitro dev server error overlay if present
+// 	try {
+// 		await page.evaluate(() => {
+// 			for (const el of document.querySelectorAll("vite-error-overlay")) el.remove();
+// 		});
+// 	} catch {
+// 		// Context may have been destroyed by a concurrent navigation
+// 	}
+// }
 
 /**
  * Login as an admin user
@@ -176,7 +190,7 @@ export async function searchInList(page: Page, query: string): Promise<void> {
 export async function getStatValue(page: Page, label: string): Promise<number> {
 	const stat = page.getByText(label).locator("..").locator("p, span, div").first();
 	const text = await stat.textContent();
-	return Number.parseInt(text?.replace(/\D/g, "") || "0");
+	return Number.parseInt(text?.replace(/\D/g, "") || "0", 10);
 }
 
 /**

@@ -1,7 +1,7 @@
 import * as stylex from "@stylexjs/stylex";
 import { Link, useLocation, useNavigate } from "@tanstack/react-router";
 import { Bookmark, Compass, Home, LogOut, MessageCircle, Search } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { getCurrentUser, logoutUser } from "../../server/functions/auth";
 import { colors, radii, semanticColors, spacing, zIndex } from "../../tokens.stylex";
 import { NotificationBell } from "../notifications/NotificationBell";
@@ -179,20 +179,22 @@ const styles = stylex.create({
 export function Header() {
 	const navigate = useNavigate();
 	const location = useLocation();
+	// Initialize with null to avoid hydration mismatch
+	// The user data will be loaded client-side only
 	const [user, setUser] = useState<{ username: string; displayName: string } | null>(null);
 
-	const loadUser = useCallback(async () => {
-		try {
-			const currentUser = await getCurrentUser();
-			setUser(currentUser);
-		} catch (error) {
-			console.error("Failed to load user:", error);
-		}
-	}, []);
-
 	useEffect(() => {
+		// Only load user on client-side
+		const loadUser = async () => {
+			try {
+				const currentUser = await getCurrentUser();
+				setUser(currentUser);
+			} catch (error) {
+				console.error("Failed to load user:", error);
+			}
+		};
 		loadUser();
-	}, [loadUser]);
+	}, []);
 
 	const handleLogout = async () => {
 		try {
@@ -258,7 +260,7 @@ export function Header() {
 					{/* User Actions */}
 					{user && (
 						<div {...stylex.props(styles.userActions)}>
-							<NotificationBell isActive={isActive("/notifications")} />
+						<NotificationBell isActive={isActive("/notifications")} />
 
 							<Link
 								to="/users/$username"

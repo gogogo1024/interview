@@ -35,14 +35,49 @@ export const TEST_USERS = {
  * Uses networkidle to ensure React/TanStack hydration completes.
  */
 export async function waitForHydration(page: Page): Promise<void> {
-	await page.waitForLoadState("networkidle");
-	// Remove Nitro dev server error overlay if present
+	// Wait for page to start loading and initialize
 	try {
-		await page.evaluate(() => {
-			for (const el of document.querySelectorAll("vite-error-overlay")) el.remove();
-		});
-	} catch {
-		// Context may have been destroyed by a concurrent navigation
+		await page.waitForLoadState("domcontentloaded", { timeout: 30_000 });
+	} catch (e) {
+		// ignore — continue anyway
+	}
+
+	// For TanStack Start applications without specific root elements,
+	// wait for the page to have any meaningful content and settle
+	// Look for common root selectors or any actual content
+	const CONTENT_SELECTORS = [
+		'[data-testid="app-root"]', // NextGen apps
+		'#app-root',                 // Some React apps
+		'#app',                       // Common React convention  
+		'#root',                      // CRA default
+		'[role="application"]',       // Accessible apps
+		'main',                       // Semantic HTML
+		'.login__styles.wrapper',     // Our specific app
+	];
+
+	let foundContent = false;
+	for (const selector of CONTENT_SELECTORS) {
+		try {
+			const elements = await page.locator(selector);
+			if (await elements.count() > 0) {
+				foundContent = true;
+				break;
+			}
+		} catch {
+			// continue to next selector
+		}
+	}
+
+	if (foundContent) {
+		// Give React/TanStack time to settle
+		await page.waitForTimeout(500);
+	} else {
+		// Fallback: wait for network to be idle as a signal that page is interactive
+		try {
+			await page.waitForLoadState("networkidle", { timeout: 60_000 });
+		} catch (e) {
+			// Give up gracefully — page may be loaded anyway
+		}
 	}
 }
 

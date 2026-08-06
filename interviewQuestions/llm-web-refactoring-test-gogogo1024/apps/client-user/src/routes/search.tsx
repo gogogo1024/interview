@@ -16,6 +16,7 @@ import {
 	shadows,
 	spacing,
 } from "../tokens.stylex";
+import type { Post, User } from "../types/ui";
 
 export const Route = createFileRoute("/search")({
 	component: SearchPage,
@@ -239,9 +240,9 @@ const styles = stylex.create({
 
 function SearchPage() {
 	const [query, setQuery] = useState("");
-	const [posts, setPosts] = useState<any[]>([]);
-	const [users, setUsers] = useState<any[]>([]);
-	const [user, setUser] = useState<any>(null);
+	const [posts, setPosts] = useState<Post[]>([]);
+	const [users, setUsers] = useState<User[]>([]);
+	const [user, setUser] = useState<User | null>(null);
 	const [tab, setTab] = useState<"posts" | "users">("posts");
 	const [loading, setLoading] = useState(false);
 	const [hasSearched, setHasSearched] = useState(false);

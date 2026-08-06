@@ -35,7 +35,8 @@ test.describe("Bookmarks - Comprehensive", () => {
 				.filter({ hasText: content })
 				.first()
 				.getAttribute("href");
-			await page.goto(postHref!, { waitUntil: "networkidle" });
+			if (!postHref) throw new Error("post href not found");
+			await page.goto(postHref, { waitUntil: "networkidle" });
 			await waitForHydration(page);
 
 			// Bookmark from detail page

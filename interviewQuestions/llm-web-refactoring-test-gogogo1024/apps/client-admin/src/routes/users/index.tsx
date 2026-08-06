@@ -185,7 +185,17 @@ export const Route = createFileRoute("/users/")({
 	component: UsersPage,
 });
 
-const mockUsers = [
+const mockUsers: {
+	id: string;
+	username: string;
+	displayName: string;
+	email: string;
+	avatarUrl: string | null;
+	role: "user" | "admin" | "moderator";
+	status: "active" | "banned";
+	postCount: number;
+	joinedAt: string;
+}[] = [
 	{
 		id: "1",
 		username: "alice",

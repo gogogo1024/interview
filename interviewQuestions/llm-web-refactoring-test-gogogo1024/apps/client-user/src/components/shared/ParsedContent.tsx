@@ -33,7 +33,8 @@ export function ParsedContent({ content }: ParsedContentProps) {
 	// Reset regex state
 	mentionPattern.lastIndex = 0;
 
-	while ((match = mentionPattern.exec(content)) !== null) {
+	match = mentionPattern.exec(content);
+	while (match !== null) {
 		// Add text before mention
 		if (match.index > lastIndex) {
 			parts.push(content.slice(lastIndex, match.index));
@@ -54,6 +55,7 @@ export function ParsedContent({ content }: ParsedContentProps) {
 		);
 
 		lastIndex = match.index + match[0].length;
+		match = mentionPattern.exec(content);
 	}
 
 	// Add remaining text

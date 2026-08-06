@@ -1,6 +1,6 @@
 import * as stylex from "@stylexjs/stylex";
 import { UserCheck, UserPlus } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { getFollowStatus, toggleFollow } from "../../server/functions/follows";
 import { colors, radii, semanticColors, spacing } from "../../tokens.stylex";
 
@@ -80,18 +80,18 @@ export function FollowButton({ username }: { username: string }) {
 	const [loading, setLoading] = useState(false);
 	const [isHovered, setIsHovered] = useState(false);
 
-	useEffect(() => {
-		loadFollowStatus();
-	}, [username]);
-
-	const loadFollowStatus = async () => {
+	const loadFollowStatus = useCallback(async () => {
 		try {
 			const status = await getFollowStatus({ data: username });
 			setFollowing(status.following);
 		} catch (error) {
 			console.error("Failed to load follow status:", error);
 		}
-	};
+	}, [username]);
+
+	useEffect(() => {
+		loadFollowStatus();
+	}, [loadFollowStatus]);
 
 	const handleToggle = async () => {
 		if (loading) return;
@@ -129,19 +129,17 @@ export function FollowButton({ username }: { username: string }) {
 					<span>Loading...</span>
 				</>
 			) : following ? (
-				<>
-					{isHovered ? (
-						<>
-							<UserPlus {...stylex.props(styles.icon)} />
-							<span>Unfollow</span>
-						</>
-					) : (
-						<>
-							<UserCheck {...stylex.props(styles.icon)} />
-							<span>Following</span>
-						</>
-					)}
-				</>
+				isHovered ? (
+					<>
+						<UserPlus {...stylex.props(styles.icon)} />
+						<span>Unfollow</span>
+					</>
+				) : (
+					<>
+						<UserCheck {...stylex.props(styles.icon)} />
+						<span>Following</span>
+					</>
+				)
 			) : (
 				<>
 					<UserPlus {...stylex.props(styles.icon)} />

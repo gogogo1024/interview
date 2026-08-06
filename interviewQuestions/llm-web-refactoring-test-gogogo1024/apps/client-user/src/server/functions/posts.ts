@@ -7,20 +7,25 @@ import {
 	requireGrpcSessionToken,
 } from "../../lib/grpc.server";
 
-function mapPostResponse(post: PostResponse) {
+export function mapPostResponse(post: PostResponse) {
+	const authorSource = post.author ?? {
+		id: "unknown",
+		username: "unknown",
+		displayName: "Unknown",
+		avatarUrl: undefined,
+	};
+
 	return {
 		id: post.id,
 		content: post.content,
 		createdAt: fromProtoTimestamp(post.createdAt),
 		updatedAt: fromProtoTimestamp(post.updatedAt),
-		author: post.author
-			? {
-					id: post.author.id,
-					username: post.author.username,
-					displayName: post.author.displayName,
-					avatarUrl: post.author.avatarUrl,
-				}
-			: null,
+		author: {
+			id: authorSource.id,
+			username: authorSource.username,
+			displayName: authorSource.displayName,
+			avatarUrl: authorSource.avatarUrl,
+		},
 		likeCount: post.likeCount,
 		commentCount: post.commentCount,
 		isLiked: post.isLiked,

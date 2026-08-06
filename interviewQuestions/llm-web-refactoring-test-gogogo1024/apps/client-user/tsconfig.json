@@ -12,7 +12,9 @@
 		"declarationMap": false,
 		"baseUrl": ".",
 		"paths": {
-			"@/*": ["./src/*"]
+			"@/*": ["./src/*"],
+			"@chirp/db-schema": ["../../packages/db-schema/src/index.ts"],
+			"@chirp/db-schema/*": ["../../packages/db-schema/src/*"]
 		}
 	}
 }

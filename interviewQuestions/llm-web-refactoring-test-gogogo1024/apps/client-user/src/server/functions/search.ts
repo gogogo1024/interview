@@ -1,26 +1,7 @@
-import type { PostResponse, UserSearchResult } from "@chirp/proto";
+import type { UserSearchResult } from "@chirp/proto";
 import { createServerFn } from "@tanstack/react-start";
-import { fromProtoTimestamp, getGrpcClient, getGrpcSessionToken } from "../../lib/grpc.server";
-
-function mapPostResponse(post: PostResponse) {
-	return {
-		id: post.id,
-		content: post.content,
-		createdAt: fromProtoTimestamp(post.createdAt),
-		updatedAt: fromProtoTimestamp(post.updatedAt),
-		author: post.author
-			? {
-					id: post.author.id,
-					username: post.author.username,
-					displayName: post.author.displayName,
-					avatarUrl: post.author.avatarUrl,
-				}
-			: null,
-		likeCount: post.likeCount,
-		commentCount: post.commentCount,
-		isLiked: post.isLiked,
-	};
-}
+import { getGrpcClient, getGrpcSessionToken } from "../../lib/grpc.server";
+import { mapPostResponse } from "./posts";
 
 function mapUserSearchResult(user: UserSearchResult) {
 	return {
