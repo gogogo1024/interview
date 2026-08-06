@@ -81,18 +81,16 @@ const filterInvalidPreloadsPlugin = (): Plugin => ({
 				for (const pkg of serverOnlyPackages) {
 					const escapedPkg = pkg.replace(/\//g, "\\/").replace(/\./g, "\\.");
 					
-					// Match patterns like:
-					// import"@chirp/grpc-client"
-					// import "@chirp/grpc-client"
-					// import{...}from"@chirp/grpc-client"
-					// import{...}from"@chirp/grpc-client";
+					// Match patterns in minified code:
+					// import"package" or import "package"
+					// import{...}from"package" or from"package" (but only in import context)
 					const patterns = [
-						// Basic: import"package"
+						// Pattern 1: import"package" or import "package"
 						`import\\s*"${escapedPkg}[^"]*"`,
-						// From statement: from"package"  
-						`from\\s*"${escapedPkg}[^"]*"`,
-						// Import with braces
+						// Pattern 2: import{...}from"package"
 						`import\\s*\\{[^}]*\\}\\s*from\\s*"${escapedPkg}[^"]*"`,
+						// Pattern 3: import*from"package" (for default imports like import $from)
+						`import\\s+\\w+\\s+from\\s*"${escapedPkg}[^"]*"`,
 					];
 					
 					for (const pattern of patterns) {
@@ -105,6 +103,8 @@ const filterInvalidPreloadsPlugin = (): Plugin => ({
 				}
 
 				if (modified) {
+					// Clean up any trailing commas or semicolons
+					content = content.replace(/;+/g, ";");
 					fs.writeFileSync(filePath, content, "utf-8");
 				}
 			}
