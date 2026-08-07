@@ -134,19 +134,21 @@ function HomePage() {
 				getHomeFeed({ data: {} }),
 			]);
 			
-			// If no user is logged in, redirect to login
-			if (!currentUser) {
-				console.log("No user found, redirecting to login");
-				navigate({ to: "/auth/login" });
-				return;
-			}
-			
 			setUser(currentUser);
 			setPosts(feedPosts);
+			
+			// If no user is logged in on client side, redirect to login
+			// This runs after hydration, so useNavigate is available
+			if (!currentUser && typeof window !== "undefined") {
+				console.log("No user found, redirecting to login");
+				navigate({ to: "/auth/login" });
+			}
 		} catch (error) {
 			console.error("Failed to load data:", error);
-			// On error, also redirect to login
-			navigate({ to: "/auth/login" });
+			// On error, also redirect to login if on client
+			if (typeof window !== "undefined") {
+				navigate({ to: "/auth/login" });
+			}
 		} finally {
 			setLoading(false);
 		}
