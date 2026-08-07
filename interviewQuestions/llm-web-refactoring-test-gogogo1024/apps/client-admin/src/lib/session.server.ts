@@ -26,6 +26,10 @@ export function useAdminSession() {
 
 export async function getAdminSessionData(): Promise<AdminSessionData | null> {
 	const session = await useAdminSession();
+	// Check if session has user data
+	if (!session.data || typeof session.data !== "object" || !("userId" in session.data)) {
+		return null;
+	}
 	if (!session.data.userId || !session.data.role) {
 		return null;
 	}

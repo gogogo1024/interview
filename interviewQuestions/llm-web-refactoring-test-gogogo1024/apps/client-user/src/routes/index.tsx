@@ -125,6 +125,7 @@ function HomePage() {
 	const [posts, setPosts] = useState<Post[]>([]);
 	const [user, setUser] = useState<User | null>(null);
 	const [loading, setLoading] = useState(true);
+	const navigate = useNavigate();
 
 	const loadData = useCallback(async () => {
 		try {
@@ -132,14 +133,24 @@ function HomePage() {
 				getCurrentUser(),
 				getHomeFeed({ data: {} }),
 			]);
+			
+			// If no user is logged in, redirect to login
+			if (!currentUser) {
+				console.log("No user found, redirecting to login");
+				navigate({ to: "/auth/login" });
+				return;
+			}
+			
 			setUser(currentUser);
 			setPosts(feedPosts);
 		} catch (error) {
 			console.error("Failed to load data:", error);
+			// On error, also redirect to login
+			navigate({ to: "/auth/login" });
 		} finally {
 			setLoading(false);
 		}
-	}, []);
+	}, [navigate]);
 
 	useEffect(() => {
 		loadData();

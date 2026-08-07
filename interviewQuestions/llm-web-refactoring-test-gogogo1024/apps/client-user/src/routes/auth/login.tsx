@@ -264,10 +264,20 @@ function LoginPage() {
 		setLoading(true);
 
 		try {
-			await loginUser({ data: { email, password } });
-			navigate({ to: "/" });
+			console.log("Starting login with email:", email);
+			const result = await loginUser({ data: { email, password } });
+			console.log("Login successful:", result);
+			
+			// Give the session a moment to be set on the server
+			await new Promise(resolve => setTimeout(resolve, 300));
+			
+			console.log("Navigating to home page...");
+			await navigate({ to: "/" });
+			console.log("Navigation complete");
 		} catch (err) {
-			setError(err instanceof Error ? err.message : "Login failed");
+			const errorMessage = err instanceof Error ? err.message : "Login failed";
+			console.error("Login error:", errorMessage, err);
+			setError(errorMessage);
 		} finally {
 			setLoading(false);
 		}

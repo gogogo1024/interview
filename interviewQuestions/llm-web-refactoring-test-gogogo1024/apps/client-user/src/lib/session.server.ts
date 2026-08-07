@@ -24,7 +24,8 @@ export function useAppSession() {
 
 export async function getSessionData(): Promise<SessionData | null> {
 	const session = await useAppSession();
-	if (!session.data.userId) {
+	// Check if session has user data
+	if (!session.data || typeof session.data !== "object" || !("userId" in session.data)) {
 		return null;
 	}
 	return session.data as SessionData;
