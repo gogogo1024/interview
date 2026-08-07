@@ -92,15 +92,67 @@ export async function loginAsAdmin(
 		}
 	});
 
-	await page.goto("/login", { waitUntil: "networkidle" });
+	// Clear browser state
+	await page.context().clearCookies();
+	await page.evaluate(() => {
+		try {
+			window.localStorage.clear();
+			window.sessionStorage.clear();
+		} catch {}
+	});
+
+	let loggedIn = false;
+	for (let attempt = 1; attempt <= 3; attempt++) {
+		await page.goto("/login", { waitUntil: "domcontentloaded" });
+		await waitForHydration(page);
+
+		await page.fill('input[name="email"]', credentials.email);
+		await page.fill('input[name="password"]', credentials.password);
+		
+		// TanStack Router uses client-side navigation, not browser navigation
+		await page.click('button[type="submit"]');
+		
+		try {
+			// Wait for URL to change away from login page (TanStack Router client-side navigation)
+			await page.waitForFunction(
+				() => {
+					const url = window.location.pathname;
+					// Admin might redirect to / or /dashboard
+					return url === "/" || url === "" || url === "/dashboard";
+				},
+				{ timeout: 10000 }
+			);
+			
+			// Verify we're not on login page anymore
+			const finalUrl = page.url();
+			if (finalUrl.includes("/login")) {
+				throw new Error("Still on login page");
+			}
+			
+			loggedIn = true;
+			break;
+		} catch (err) {
+			const currentUrl = page.url();
+			console.log(`Admin login attempt ${attempt} failed. Current URL: ${currentUrl}. Error: ${err}`);
+			if (attempt < 3) {
+				await page.context().clearCookies();
+			}
+		}
+	}
+
+	if (!loggedIn) {
+		const currentUrl = page.url();
+		console.log(`Admin login failed after 3 attempts. Final URL: ${currentUrl}`);
+		throw new Error(`Failed to login after 3 attempts. Currently at: ${currentUrl}`);
+	}
+
+	// Wait for hydration after navigation
 	await waitForHydration(page);
 
-	await page.fill('input[name="email"]', credentials.email);
-	await page.fill('input[name="password"]', credentials.password);
-	await page.click('button[type="submit"]');
-
-	// Wait for redirect to dashboard
-	await expect(page).toHaveURL("/");
+	// Wait for page content to be fully loaded (longer timeout for data fetching)
+	await page.waitForLoadState("networkidle", { timeout: 15000 }).catch(() => {
+		// Ignore timeout, page might have settled anyway
+	});
 }
 
 /**

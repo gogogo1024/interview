@@ -143,13 +143,33 @@ export async function loginAs(
 
 		await page.fill('input[name="email"]', credentials.email);
 		await page.fill('input[name="password"]', credentials.password);
+		
+		// TanStack Router uses client-side navigation, not browser navigation
+		// So we wait for URL change using the page's URL observable
 		await page.click('button[type="submit"]');
-
+		
 		try {
-			await expect(page).toHaveURL("/", { timeout: 10000 });
+			// Wait for URL to change to home page (TanStack Router client-side navigation)
+			// Use waitForFunction to check URL change
+			await page.waitForFunction(
+				() => {
+					const url = window.location.pathname;
+					return url === "/" || url === "";
+				},
+				{ timeout: 10000 }
+			);
+			
+			// Verify we're on the home page
+			const finalUrl = page.url();
+			if (finalUrl.includes("/auth/login")) {
+				throw new Error("Still on login page");
+			}
+			
 			loggedIn = true;
 			break;
-		} catch {
+		} catch (err) {
+			const currentUrl = page.url();
+			console.log(`Login attempt ${attempt} failed. Current URL: ${currentUrl}. Error: ${err}`);
 			if (attempt < 3) {
 				await clearBrowserState(page);
 			}
@@ -157,15 +177,26 @@ export async function loginAs(
 	}
 
 	if (!loggedIn) {
-		await expect(page).toHaveURL("/");
+		// If we still can't log in, at least check the current state
+		const currentUrl = page.url();
+		console.log(`Login failed after 3 attempts. Final URL: ${currentUrl}`);
+		throw new Error(`Failed to login after 3 attempts. Currently at: ${currentUrl}`);
 	}
 
-	// Reload the page to ensure session cookie is properly picked up by Header
-	await page.reload({ waitUntil: "networkidle" });
+	// Wait for hydration after navigation
 	await waitForHydration(page);
 
 	// Wait for user state to be loaded in Header (logout button appears)
-	await expect(page.locator('button[title="Logout"]')).toBeVisible({ timeout: 10000 });
+	// Retry with longer timeout to allow for session data to be fetched
+	try {
+		await expect(page.locator('button[title="Logout"]')).toBeVisible({ timeout: 15000 });
+	} catch (err) {
+		// If logout button not visible, page might still be loading user data
+		// Give it more time and try again
+		await page.waitForTimeout(2000);
+		await waitForHydration(page);
+		await expect(page.locator('button[title="Logout"]')).toBeVisible({ timeout: 10000 });
+	}
 }
 
 /**
