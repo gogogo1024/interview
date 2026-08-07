@@ -187,10 +187,12 @@ export function Header() {
 		// Only load user on client-side
 		const loadUser = async () => {
 			try {
+				console.log("Header: Loading current user...");
 				const currentUser = await getCurrentUser();
+				console.log("Header: getCurrentUser returned:", currentUser);
 				setUser(currentUser);
 			} catch (error) {
-				console.error("Failed to load user:", error);
+				console.error("Header: Failed to load user:", error);
 			}
 		};
 		loadUser();

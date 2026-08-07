@@ -33,7 +33,7 @@ export default defineConfig({
 		// Use production build to avoid dev mode Nitro environment issues
 		command: "pnpm run build && pnpm run start",
 		url: "http://localhost:3000",
-		reuseExistingServer: false,
+		reuseExistingServer: true,
 		timeout: 180000,  // 3 minutes to allow build + start
 	},
 });

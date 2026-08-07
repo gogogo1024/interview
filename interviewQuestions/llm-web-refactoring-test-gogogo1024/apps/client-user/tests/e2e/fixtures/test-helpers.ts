@@ -137,6 +137,14 @@ export async function loginAs(
 
 	console.log(`loginAs: Starting login for user: ${typeof user === "string" ? user : user.email}`);
 	
+	// Listen to page console messages for debugging
+	const consoleMessages: string[] = [];
+	page.on("console", (msg) => {
+		const text = `[${msg.type()}] ${msg.text()}`;
+		console.log(`PAGE: ${text}`);
+		consoleMessages.push(text);
+	});
+	
 	let loggedIn = false;
 	for (let attempt = 1; attempt <= 3; attempt++) {
 		console.log(`\n=== Login Attempt ${attempt}/3 ===`);
@@ -206,6 +214,7 @@ export async function loginAs(
 	if (!loggedIn) {
 		const finalUrl = page.url();
 		console.log(`\n✗ Login FAILED after 3 attempts. Final URL: ${finalUrl}`);
+		console.log(`Page console messages: ${consoleMessages.join("\n")}`);
 		throw new Error(`Failed to login after 3 attempts. Currently at: ${finalUrl}`);
 	}
 
@@ -222,6 +231,7 @@ export async function loginAs(
 	} catch (err) {
 		console.log(`Warning: Logout button not visible after 15s`);
 		console.log(`Current URL: ${page.url()}`);
+		console.log(`Page console messages: ${consoleMessages.join("\n")}`);
 		// Don't fail here, the test might still work
 	}
 }
