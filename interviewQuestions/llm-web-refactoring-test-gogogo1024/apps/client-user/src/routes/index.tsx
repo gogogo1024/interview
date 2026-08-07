@@ -125,7 +125,6 @@ function HomePage() {
 	const [posts, setPosts] = useState<Post[]>([]);
 	const [user, setUser] = useState<User | null>(null);
 	const [loading, setLoading] = useState(true);
-	const navigate = useNavigate();
 
 	const loadData = useCallback(async () => {
 		try {
@@ -136,27 +135,28 @@ function HomePage() {
 			
 			setUser(currentUser);
 			setPosts(feedPosts);
-			
-			// If no user is logged in on client side, redirect to login
-			// This runs after hydration, so useNavigate is available
-			if (!currentUser && typeof window !== "undefined") {
-				console.log("No user found, redirecting to login");
-				navigate({ to: "/auth/login" });
-			}
 		} catch (error) {
 			console.error("Failed to load data:", error);
-			// On error, also redirect to login if on client
-			if (typeof window !== "undefined") {
-				navigate({ to: "/auth/login" });
-			}
 		} finally {
 			setLoading(false);
 		}
-	}, [navigate]);
+	}, []);
 
 	useEffect(() => {
 		loadData();
 	}, [loadData]);
+
+	// Handle redirects on client side only
+	useEffect(() => {
+		// Only run on client after hydration
+		if (typeof window === "undefined") return;
+		
+		// If no user and not loading, show welcome or redirect
+		if (!user && !loading) {
+			console.log("No user found on client");
+			// Page will show welcome message via the condition below
+		}
+	}, [user, loading]);
 
 	if (!user && !loading) {
 		return (
