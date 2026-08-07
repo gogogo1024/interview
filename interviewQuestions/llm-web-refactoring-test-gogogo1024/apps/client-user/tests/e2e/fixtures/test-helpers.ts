@@ -144,27 +144,43 @@ export async function loginAs(
 		await page.fill('input[name="email"]', credentials.email);
 		await page.fill('input[name="password"]', credentials.password);
 		
-		// TanStack Router uses client-side navigation, not browser navigation
-		// So we wait for URL change using the page's URL observable
+		// Log form state before submit
+		const emailValue = await page.inputValue('input[name="email"]');
+		const passwordValue = await page.inputValue('input[name="password"]');
+		console.log(`Login attempt ${attempt}: Submitting form with email="${emailValue}" (${emailValue === credentials.email ? "correct" : "WRONG"})`);
+		
+		// Submit form and check for navigation
 		await page.click('button[type="submit"]');
 		
 		try {
-			// Wait for URL to change to home page (TanStack Router client-side navigation)
-			// Use waitForFunction to check URL change
-			await page.waitForFunction(
-				() => {
-					const url = window.location.pathname;
-					return url === "/" || url === "";
-				},
-				{ timeout: 10000 }
-			);
-			
-			// Verify we're on the home page
-			const finalUrl = page.url();
-			if (finalUrl.includes("/auth/login")) {
-				throw new Error("Still on login page");
+			// Wait for URL to change away from /auth/login
+			// Check the URL directly in page evaluation with timeout
+			let urlChanged = false;
+			for (let i = 0; i < 20; i++) {
+				const currentPath = page.url();
+				console.log(`Attempt ${attempt}, check ${i + 1}/20: Current URL = ${currentPath}`);
+				
+				if (!currentPath.includes("/auth/login")) {
+					urlChanged = true;
+					break;
+				}
+				
+				// Also check for any error messages on the login page
+				try {
+					const errorMsg = await page.locator('[role="alert"]').textContent({ timeout: 500 }).catch(() => null);
+					if (errorMsg) {
+						console.log(`Error message found: ${errorMsg}`);
+					}
+				} catch {}
+				
+				await page.waitForTimeout(500);
 			}
 			
+			if (!urlChanged) {
+				throw new Error(`URL never changed from /auth/login after 10s`);
+			}
+			
+			console.log(`Login attempt ${attempt} successful! URL: ${page.url()}`);
 			loggedIn = true;
 			break;
 		} catch (err) {
@@ -177,7 +193,6 @@ export async function loginAs(
 	}
 
 	if (!loggedIn) {
-		// If we still can't log in, at least check the current state
 		const currentUrl = page.url();
 		console.log(`Login failed after 3 attempts. Final URL: ${currentUrl}`);
 		throw new Error(`Failed to login after 3 attempts. Currently at: ${currentUrl}`);
@@ -187,15 +202,11 @@ export async function loginAs(
 	await waitForHydration(page);
 
 	// Wait for user state to be loaded in Header (logout button appears)
-	// Retry with longer timeout to allow for session data to be fetched
 	try {
 		await expect(page.locator('button[title="Logout"]')).toBeVisible({ timeout: 15000 });
 	} catch (err) {
-		// If logout button not visible, page might still be loading user data
-		// Give it more time and try again
-		await page.waitForTimeout(2000);
-		await waitForHydration(page);
-		await expect(page.locator('button[title="Logout"]')).toBeVisible({ timeout: 10000 });
+		console.log(`Logout button not visible after 15s, page content:`, await page.content().then(c => c.substring(0, 500)));
+		throw err;
 	}
 }
 
