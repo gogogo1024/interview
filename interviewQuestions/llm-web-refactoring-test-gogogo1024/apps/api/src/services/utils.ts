@@ -1,5 +1,5 @@
+import { createHash } from "node:crypto";
 import bcrypt from "bcryptjs";
-import { createHash } from "crypto";
 
 /**
  * Generate a simple ID

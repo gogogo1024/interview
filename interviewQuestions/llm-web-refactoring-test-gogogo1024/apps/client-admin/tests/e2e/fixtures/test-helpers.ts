@@ -47,7 +47,9 @@ export async function waitForHydration(page: Page) {
 
 	try {
 		await page.evaluate(() => {
-			document.querySelectorAll("vite-error-overlay").forEach((el) => el.remove());
+			document.querySelectorAll("vite-error-overlay").forEach((el) => {
+				el.remove();
+			});
 		});
 	} catch (err) {
 		console.error(err);

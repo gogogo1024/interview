@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { createTestFollow, createTestPost, createTestUser } from "../../tests/helpers";
+import type { DbClient } from "../db";
 import { getBookmarkedPosts, toggleBookmark } from "./bookmarks.service";
 import { getHomeFeed } from "./feed.service";
 import { getUser } from "./users.service";
@@ -32,19 +33,19 @@ describe("Query performance (N+1 guards)", () => {
 		}
 
 		const dbMod = await import("../db");
-		const client = (dbMod as any).client;
-		const orig = (client as any).execute.bind(client);
+		const client = (dbMod as unknown as { client: DbClient }).client;
+		const orig = client.execute.bind(client);
 		let sqlCount = 0;
-		(client as any).execute = async (...args: any[]) => {
+		client.execute = async (...args: unknown[]) => {
 			sqlCount++;
-			return orig(...args);
+			return orig(...(args as unknown[]));
 		};
 
 		const feed = await getHomeFeed(current.id, { limit: 10 });
 		expect(feed.length).toBe(10);
 		expect(sqlCount).toBe(5);
 
-		(client as any).execute = orig;
+		client.execute = orig;
 	});
 
 	it("getUser (profile) executes expected number of queries", async () => {
@@ -65,12 +66,12 @@ describe("Query performance (N+1 guards)", () => {
 		await createTestPost(target.id, "p2");
 
 		const dbMod = await import("../db");
-		const client = (dbMod as any).client;
-		const orig = (client as any).execute.bind(client);
+		const client = (dbMod as unknown as { client: DbClient }).client;
+		const orig = client.execute.bind(client);
 		let sqlCount = 0;
-		(client as any).execute = async (...args: any[]) => {
+		client.execute = async (...args: unknown[]) => {
 			sqlCount++;
-			return orig(...args);
+			return orig(...(args as unknown[]));
 		};
 
 		const profile = await getUser(target.username, follower.id);
@@ -78,7 +79,7 @@ describe("Query performance (N+1 guards)", () => {
 		// user select + follower count + following count + post count + isFollowing check
 		expect(sqlCount).toBe(5);
 
-		(client as any).execute = orig;
+		client.execute = orig;
 	});
 
 	it("getBookmarkedPosts executes expected number of queries (10 bookmarks)", async () => {
@@ -92,18 +93,18 @@ describe("Query performance (N+1 guards)", () => {
 		}
 
 		const dbMod = await import("../db");
-		const client = (dbMod as any).client;
-		const orig = (client as any).execute.bind(client);
+		const client = (dbMod as unknown as { client: DbClient }).client;
+		const orig = client.execute.bind(client);
 		let sqlCount = 0;
-		(client as any).execute = async (...args: any[]) => {
+		client.execute = async (...args: unknown[]) => {
 			sqlCount++;
-			return orig(...args);
+			return orig(...(args as unknown[]));
 		};
 
 		const bookmarks = await getBookmarkedPosts(current.id, current.id, 10, 0);
 		expect(bookmarks.length).toBe(10);
 		expect(sqlCount).toBe(5);
 
-		(client as any).execute = orig;
+		client.execute = orig;
 	});
 });

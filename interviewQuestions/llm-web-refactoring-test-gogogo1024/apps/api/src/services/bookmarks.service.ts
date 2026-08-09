@@ -6,6 +6,20 @@ import { generateId } from "./utils";
 
 const { bookmarks, posts, users } = schema;
 
+type PostRow = {
+	id: string;
+	content: string;
+	createdAt: Date;
+	updatedAt: Date;
+	author?: { id: string; username: string; displayName: string; avatarUrl?: string | null } | null;
+};
+
+export type BookmarkedPost = PostRow & {
+	likeCount: number;
+	commentCount: number;
+	isLiked: boolean;
+};
+
 /**
  * Toggle bookmark for a post (create if not exists, delete if exists)
  */
@@ -97,8 +111,11 @@ export async function getBookmarkedPosts(
 		.leftJoin(users, eq(posts.authorId, users.id))
 		.where(inArray(posts.id, bookmarkedIds));
 
-	const postsMap: Record<string, any> = {};
-	postsRows.forEach((p) => (postsMap[p.id] = p));
+	const postsMap: Record<string, PostRow> = {};
+	postsRows.forEach((p) => {
+		const pr = p as unknown as PostRow;
+		postsMap[pr.id] = pr;
+	});
 
 	const countsMap = await getCountsForPostIds(bookmarkedIds, requesterId);
 
@@ -111,7 +128,7 @@ export async function getBookmarkedPosts(
 				likeCount: countsMap[post.id]?.likeCount || 0,
 				commentCount: countsMap[post.id]?.commentCount || 0,
 				isLiked: countsMap[post.id]?.isLiked || false,
-			};
+			} as BookmarkedPost;
 		})
-		.filter((p) => p !== null);
+		.filter((p): p is BookmarkedPost => p !== null);
 }

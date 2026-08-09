@@ -1,9 +1,10 @@
 import type { ISearchService, PostResponse } from "@chirp/proto";
 import { validateSessionToken } from "../../middleware/auth";
+import type { PostWithMeta } from "../../services/posts.service";
 import { searchPosts, searchUsers } from "../../services/search.service";
 import { toProtoTimestamp } from "../../services/utils";
 
-function toPostResponse(post: any): PostResponse {
+function toPostResponse(post: PostWithMeta): PostResponse {
 	return {
 		id: post.id,
 		content: post.content,

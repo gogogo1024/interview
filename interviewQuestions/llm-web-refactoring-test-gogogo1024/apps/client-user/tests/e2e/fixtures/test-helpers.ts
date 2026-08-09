@@ -1,4 +1,4 @@
-import { expect, type Page, type Response } from "@playwright/test";
+import { type Cookie, expect, type Page, type Response } from "@playwright/test";
 
 /**
  * Test user credentials from seed data
@@ -38,9 +38,11 @@ export async function waitForHydration(page: Page): Promise<void> {
 	// Remove Nitro / Vite error overlay if present
 	try {
 		await page.evaluate(() => {
-			document.querySelectorAll("vite-error-overlay").forEach((el) => el.remove());
+			document.querySelectorAll("vite-error-overlay").forEach((el) => {
+				el.remove();
+			});
 		});
-	} catch (e) {
+	} catch (_e) {
 		// ignore
 	}
 
@@ -86,7 +88,9 @@ export async function waitForCommentForm(page: Page, timeout = 15000) {
 	// Remove common dev overlays that can block visibility
 	try {
 		await page.evaluate(() => {
-			document.querySelectorAll("vite-error-overlay").forEach((el) => el.remove());
+			document.querySelectorAll("vite-error-overlay").forEach((el) => {
+				el.remove();
+			});
 		});
 	} catch {}
 
@@ -156,7 +160,7 @@ export async function clearBrowserState(page: Page): Promise<void> {
 				window.sessionStorage.clear();
 			} catch {}
 		});
-	} catch (e) {
+	} catch (_e) {
 		// ignore
 	}
 	// Neutral blank page
@@ -325,7 +329,7 @@ export async function loginAs(
 		try {
 			const cookies = await page.context().cookies();
 			console.log("[E2E-COOKIES]", JSON.stringify(cookies));
-		} catch (e) {
+		} catch (_e) {
 			// ignore cookie dump errors
 		}
 		// After cookie injection/reload, wait for the backend current-user call
@@ -352,10 +356,10 @@ export async function loginAs(
 					{ timeout: 15_000 },
 				)
 				.catch(() => {});
-		} catch (e) {
+		} catch (_e) {
 			// ignore waiting errors
 		}
-	} catch (e) {
+	} catch (_e) {
 		// ignore
 	}
 }
@@ -385,7 +389,7 @@ export async function apiLoginAs(
 	// and persist the HttpOnly session cookie set by the server.
 	try {
 		await page.evaluate(
-			async (fnUrl, email, password) => {
+			async ({ fnUrl, email, password }: { fnUrl: string; email: string; password: string }) => {
 				try {
 					await fetch(fnUrl, {
 						method: "POST",
@@ -395,13 +399,15 @@ export async function apiLoginAs(
 						},
 						body: JSON.stringify({ args: [{ data: { email, password } }] }),
 					});
-				} catch (e) {
-					// swallow errors - caller will fallback to UI login
+				} catch (_e) {
+					// ignore
 				}
 			},
-			`/ _serverFn/${LOGIN_FN_ID}`.replace(/\s+/g, ""),
-			credentials.email,
-			credentials.password,
+			{
+				fnUrl: `/_serverFn/${LOGIN_FN_ID}`.replace(/\s+/g, ""),
+				email: credentials.email,
+				password: credentials.password,
+			},
 		);
 
 		// Give the browser a moment to persist cookie and let client re-fetch user
@@ -409,7 +415,7 @@ export async function apiLoginAs(
 			await page.reload({ waitUntil: "networkidle" });
 		} catch {}
 		await waitForHydration(page);
-	} catch (e) {
+	} catch (_e) {
 		// swallow - fallback handled by caller
 	}
 }
@@ -430,7 +436,18 @@ export async function nodeApiLoginAs(
 	const url = `http://localhost:3000/api/e2e/login`;
 
 	try {
-		const fetch = (await import("node-fetch")).default as typeof globalThis.fetch;
+		type FetchResponse = { headers?: { raw?: () => Record<string, string[]> } };
+		type FetchFn = (
+			url: string,
+			init?: {
+				method?: string;
+				headers?: Record<string, string>;
+				body?: string;
+				redirect?: string;
+			},
+		) => Promise<FetchResponse>;
+
+		const fetch = (await import("node-fetch")).default as unknown as FetchFn;
 		const res = await fetch(url, {
 			method: "POST",
 			headers: { "Content-Type": "application/json" },
@@ -438,7 +455,7 @@ export async function nodeApiLoginAs(
 			redirect: "manual",
 		});
 
-		const raw = res.headers.raw ? (res.headers.raw() as Record<string, string[]>) : {};
+		const raw = res.headers?.raw ? (res.headers.raw() as Record<string, string[]>) : {};
 		const setCookie = raw["set-cookie"] || raw["Set-Cookie"] || [];
 		if (!setCookie || setCookie.length === 0) {
 			// no cookie set — let caller fallback to apiLoginAs/UI
@@ -451,7 +468,7 @@ export async function nodeApiLoginAs(
 			if (eq === -1) return [];
 			const name = pair.slice(0, eq);
 			const value = pair.slice(eq + 1);
-			const cookie: any = { name, value, url: "http://localhost", path: "/" };
+			const cookie = { name, value, url: "http://localhost", path: "/" } as unknown as Cookie;
 			for (const a of attrs) {
 				const [k, v] = a.split("=");
 				const key = k.toLowerCase();
@@ -460,19 +477,23 @@ export async function nodeApiLoginAs(
 				if (key === "path") cookie.path = v;
 				if (key === "httponly") cookie.httpOnly = true;
 				if (key === "secure") cookie.secure = true;
-				if (key === "samesite") cookie.sameSite = v; // Playwright accepts 'Lax'|'Strict'|'None'
+				if (key === "samesite") {
+					const s = v ? (v.charAt(0).toUpperCase() + v.slice(1).toLowerCase()) : undefined;
+					if (s === "Lax" || s === "Strict" || s === "None")
+						cookie.sameSite = s as "Lax" | "Strict" | "None";
+				}
 			}
 			return [cookie];
 		});
 
 		if (cookies.length) {
-			await page.context().addCookies(cookies as any);
+			await page.context().addCookies(cookies);
 			try {
 				await page.goto("/", { waitUntil: "networkidle" });
 			} catch {}
 			await waitForHydration(page);
 		}
-	} catch (e) {
+	} catch (_e) {
 		// swallow errors — fallback handled by loginAs
 		return;
 	}
@@ -570,11 +591,7 @@ export async function waitForNotificationsSettled(page: Page, timeout = 15_000):
 						if (card.textContent && /no notifications yet/i.test(card.textContent)) return true;
 					}
 					// fallback: global empty-state text
-					if (
-						document.body &&
-						document.body.innerText &&
-						/no notifications yet/i.test(document.body.innerText)
-					)
+					if (document.body?.innerText && /no notifications yet/i.test(document.body.innerText))
 						return true;
 					return false;
 				} catch {

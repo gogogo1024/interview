@@ -10,6 +10,7 @@ export * from "react-dom/server.browser";
 import * as _server from "react-dom/server.browser";
 
 // Provide a cheap default export that proxies the named exports.
-const serverDefault: any = _server || {};
+// Use the actual module type for compatibility instead of `any`.
+const serverDefault = (_server || {}) as typeof _server;
 
 export default serverDefault;

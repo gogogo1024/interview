@@ -1,19 +1,22 @@
 import { beforeEach, vi } from "vitest";
+import type { DbClient } from "../src/db";
 
 export async function resetDatabase() {
 	const { client } = await import("../src/db");
 
-	await (client as any).execute("PRAGMA foreign_keys = OFF");
-	await (client as any).execute("DELETE FROM audit_logs");
-	await (client as any).execute("DELETE FROM reports");
-	await (client as any).execute("DELETE FROM notifications");
-	await (client as any).execute("DELETE FROM bookmarks");
-	await (client as any).execute("DELETE FROM follows");
-	await (client as any).execute("DELETE FROM likes");
-	await (client as any).execute("DELETE FROM comments");
-	await (client as any).execute("DELETE FROM posts");
-	await (client as any).execute("DELETE FROM users");
-	await (client as any).execute("PRAGMA foreign_keys = ON");
+	const dbClient = client as unknown as DbClient;
+
+	await dbClient.execute("PRAGMA foreign_keys = OFF");
+	await dbClient.execute("DELETE FROM audit_logs");
+	await dbClient.execute("DELETE FROM reports");
+	await dbClient.execute("DELETE FROM notifications");
+	await dbClient.execute("DELETE FROM bookmarks");
+	await dbClient.execute("DELETE FROM follows");
+	await dbClient.execute("DELETE FROM likes");
+	await dbClient.execute("DELETE FROM comments");
+	await dbClient.execute("DELETE FROM posts");
+	await dbClient.execute("DELETE FROM users");
+	await dbClient.execute("PRAGMA foreign_keys = ON");
 }
 
 // Mock the database module before any imports

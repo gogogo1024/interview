@@ -5,6 +5,11 @@ import type {
 	ReportResponse,
 } from "@chirp/proto";
 import { requireAdmin, validateSessionToken } from "../../middleware/auth";
+import type {
+	AdminUser,
+	AuditLogWithUsername,
+	ReportWithUsername,
+} from "../../services/admin.service";
 import {
 	banUser,
 	deleteCommentAdmin,
@@ -22,7 +27,7 @@ import {
 } from "../../services/admin.service";
 import { toProtoTimestamp } from "../../services/utils";
 
-function toAdminUserResponse(user: any): AdminUserResponse {
+function toAdminUserResponse(user: AdminUser): AdminUserResponse {
 	return {
 		id: user.id,
 		email: user.email,
@@ -40,7 +45,7 @@ function toAdminUserResponse(user: any): AdminUserResponse {
 	};
 }
 
-function toReportResponse(report: any): ReportResponse {
+function toReportResponse(report: ReportWithUsername): ReportResponse {
 	return {
 		id: report.id,
 		reporterId: report.reporterId,
@@ -56,7 +61,7 @@ function toReportResponse(report: any): ReportResponse {
 	};
 }
 
-function toAuditLogResponse(log: any): AuditLogResponse {
+function toAuditLogResponse(log: AuditLogWithUsername): AuditLogResponse {
 	return {
 		id: log.id,
 		adminId: log.adminId,

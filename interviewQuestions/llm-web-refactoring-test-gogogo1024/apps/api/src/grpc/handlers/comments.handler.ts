@@ -1,9 +1,10 @@
 import type { CommentResponse, ICommentsService } from "@chirp/proto";
 import { validateSessionToken } from "../../middleware/auth";
+import type { CommentWithMeta } from "../../services/comments.service";
 import { createComment, deleteComment, getPostComments } from "../../services/comments.service";
 import { toProtoTimestamp } from "../../services/utils";
 
-function toCommentResponse(comment: any): CommentResponse {
+function toCommentResponse(comment: CommentWithMeta): CommentResponse {
 	return {
 		id: comment.id,
 		content: comment.content,

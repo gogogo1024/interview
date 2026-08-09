@@ -11,6 +11,27 @@ shell_quote() {
   printf "'%s'" "$(printf '%s' "$1" | sed "s/'/'\"'\"'/g")"
 }
 
+# Run a command, tee output to $outlog, and copy any generated trace.zip to /tmp/playwright-reruns
+run_and_copy() {
+  local cmd="$1"
+  echo "Running: $cmd" >&2
+  mkdir -p /tmp/playwright-reruns
+  # execute the command and capture output
+  if bash -lc "$cmd" 2>&1 | tee "$outlog"; then
+    # copy any trace.zip files produced under test-results
+    find . -path "*/test-results/*/trace.zip" -type f -print0 2>/dev/null | while IFS= read -r -d '' f; do
+      dname=$(basename "$(dirname "$f")")
+      cp -v "$f" "/tmp/playwright-reruns/${name}.${TIMESTAMP}.${dname}.trace.zip" >>"$outlog" 2>&1 || true
+    done
+    # copy the run log
+    cp -v "$outlog" "/tmp/playwright-reruns/${name}.${TIMESTAMP}.log" || true
+    return 0
+  else
+    cp -v "$outlog" "/tmp/playwright-reruns/${name}.${TIMESTAMP}.log" || true
+    return 1
+  fi
+}
+
 TOP10="/tmp/playwright-traces/summaries/top10.txt"
 if [ ! -f "$TOP10" ]; then
   echo "Top10 missing: $TOP10" >&2
@@ -114,6 +135,14 @@ process_line() {
   export PLAYWRIGHT_STORAGE_STATE="/tmp/playwright-client-user-$(date +%s)-$$.json"
   TIMESTAMP=$(date +%s)
   outlog="/tmp/playwright-reruns/${name}.${TIMESTAMP}.log"
+
+  # If we couldn't resolve a spec path, skip running playwright to avoid executing an empty spec
+  if [ -z "${specpath:-}" ] || [ ! -f "${specpath:-}" ]; then
+    echo "Skipping run: no spec file for '$name' (prefix: $prefix)" >&2
+    mkdir -p /tmp/playwright-reruns
+    echo "No spec file found for $name (prefix: $prefix)" > "/tmp/playwright-reruns/${name}.nomatch.log"
+    return
+  fi
 
   # attempt runs
   if [ -n "$test_title" ]; then

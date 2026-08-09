@@ -1,9 +1,10 @@
 import type { IFeedService, PostResponse } from "@chirp/proto";
 import { validateSessionToken } from "../../middleware/auth";
 import { getExploreFeed, getHomeFeed } from "../../services/feed.service";
+import type { PostWithMeta } from "../../services/posts.service";
 import { toProtoTimestamp } from "../../services/utils";
 
-function toPostResponse(post: any): PostResponse {
+function toPostResponse(post: PostWithMeta): PostResponse {
 	return {
 		id: post.id,
 		content: post.content,

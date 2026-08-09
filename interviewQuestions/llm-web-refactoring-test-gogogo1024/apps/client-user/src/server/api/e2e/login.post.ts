@@ -1,3 +1,4 @@
+import type { H3Event } from "h3";
 import { defineEventHandler, readBody } from "h3";
 import { getGrpcClient } from "../../../lib/grpc.server";
 import { setSessionData } from "../../../lib/session.server";
@@ -9,8 +10,8 @@ import { setSessionData } from "../../../lib/session.server";
  * On success: sets the same `chirp-session` cookie as normal login and returns { success, userId }
  * This endpoint is intended for test use only and should not be exposed in production.
  */
-export default defineEventHandler(async (event) => {
-	const body = (await readBody(event)) as any;
+export default defineEventHandler(async (event: H3Event) => {
+	const body = (await readBody(event)) as { email?: string; password?: string } | undefined;
 	const email = body?.email;
 	const password = body?.password;
 
@@ -44,8 +45,9 @@ export default defineEventHandler(async (event) => {
 		});
 
 		return { success: true, userId: response.userId };
-	} catch (err: any) {
+	} catch (err: unknown) {
 		event.res.statusCode = 500;
-		return { success: false, error: String(err?.message || err) };
+		const message = err instanceof Error ? err.message : String(err);
+		return { success: false, error: message };
 	}
 });

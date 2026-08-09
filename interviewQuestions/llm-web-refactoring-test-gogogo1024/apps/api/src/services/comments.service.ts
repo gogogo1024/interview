@@ -15,6 +15,24 @@ export interface CreateCommentInput {
 	parentId?: string;
 }
 
+export interface CommentAuthor {
+	id: string;
+	username: string;
+	displayName: string;
+	avatarUrl?: string | null;
+}
+
+export interface CommentWithMeta {
+	id: string;
+	content: string;
+	createdAt: Date;
+	parentId?: string | null;
+	author?: CommentAuthor | null;
+	likeCount: number;
+	isLiked: boolean;
+	replies: CommentWithMeta[];
+}
+
 // Comment like info is provided by commentMetrics service (batch)
 
 export async function createComment(input: CreateCommentInput) {
@@ -71,7 +89,7 @@ export async function createComment(input: CreateCommentInput) {
 	return { commentId };
 }
 
-export async function getPostComments(postId: string, userId?: string) {
+export async function getPostComments(postId: string, userId?: string): Promise<CommentWithMeta[]> {
 	// Get top-level comments
 	const topLevelComments = await db
 		.select({
@@ -114,17 +132,29 @@ export async function getPostComments(postId: string, userId?: string) {
 	const allIds = [...topLevelIds, ...replies.map((r) => r.id)];
 	const likeInfoMap = await getCommentLikesForIds(allIds, userId);
 
-	const repliesByParent: Record<string, any[]> = {};
+	const repliesByParent: Record<string, CommentWithMeta[]> = {};
 	replies.forEach((r) => {
 		if (!r.parentId) return;
-		const parentReplies = repliesByParent[r.parentId] || [];
-		parentReplies.push({ ...r, ...likeInfoMap[r.id], replies: [] });
+		const parentReplies = (repliesByParent[r.parentId] as CommentWithMeta[]) || [];
+		parentReplies.push({
+			id: r.id,
+			content: r.content,
+			createdAt: r.createdAt,
+			parentId: r.parentId,
+			author: r.author || null,
+			...(likeInfoMap[r.id] as { likeCount: number; isLiked: boolean }),
+			replies: [],
+		});
 		repliesByParent[r.parentId] = parentReplies;
 	});
 
 	return topLevelComments.map((comment) => ({
-		...comment,
-		...likeInfoMap[comment.id],
+		id: comment.id,
+		content: comment.content,
+		createdAt: comment.createdAt,
+		parentId: comment.parentId,
+		author: comment.author || null,
+		...(likeInfoMap[comment.id] as { likeCount: number; isLiked: boolean }),
 		replies: repliesByParent[comment.id] || [],
 	}));
 }

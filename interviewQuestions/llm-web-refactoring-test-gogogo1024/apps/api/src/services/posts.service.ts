@@ -12,6 +12,24 @@ export interface CreatePostInput {
 	authorId: string;
 }
 
+export interface PostAuthor {
+	id: string;
+	username: string;
+	displayName: string;
+	avatarUrl?: string | null;
+}
+
+export interface PostWithMeta {
+	id: string;
+	content: string;
+	createdAt: Date;
+	updatedAt: Date;
+	author?: PostAuthor | null;
+	likeCount: number;
+	commentCount: number;
+	isLiked: boolean;
+}
+
 export interface UpdatePostInput {
 	postId: string;
 	content: string;

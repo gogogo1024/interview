@@ -1,5 +1,5 @@
+import os from "node:os";
 import { defineConfig, devices } from "@playwright/test";
-import os from "os";
 
 // Auto-configure workers: prefer PW_WORKERS env, on CI use 1, otherwise use
 // (cpus - 1) locally to leave one core free for system tasks.

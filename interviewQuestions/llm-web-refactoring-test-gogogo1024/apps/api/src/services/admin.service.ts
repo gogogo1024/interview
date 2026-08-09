@@ -1,9 +1,20 @@
+import type { AuditLog as DbAuditLog, Report as DbReport, User as DbUser } from "@chirp/db-schema";
 import { desc, eq, gte, like, or, sql } from "drizzle-orm";
 import { db, schema } from "../db";
 import { badRequest, forbidden, notFound } from "../observability/errors";
 import { generateId } from "./utils";
 
 const { users, posts, comments, reports, auditLogs } = schema;
+
+// The service returns user rows without sensitive fields like `passwordHash`
+// and `bannedBy` (they are intentionally excluded from selects). Represent
+// the runtime shape accurately by omitting those fields.
+export type AdminUser = Omit<DbUser, "passwordHash" | "bannedBy"> & {
+	postCount: number;
+	commentCount: number;
+};
+export type ReportWithUsername = DbReport & { reporterUsername: string };
+export type AuditLogWithUsername = DbAuditLog & { adminUsername: string };
 
 interface ListUsersOptions {
 	limit?: number;
