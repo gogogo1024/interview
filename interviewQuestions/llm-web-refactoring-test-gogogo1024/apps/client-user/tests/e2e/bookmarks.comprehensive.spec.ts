@@ -2,7 +2,7 @@ import { expect, test } from "@playwright/test";
 
 test.describe.configure({ mode: "serial" });
 
-import { createPost, loginAs, uniqueId, waitForHydration } from "./fixtures/test-helpers";
+import { createPost, loginAs, logout, uniqueId, waitForHydration } from "./fixtures/test-helpers";
 
 test.describe("Bookmarks - Comprehensive", () => {
 	test.beforeEach(async ({ page }) => {
@@ -253,9 +253,8 @@ test.describe("Bookmarks - Comprehensive", () => {
 			await page.goto("/", { waitUntil: "networkidle" });
 			await waitForHydration(page);
 
-			// Log out (use waitForURL to ensure logout completes)
-			const logoutButton = page.locator('button[title="Logout"]');
-			await logoutButton.click();
+			// Log out (use helper to ensure robust logout)
+			await logout(page);
 			await page.waitForURL(/\/auth\/login/, { timeout: 10000 });
 			await waitForHydration(page);
 

@@ -11,7 +11,10 @@ export default defineConfig({
 	reporter: "html",
 	use: {
 		baseURL: "http://localhost:3002",
-		trace: "on-first-retry",
+		trace: "off",
+		// Allow overriding storage state path via env var to avoid cross-project collisions.
+		// When not set, no global storage state will be loaded.
+		storageState: process.env.PLAYWRIGHT_STORAGE_STATE || undefined,
 	},
 	projects: [
 		{

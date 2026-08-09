@@ -2,9 +2,20 @@ import { expect, test } from "@playwright/test";
 
 test.describe.configure({ mode: "serial" });
 
-import { loginAs, TEST_USERS, uniqueId, waitForHydration } from "./fixtures/test-helpers";
+import {
+	clearBrowserState,
+	loginAs,
+	TEST_USERS,
+	uniqueId,
+	waitForHydration,
+} from "./fixtures/test-helpers";
 
 test.describe("Authentication - Comprehensive", () => {
+	// Ensure each test starts without pre-existing session state to avoid
+	// global `storageState` pollution affecting unauthenticated assertions.
+	test.beforeEach(async ({ page }) => {
+		await clearBrowserState(page);
+	});
 	test.describe("Registration", () => {
 		test("should register a new user with valid data", async ({ page }) => {
 			const uniqueEmail = `newuser_${uniqueId()}@example.com`;
@@ -37,8 +48,13 @@ test.describe("Authentication - Comprehensive", () => {
 
 			await page.click('button[type="submit"]');
 
-			// Should show error for duplicate email
-			await expect(page.getByText(/already|exists|taken/i)).toBeVisible();
+			// Should show error for duplicate email (match the error box specifically)
+			await expect(
+				page
+					.locator("div")
+					.filter({ hasText: /already|exists|taken/i })
+					.first(),
+			).toBeVisible();
 		});
 
 		test("should show error for existing username", async ({ page }) => {
@@ -53,8 +69,13 @@ test.describe("Authentication - Comprehensive", () => {
 
 			await page.click('button[type="submit"]');
 
-			// Should show error for duplicate username
-			await expect(page.getByText(/already|exists|taken/i)).toBeVisible();
+			// Should show error for duplicate username (match the error box specifically)
+			await expect(
+				page
+					.locator("div")
+					.filter({ hasText: /already|exists|taken/i })
+					.first(),
+			).toBeVisible();
 		});
 
 		test("should validate password confirmation", async ({ page }) => {

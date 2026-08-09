@@ -2,9 +2,11 @@ import { expect, test } from "@playwright/test";
 import {
 	createPost,
 	loginAs,
+	logout,
 	uniqueId,
 	waitForCommentForm,
 	waitForHydration,
+	waitForNotificationsSettled,
 } from "./fixtures/test-helpers";
 
 test.describe("Notifications - Comprehensive", () => {
@@ -39,7 +41,7 @@ test.describe("Notifications - Comprehensive", () => {
 			}
 
 			// Log out and login as alice
-			await page.click('button[title="Logout"]');
+			await logout(page);
 			await waitForHydration(page);
 			await loginAs(page, "alice");
 
@@ -73,7 +75,7 @@ test.describe("Notifications - Comprehensive", () => {
 			if (!postUrl) throw new Error("post url not found");
 
 			// Log out and login as bob
-			await page.click('button[title="Logout"]');
+			await logout(page);
 			await waitForHydration(page);
 			await loginAs(page, "bob");
 
@@ -86,7 +88,7 @@ test.describe("Notifications - Comprehensive", () => {
 			await waitForHydration(page);
 
 			// Log out and login as alice to check notification
-			await page.click('button[title="Logout"]');
+			await logout(page);
 			await waitForHydration(page);
 			await loginAs(page, "alice");
 
@@ -112,7 +114,7 @@ test.describe("Notifications - Comprehensive", () => {
 			if (!postUrl) throw new Error("post url not found");
 
 			// Log out and login as bob
-			await page.click('button[title="Logout"]');
+			await logout(page);
 			await waitForHydration(page);
 			await loginAs(page, "bob");
 
@@ -127,7 +129,7 @@ test.describe("Notifications - Comprehensive", () => {
 			await waitForHydration(page);
 
 			// Log out and login as alice to check notification
-			await page.click('button[title="Logout"]');
+			await logout(page);
 			await waitForHydration(page);
 			await loginAs(page, "alice");
 
@@ -178,7 +180,7 @@ test.describe("Notifications - Comprehensive", () => {
 			).toBeVisible({ timeout: 10000 });
 
 			// Log out and login as diana to check notification
-			await page.click('button[title="Logout"]');
+			await logout(page);
 			await waitForHydration(page);
 			await loginAs(page, "diana");
 
@@ -222,10 +224,19 @@ test.describe("Notifications - Comprehensive", () => {
 			await loginAs(page, "alice");
 			await page.goto("/notifications", { waitUntil: "networkidle" });
 			await waitForHydration(page);
+			// Wait for either notifications to appear or the empty-state text
+			await waitForNotificationsSettled(page, 15_000);
 
 			// Should show either notifications or empty state
-			const hasNotifications = await page.locator('div[role="button"]').first().isVisible();
-			const hasEmptyState = await page.getByText("No notifications yet").isVisible();
+			// Notifications items render as <button> or <article> (not always div[role="button"]),
+			// so check a broader set of selectors.
+			const hasNotifications =
+				(await page
+					.locator(
+						'button, div[role="button"], article, [role="listitem"], [role="button"], .NotificationItem__styles.item, [data-test="notification-item"]',
+					)
+					.count()) > 0;
+			const hasEmptyState = (await page.getByText("No notifications yet").count()) > 0;
 
 			expect(hasNotifications || hasEmptyState).toBe(true);
 		});

@@ -146,7 +146,7 @@ export function CommentForm({
 	};
 
 	return (
-		<form onSubmit={handleSubmit} {...stylex.props(styles.form)}>
+		<form data-test="comment-form" onSubmit={handleSubmit} {...stylex.props(styles.form)}>
 			{error && (
 				<div {...stylex.props(styles.errorBox)}>
 					<AlertCircle {...stylex.props(styles.errorIcon)} size={16} />
@@ -155,6 +155,7 @@ export function CommentForm({
 			)}
 			<div {...stylex.props(styles.inputWrapper, isFocused && styles.inputWrapperFocused)}>
 				<textarea
+					data-test="comment-input"
 					value={content}
 					onChange={(e) => setContent(e.target.value)}
 					onFocus={() => setIsFocused(true)}

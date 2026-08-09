@@ -5,6 +5,7 @@ test.describe.configure({ mode: "serial" });
 import {
 	createPost,
 	loginAs,
+	logout,
 	uniqueId,
 	waitForCommentForm,
 	waitForHydration,
@@ -171,7 +172,7 @@ test.describe("Mentions - Comprehensive", () => {
 			await createPost(page, content);
 
 			// Log out and login as bob
-			await page.click('button[title="Logout"]');
+			await logout(page);
 			await waitForHydration(page);
 			await loginAs(page, "bob");
 
@@ -204,7 +205,7 @@ test.describe("Mentions - Comprehensive", () => {
 			await waitForHydration(page);
 
 			// Log out and login as bob
-			await page.click('button[title="Logout"]');
+			await logout(page);
 			await waitForHydration(page);
 			await loginAs(page, "bob");
 
@@ -243,7 +244,7 @@ test.describe("Mentions - Comprehensive", () => {
 			await createPost(page, content);
 
 			// Log out and login as bob
-			await page.click('button[title="Logout"]');
+			await logout(page);
 			await waitForHydration(page);
 			await loginAs(page, "bob");
 

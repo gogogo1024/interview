@@ -14,7 +14,9 @@ export function getGrpcClient(): ChirpClient {
 	if (!grpcClient) {
 		grpcClient = createChirpClient({
 			host: GRPC_HOST,
-			secure: process.env.NODE_ENV === "production",
+			// For testing and development, always use insecure connections
+			// In production with proper TLS setup, this should be true
+			secure: false,
 		});
 	}
 	return grpcClient;

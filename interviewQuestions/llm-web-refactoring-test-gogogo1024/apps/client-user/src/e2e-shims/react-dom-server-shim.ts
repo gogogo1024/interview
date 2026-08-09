@@ -5,9 +5,9 @@
 // This shim re-exports named exports from the real browser entry and
 // also provides a default export object for compatibility.
 
-export * from 'react-dom/server.browser';
+export * from "react-dom/server.browser";
 
-import * as _server from 'react-dom/server.browser';
+import * as _server from "react-dom/server.browser";
 
 // Provide a cheap default export that proxies the named exports.
 const serverDefault: any = _server || {};

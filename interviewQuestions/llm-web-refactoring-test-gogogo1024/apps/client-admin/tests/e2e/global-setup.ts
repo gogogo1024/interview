@@ -1,3 +1,21 @@
+import { test } from "@playwright/test";
+
+// Ensure each admin test starts with a clean browser context to avoid session reuse
+test.beforeEach(async ({ page }) => {
+	try {
+		await page.context().clearCookies();
+		await page.evaluate(() => {
+			try {
+				window.localStorage.clear();
+				window.sessionStorage.clear();
+			} catch {}
+		});
+		await page.goto("about:blank");
+	} catch {
+		// ignore
+	}
+});
+
 import type { FullConfig } from "@playwright/test";
 
 /**

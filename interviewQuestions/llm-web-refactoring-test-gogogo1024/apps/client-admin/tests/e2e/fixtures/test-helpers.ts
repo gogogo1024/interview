@@ -47,9 +47,7 @@ export async function waitForHydration(page: Page) {
 
 	try {
 		await page.evaluate(() => {
-			document
-				.querySelectorAll("vite-error-overlay")
-				.forEach(el => el.remove());
+			document.querySelectorAll("vite-error-overlay").forEach((el) => el.remove());
 		});
 	} catch (err) {
 		console.error(err);
@@ -108,10 +106,10 @@ export async function loginAsAdmin(
 
 		await page.fill('input[name="email"]', credentials.email);
 		await page.fill('input[name="password"]', credentials.password);
-		
+
 		// TanStack Router uses client-side navigation, not browser navigation
 		await page.click('button[type="submit"]');
-		
+
 		try {
 			// Wait for URL to change away from login page (TanStack Router client-side navigation)
 			await page.waitForFunction(
@@ -120,20 +118,22 @@ export async function loginAsAdmin(
 					// Admin might redirect to / or /dashboard
 					return url === "/" || url === "" || url === "/dashboard";
 				},
-				{ timeout: 10000 }
+				{ timeout: 10000 },
 			);
-			
+
 			// Verify we're not on login page anymore
 			const finalUrl = page.url();
 			if (finalUrl.includes("/login")) {
 				throw new Error("Still on login page");
 			}
-			
+
 			loggedIn = true;
 			break;
 		} catch (err) {
 			const currentUrl = page.url();
-			console.log(`Admin login attempt ${attempt} failed. Current URL: ${currentUrl}. Error: ${err}`);
+			console.log(
+				`Admin login attempt ${attempt} failed. Current URL: ${currentUrl}. Error: ${err}`,
+			);
 			if (attempt < 3) {
 				await page.context().clearCookies();
 			}

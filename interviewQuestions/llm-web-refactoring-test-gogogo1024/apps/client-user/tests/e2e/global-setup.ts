@@ -1,3 +1,11 @@
+import { test } from "@playwright/test";
+import { clearBrowserState } from "./fixtures/test-helpers";
+
+// Ensure each test starts with a clean browser context to avoid session/account reuse
+test.beforeEach(async ({ page }) => {
+	await clearBrowserState(page);
+});
+
 import type { FullConfig } from "@playwright/test";
 
 /**
