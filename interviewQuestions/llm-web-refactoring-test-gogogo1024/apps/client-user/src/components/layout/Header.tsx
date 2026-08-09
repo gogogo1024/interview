@@ -262,7 +262,7 @@ export function Header() {
 					{/* User Actions */}
 					{user && (
 						<div {...stylex.props(styles.userActions)}>
-						<NotificationBell isActive={isActive("/notifications")} />
+							<NotificationBell isActive={isActive("/notifications")} />
 
 							<Link
 								to="/users/$username"

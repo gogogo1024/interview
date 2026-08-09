@@ -267,10 +267,10 @@ function LoginPage() {
 			console.log("Starting login with email:", email);
 			const result = await loginUser({ data: { email, password } });
 			console.log("Login successful:", result);
-			
+
 			// Give the session a moment to be set on the server
-			await new Promise(resolve => setTimeout(resolve, 300));
-			
+			await new Promise((resolve) => setTimeout(resolve, 300));
+
 			console.log("Navigating to home page...");
 			await navigate({ to: "/" });
 			console.log("Navigation complete");

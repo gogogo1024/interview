@@ -1,4 +1,4 @@
-import { createHash } from "crypto";
+import { createHash } from "node:crypto";
 import { eq } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 import { createTestUser } from "../../tests/helpers";
@@ -66,9 +66,7 @@ describe("AuthService", () => {
 		const username = `legacyuser-${Date.now()}`;
 		const password = "legacy-pass-123";
 
-		const legacyHash = createHash("sha256")
-			.update(password + "salt")
-			.digest("hex");
+		const legacyHash = createHash("sha256").update(`${password}salt`).digest("hex");
 
 		await db.insert(users).values({
 			id,

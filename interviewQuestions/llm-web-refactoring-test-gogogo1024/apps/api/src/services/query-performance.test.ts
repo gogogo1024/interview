@@ -31,11 +31,15 @@ describe("Query performance (N+1 guards)", () => {
 			await createTestPost(author.id, `post-${i}`);
 		}
 
-		const dbMod = await import("../db");
-		const client = (dbMod as any).client;
-		const orig = (client as any).execute.bind(client);
+		const dbMod = (await import("../db")) as unknown as {
+			client: { execute: (...args: unknown[]) => Promise<unknown> };
+		};
+		const client = dbMod.client;
+		const orig = client.execute.bind(client);
 		let sqlCount = 0;
-		(client as any).execute = async (...args: any[]) => {
+		(client as { execute: (...args: unknown[]) => Promise<unknown> }).execute = async (
+			...args: unknown[]
+		) => {
 			sqlCount++;
 			return orig(...args);
 		};
@@ -44,7 +48,7 @@ describe("Query performance (N+1 guards)", () => {
 		expect(feed.length).toBe(10);
 		expect(sqlCount).toBe(5);
 
-		(client as any).execute = orig;
+		(client as { execute: (...args: unknown[]) => Promise<unknown> }).execute = orig;
 	});
 
 	it("getUser (profile) executes expected number of queries", async () => {
@@ -64,11 +68,15 @@ describe("Query performance (N+1 guards)", () => {
 		await createTestPost(target.id, "p1");
 		await createTestPost(target.id, "p2");
 
-		const dbMod = await import("../db");
-		const client = (dbMod as any).client;
-		const orig = (client as any).execute.bind(client);
+		const dbMod = (await import("../db")) as unknown as {
+			client: { execute: (...args: unknown[]) => Promise<unknown> };
+		};
+		const client = dbMod.client;
+		const orig = client.execute.bind(client);
 		let sqlCount = 0;
-		(client as any).execute = async (...args: any[]) => {
+		(client as { execute: (...args: unknown[]) => Promise<unknown> }).execute = async (
+			...args: unknown[]
+		) => {
 			sqlCount++;
 			return orig(...args);
 		};
@@ -78,7 +86,7 @@ describe("Query performance (N+1 guards)", () => {
 		// user select + follower count + following count + post count + isFollowing check
 		expect(sqlCount).toBe(5);
 
-		(client as any).execute = orig;
+		(client as { execute: (...args: unknown[]) => Promise<unknown> }).execute = orig;
 	});
 
 	it("getBookmarkedPosts executes expected number of queries (10 bookmarks)", async () => {
@@ -91,11 +99,15 @@ describe("Query performance (N+1 guards)", () => {
 			await toggleBookmark(postId, current.id);
 		}
 
-		const dbMod = await import("../db");
-		const client = (dbMod as any).client;
-		const orig = (client as any).execute.bind(client);
+		const dbMod = (await import("../db")) as unknown as {
+			client: { execute: (...args: unknown[]) => Promise<unknown> };
+		};
+		const client = dbMod.client;
+		const orig = client.execute.bind(client);
 		let sqlCount = 0;
-		(client as any).execute = async (...args: any[]) => {
+		(client as { execute: (...args: unknown[]) => Promise<unknown> }).execute = async (
+			...args: unknown[]
+		) => {
 			sqlCount++;
 			return orig(...args);
 		};
@@ -104,6 +116,6 @@ describe("Query performance (N+1 guards)", () => {
 		expect(bookmarks.length).toBe(10);
 		expect(sqlCount).toBe(5);
 
-		(client as any).execute = orig;
+		(client as { execute: (...args: unknown[]) => Promise<unknown> }).execute = orig;
 	});
 });

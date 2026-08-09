@@ -22,51 +22,93 @@ import {
 } from "../../services/admin.service";
 import { toProtoTimestamp } from "../../services/utils";
 
-function toAdminUserResponse(user: any): AdminUserResponse {
+function toAdminUserResponse(user: unknown): AdminUserResponse {
+	const u = user as {
+		id: string;
+		email: string;
+		username: string;
+		displayName?: string;
+		avatarUrl?: string | null;
+		bio?: string | null;
+		role: string;
+		createdAt: string | number | Date;
+		updatedAt: string | number | Date;
+		bannedAt?: string | number | Date | null;
+		bannedReason?: string | null;
+		postCount?: number;
+		commentCount?: number;
+	};
+
 	return {
-		id: user.id,
-		email: user.email,
-		username: user.username,
-		displayName: user.displayName,
-		avatarUrl: user.avatarUrl || undefined,
-		bio: user.bio || undefined,
-		role: user.role,
-		createdAt: toProtoTimestamp(user.createdAt),
-		updatedAt: toProtoTimestamp(user.updatedAt),
-		bannedAt: user.bannedAt ? toProtoTimestamp(user.bannedAt) : undefined,
-		bannedReason: user.bannedReason || undefined,
-		postCount: user.postCount || 0,
-		commentCount: user.commentCount || 0,
+		id: u.id,
+		email: u.email,
+		username: u.username,
+		displayName: u.displayName || "",
+		avatarUrl: u.avatarUrl || undefined,
+		bio: u.bio || undefined,
+		role: u.role,
+		createdAt: toProtoTimestamp(new Date(u.createdAt)),
+		updatedAt: toProtoTimestamp(new Date(u.updatedAt)),
+		bannedAt: u.bannedAt ? toProtoTimestamp(new Date(u.bannedAt)) : undefined,
+		bannedReason: u.bannedReason || undefined,
+		postCount: u.postCount || 0,
+		commentCount: u.commentCount || 0,
 	};
 }
 
-function toReportResponse(report: any): ReportResponse {
+function toReportResponse(report: unknown): ReportResponse {
+	const r = report as {
+		id: string;
+		reporterId: string;
+		reporterUsername?: string;
+		targetType: string;
+		targetId: string;
+		reason: string;
+		description?: string | null;
+		status: string;
+		reviewedBy?: string | null;
+		reviewedAt?: string | number | Date | null;
+		createdAt: string | number | Date;
+	};
+
 	return {
-		id: report.id,
-		reporterId: report.reporterId,
-		reporterUsername: report.reporterUsername,
-		targetType: report.targetType,
-		targetId: report.targetId,
-		reason: report.reason,
-		description: report.description || undefined,
-		status: report.status,
-		reviewedBy: report.reviewedBy || undefined,
-		reviewedAt: report.reviewedAt ? toProtoTimestamp(report.reviewedAt) : undefined,
-		createdAt: toProtoTimestamp(report.createdAt),
+		id: r.id,
+		reporterId: r.reporterId,
+		reporterUsername: r.reporterUsername || "",
+		targetType: r.targetType,
+		targetId: r.targetId,
+		reason: r.reason,
+		description: r.description || undefined,
+		status: r.status,
+		reviewedBy: r.reviewedBy || undefined,
+		reviewedAt: r.reviewedAt ? toProtoTimestamp(new Date(r.reviewedAt)) : undefined,
+		createdAt: toProtoTimestamp(new Date(r.createdAt)),
 	};
 }
 
-function toAuditLogResponse(log: any): AuditLogResponse {
+function toAuditLogResponse(log: unknown): AuditLogResponse {
+	const l = log as {
+		id: string;
+		adminId: string;
+		adminUsername?: string;
+		action: string;
+		targetType?: string | null;
+		targetId?: string | null;
+		details?: string | null;
+		ipAddress?: string | null;
+		createdAt: string | number | Date;
+	};
+
 	return {
-		id: log.id,
-		adminId: log.adminId,
-		adminUsername: log.adminUsername,
-		action: log.action,
-		targetType: log.targetType || undefined,
-		targetId: log.targetId || undefined,
-		details: log.details || undefined,
-		ipAddress: log.ipAddress || undefined,
-		createdAt: toProtoTimestamp(log.createdAt),
+		id: l.id,
+		adminId: l.adminId,
+		adminUsername: l.adminUsername || "",
+		action: l.action,
+		targetType: l.targetType || undefined,
+		targetId: l.targetId || undefined,
+		details: l.details || undefined,
+		ipAddress: l.ipAddress || undefined,
+		createdAt: toProtoTimestamp(new Date(l.createdAt)),
 	};
 }
 

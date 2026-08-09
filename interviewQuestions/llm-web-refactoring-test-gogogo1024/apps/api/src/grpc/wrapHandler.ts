@@ -3,7 +3,7 @@ import { getTraceId, runWithNewTrace } from "../observability/context";
 import { logger } from "../observability/logger";
 import { generateId } from "../services/utils";
 
-type HandlerFn = (...args: any[]) => Promise<any>;
+type HandlerFn = (...args: unknown[]) => Promise<unknown>;
 
 interface MetadataSink {
 	sendMetadata(metadata: grpc.Metadata): void;
@@ -50,7 +50,7 @@ export function wrapGrpcHandler<T extends object>(handler: T, serviceName: strin
 		const orig = (handler as Record<string, unknown>)[key];
 		if (typeof orig !== "function") continue;
 
-		wrapped[key] = (async (...args: any[]) => {
+		wrapped[key] = (async (...args: unknown[]) => {
 			const traceId = generateId();
 			return runWithNewTrace(async () => {
 				const method = `${serviceName}.${key}`;
@@ -77,10 +77,10 @@ export function wrapGrpcHandler<T extends object>(handler: T, serviceName: strin
 
 					logger.info("grpc.request.end", { method });
 					return res;
-				} catch (err: any) {
+				} catch (err: unknown) {
 					logger.error("grpc.request.error", {
 						method,
-						error: err && err.stack ? err.stack : String(err),
+						error: err instanceof Error ? (err.stack ?? String(err)) : String(err),
 					});
 
 					// Normalize errors: if it has a numeric `code`, rethrow with that code; else map to INTERNAL
@@ -88,16 +88,21 @@ export function wrapGrpcHandler<T extends object>(handler: T, serviceName: strin
 						err instanceof Error
 							? `${err.message} (trace=${getTraceId()})`
 							: `Internal error (trace=${getTraceId()})`;
-					const e: any = new Error(message);
-					if (err && typeof err.code === "number") {
-						e.code = err.code;
+					const e = new Error(message) as Error & { code?: number };
+					if (typeof err === "object" && err !== null && "code" in err) {
+						const maybe = err as { code?: unknown };
+						if (typeof maybe.code === "number") {
+							e.code = maybe.code;
+						} else {
+							e.code = grpc.status.INTERNAL;
+						}
 					} else {
 						e.code = grpc.status.INTERNAL;
 					}
 					throw e;
 				}
 			}, traceId);
-		}) as any;
+		}) as unknown as HandlerFn;
 	}
 
 	return wrapped as T;

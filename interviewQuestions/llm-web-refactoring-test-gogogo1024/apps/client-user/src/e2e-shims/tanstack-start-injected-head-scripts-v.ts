@@ -1,1 +1,1 @@
-export const injectedHeadScripts = '';
+export const injectedHeadScripts = "";

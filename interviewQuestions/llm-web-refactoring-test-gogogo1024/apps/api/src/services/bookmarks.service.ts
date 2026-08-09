@@ -97,8 +97,10 @@ export async function getBookmarkedPosts(
 		.leftJoin(users, eq(posts.authorId, users.id))
 		.where(inArray(posts.id, bookmarkedIds));
 
-	const postsMap: Record<string, any> = {};
-	postsRows.forEach((p) => (postsMap[p.id] = p));
+	const postsMap: Record<string, unknown> = {};
+	postsRows.forEach((p) => {
+		postsMap[p.id] = p;
+	});
 
 	const countsMap = await getCountsForPostIds(bookmarkedIds, requesterId);
 

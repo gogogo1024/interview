@@ -114,7 +114,7 @@ export async function getPostComments(postId: string, userId?: string) {
 	const allIds = [...topLevelIds, ...replies.map((r) => r.id)];
 	const likeInfoMap = await getCommentLikesForIds(allIds, userId);
 
-	const repliesByParent: Record<string, any[]> = {};
+	const repliesByParent: Record<string, unknown[]> = {};
 	replies.forEach((r) => {
 		if (!r.parentId) return;
 		const parentReplies = repliesByParent[r.parentId] || [];

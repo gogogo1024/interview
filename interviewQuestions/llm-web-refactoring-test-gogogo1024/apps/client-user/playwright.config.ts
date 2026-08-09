@@ -2,7 +2,7 @@ import { defineConfig, devices } from "@playwright/test";
 
 export default defineConfig({
 	testDir: "./tests/e2e",
-	timeout: 90000,  // Increased to 90s to allow for slower SSR hydration
+	timeout: 90000, // Increased to 90s to allow for slower SSR hydration
 	// globalSetup: "./tests/e2e/global-setup.ts",
 	fullyParallel: false,
 	forbidOnly: !!process.env.CI,
@@ -34,6 +34,6 @@ export default defineConfig({
 		command: "pnpm run build && pnpm run start",
 		url: "http://localhost:3000",
 		reuseExistingServer: true,
-		timeout: 180000,  // 3 minutes to allow build + start
+		timeout: 180000, // 3 minutes to allow build + start
 	},
 });

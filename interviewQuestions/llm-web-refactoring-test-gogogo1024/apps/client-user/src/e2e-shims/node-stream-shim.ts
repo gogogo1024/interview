@@ -5,35 +5,35 @@
 // needed on the client. The shim prevents Rollup/Vite from failing
 // when it statically analyzes imports.
 export class Readable {
-  constructor() {
-    throw new Error('Readable is not available in the browser build');
-  }
-  static fromWeb() {
-    throw new Error('Readable.fromWeb is not available in the browser build');
-  }
-  static toWeb() {
-    throw new Error('Readable.toWeb is not available in the browser build');
-  }
+	constructor() {
+		throw new Error("Readable is not available in the browser build");
+	}
+	static fromWeb() {
+		throw new Error("Readable.fromWeb is not available in the browser build");
+	}
+	static toWeb() {
+		throw new Error("Readable.toWeb is not available in the browser build");
+	}
 }
 
 export class Writable {
-  constructor() {
-    throw new Error('Writable is not available in the browser build');
-  }
+	constructor() {
+		throw new Error("Writable is not available in the browser build");
+	}
 }
 
 export class Duplex extends Readable {
-  constructor() {
-    super();
-    throw new Error('Duplex is not available in the browser build');
-  }
+	constructor() {
+		super();
+		throw new Error("Duplex is not available in the browser build");
+	}
 }
 
 export class PassThrough extends Duplex {
-  constructor() {
-    super();
-    throw new Error('PassThrough is not available in the browser build');
-  }
+	constructor() {
+		super();
+		throw new Error("PassThrough is not available in the browser build");
+	}
 }
 
 export class Transform extends Duplex {}

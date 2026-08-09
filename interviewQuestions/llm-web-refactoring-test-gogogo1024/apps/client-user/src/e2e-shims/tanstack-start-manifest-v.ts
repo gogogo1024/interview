@@ -1,8 +1,8 @@
 export function tsrStartManifest() {
-  return {
-    clientEntry: '/src/main.tsx',
-    routes: {
-      root: { assets: [], preloads: [] },
-    },
-  };
+	return {
+		clientEntry: "/src/main.tsx",
+		routes: {
+			root: { assets: [], preloads: [] },
+		},
+	};
 }

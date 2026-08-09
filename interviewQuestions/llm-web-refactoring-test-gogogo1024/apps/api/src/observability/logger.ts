@@ -1,13 +1,13 @@
 import { getTraceId } from "./context";
 
-function formatLog(level: string, event: string, meta: Record<string, any> = {}) {
+function formatLog(level: string, event: string, meta: Record<string, unknown> = {}) {
 	const payload = {
 		timestamp: new Date().toISOString(),
 		level,
 		event,
 		traceId: getTraceId() || null,
 		...meta,
-	};
+	} as Record<string, unknown>;
 	// Structured JSON logs to stdout/stderr
 	if (level === "error") {
 		console.error(JSON.stringify(payload));
@@ -17,7 +17,7 @@ function formatLog(level: string, event: string, meta: Record<string, any> = {})
 }
 
 export const logger = {
-	info: (event: string, meta?: Record<string, any>) => formatLog("info", event, meta),
-	warn: (event: string, meta?: Record<string, any>) => formatLog("warn", event, meta),
-	error: (event: string, meta?: Record<string, any>) => formatLog("error", event, meta),
+	info: (event: string, meta?: Record<string, unknown>) => formatLog("info", event, meta),
+	warn: (event: string, meta?: Record<string, unknown>) => formatLog("warn", event, meta),
+	error: (event: string, meta?: Record<string, unknown>) => formatLog("error", event, meta),
 };

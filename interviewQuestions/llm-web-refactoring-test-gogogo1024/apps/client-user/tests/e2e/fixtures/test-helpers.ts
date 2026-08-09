@@ -47,19 +47,19 @@ export async function waitForHydration(page: Page): Promise<void> {
 	// Look for common root selectors or any actual content
 	const CONTENT_SELECTORS = [
 		'[data-testid="app-root"]', // NextGen apps
-		'#app-root',                 // Some React apps
-		'#app',                       // Common React convention  
-		'#root',                      // CRA default
-		'[role="application"]',       // Accessible apps
-		'main',                       // Semantic HTML
-		'.login__styles.wrapper',     // Our specific app
+		"#app-root", // Some React apps
+		"#app", // Common React convention
+		"#root", // CRA default
+		'[role="application"]', // Accessible apps
+		"main", // Semantic HTML
+		".login__styles.wrapper", // Our specific app
 	];
 
 	let foundContent = false;
 	for (const selector of CONTENT_SELECTORS) {
 		try {
 			const elements = await page.locator(selector);
-			if (await elements.count() > 0) {
+			if ((await elements.count()) > 0) {
 				foundContent = true;
 				break;
 			}
@@ -136,7 +136,7 @@ export async function loginAs(
 	});
 
 	console.log(`loginAs: Starting login for user: ${typeof user === "string" ? user : user.email}`);
-	
+
 	// Listen to page console messages for debugging
 	const consoleMessages: string[] = [];
 	page.on("console", (msg) => {
@@ -144,15 +144,15 @@ export async function loginAs(
 		console.log(`PAGE: ${text}`);
 		consoleMessages.push(text);
 	});
-	
+
 	let loggedIn = false;
 	for (let attempt = 1; attempt <= 3; attempt++) {
 		console.log(`\n=== Login Attempt ${attempt}/3 ===`);
-		
+
 		// Navigate to login page
 		await page.goto("/auth/login", { waitUntil: "domcontentloaded" });
 		await waitForHydration(page);
-		
+
 		// Wait for form to be ready
 		try {
 			await page.waitForSelector('input[name="email"]', { state: "visible", timeout: 10000 });
@@ -165,32 +165,36 @@ export async function loginAs(
 		const emailInput = page.locator('input[name="email"]');
 		const passwordInput = page.locator('input[name="password"]');
 		const submitBtn = page.locator('button[type="submit"]');
-		
+
 		await emailInput.fill(credentials.email, { timeout: 5000 });
 		await passwordInput.fill(credentials.password, { timeout: 5000 });
 		console.log(`Filled credentials: ${credentials.email}`);
-		
+
 		// Submit form and wait for response
 		await submitBtn.click();
 		console.log(`Form submitted`);
-		
+
 		// Wait for page to change or error message to appear
 		try {
 			// Give the server time to respond and navigate
 			await page.waitForTimeout(2000);
-			
+
 			const currentUrl = page.url();
 			console.log(`After submit, URL: ${currentUrl}`);
-			
+
 			// Check if we're still on login page
 			if (!currentUrl.includes("/auth/login")) {
 				console.log(`✓ Successfully navigated away from login page`);
 				loggedIn = true;
 				break;
 			}
-			
+
 			// Check for error message
-			const errorElement = await page.locator('[role="alert"], .error, [class*="error"]').first().textContent({ timeout: 1000 }).catch(() => null);
+			const errorElement = await page
+				.locator('[role="alert"], .error, [class*="error"]')
+				.first()
+				.textContent({ timeout: 1000 })
+				.catch(() => null);
 			if (errorElement) {
 				console.log(`Error message on page: ${errorElement}`);
 			} else {
@@ -199,7 +203,7 @@ export async function loginAs(
 		} catch (err) {
 			console.log(`Error during wait: ${err}`);
 		}
-		
+
 		// Clear browser state before retry (except on last attempt)
 		if (attempt < 3 && !loggedIn) {
 			console.log(`Clearing browser state for retry...`);
@@ -219,7 +223,7 @@ export async function loginAs(
 	}
 
 	console.log(`\n✓ Login successful, waiting for page to settle...`);
-	
+
 	// Wait for hydration after navigation
 	await waitForHydration(page);
 

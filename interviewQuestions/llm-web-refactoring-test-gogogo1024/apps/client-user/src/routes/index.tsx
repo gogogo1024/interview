@@ -132,7 +132,7 @@ function HomePage() {
 				getCurrentUser(),
 				getHomeFeed({ data: {} }),
 			]);
-			
+
 			setUser(currentUser);
 			setPosts(feedPosts);
 		} catch (error) {
@@ -150,7 +150,7 @@ function HomePage() {
 	useEffect(() => {
 		// Only run on client after hydration
 		if (typeof window === "undefined") return;
-		
+
 		// If no user and not loading, show welcome or redirect
 		if (!user && !loading) {
 			console.log("No user found on client");

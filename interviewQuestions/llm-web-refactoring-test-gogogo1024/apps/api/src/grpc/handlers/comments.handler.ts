@@ -3,23 +3,39 @@ import { validateSessionToken } from "../../middleware/auth";
 import { createComment, deleteComment, getPostComments } from "../../services/comments.service";
 import { toProtoTimestamp } from "../../services/utils";
 
-function toCommentResponse(comment: any): CommentResponse {
+function toCommentResponse(comment: unknown): CommentResponse {
+	const c = comment as {
+		id: string;
+		content: string;
+		createdAt: string | number | Date;
+		parentId?: string | null;
+		author?: {
+			id?: string;
+			username?: string;
+			displayName?: string;
+			avatarUrl?: string | null;
+		} | null;
+		likeCount?: number;
+		isLiked?: boolean;
+		replies?: unknown[];
+	};
+
 	return {
-		id: comment.id,
-		content: comment.content,
-		createdAt: toProtoTimestamp(comment.createdAt),
-		parentId: comment.parentId || undefined,
-		author: comment.author
+		id: c.id,
+		content: c.content,
+		createdAt: toProtoTimestamp(new Date(c.createdAt)),
+		parentId: c.parentId || undefined,
+		author: c.author
 			? {
-					id: comment.author.id || "",
-					username: comment.author.username || "",
-					displayName: comment.author.displayName || "",
-					avatarUrl: comment.author.avatarUrl || undefined,
+					id: c.author.id || "",
+					username: c.author.username || "",
+					displayName: c.author.displayName || "",
+					avatarUrl: c.author.avatarUrl || undefined,
 				}
 			: { id: "", username: "", displayName: "" },
-		likeCount: comment.likeCount || 0,
-		isLiked: comment.isLiked || false,
-		replies: (comment.replies || []).map(toCommentResponse),
+		likeCount: c.likeCount || 0,
+		isLiked: c.isLiked || false,
+		replies: (c.replies || []).map(toCommentResponse),
 	};
 }
 

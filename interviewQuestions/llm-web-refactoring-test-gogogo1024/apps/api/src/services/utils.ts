@@ -1,5 +1,5 @@
+import { createHash } from "node:crypto";
 import bcrypt from "bcryptjs";
-import { createHash } from "crypto";
 
 /**
  * Generate a simple ID
@@ -31,7 +31,7 @@ export async function verifyPassword(password: string, hashedPassword: string): 
 
 	// Legacy SHA-256 verification
 	const hash = createHash("sha256");
-	hash.update(password + LEGACY_SALT);
+	hash.update(`${password}${LEGACY_SALT}`);
 	const computed = hash.digest("hex");
 	return computed === hashedPassword;
 }

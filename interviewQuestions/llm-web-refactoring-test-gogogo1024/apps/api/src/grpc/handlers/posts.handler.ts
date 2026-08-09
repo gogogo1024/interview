@@ -10,23 +10,39 @@ import {
 } from "../../services/posts.service";
 import { toProtoTimestamp } from "../../services/utils";
 
-function toPostResponse(post: any): PostResponse {
+function toPostResponse(post: unknown): PostResponse {
+	const p = post as {
+		id: string;
+		content: string;
+		createdAt: string | number | Date;
+		updatedAt?: string | number | Date;
+		author?: {
+			id?: string;
+			username?: string;
+			displayName?: string;
+			avatarUrl?: string | null;
+		} | null;
+		likeCount?: number;
+		commentCount?: number;
+		isLiked?: boolean;
+	};
+
 	return {
-		id: post.id,
-		content: post.content,
-		createdAt: toProtoTimestamp(post.createdAt),
-		updatedAt: toProtoTimestamp(post.updatedAt),
-		author: post.author
+		id: p.id,
+		content: p.content,
+		createdAt: toProtoTimestamp(new Date(p.createdAt)),
+		updatedAt: p.updatedAt ? toProtoTimestamp(new Date(p.updatedAt)) : undefined,
+		author: p.author
 			? {
-					id: post.author.id || "",
-					username: post.author.username || "",
-					displayName: post.author.displayName || "",
-					avatarUrl: post.author.avatarUrl || undefined,
+					id: p.author.id || "",
+					username: p.author.username || "",
+					displayName: p.author.displayName || "",
+					avatarUrl: p.author.avatarUrl || undefined,
 				}
 			: { id: "", username: "", displayName: "" },
-		likeCount: post.likeCount || 0,
-		commentCount: post.commentCount || 0,
-		isLiked: post.isLiked || false,
+		likeCount: p.likeCount || 0,
+		commentCount: p.commentCount || 0,
+		isLiked: p.isLiked || false,
 	};
 }
 
