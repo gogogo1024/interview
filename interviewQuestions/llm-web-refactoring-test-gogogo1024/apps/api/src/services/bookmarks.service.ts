@@ -132,10 +132,13 @@ export async function getBookmarkedPosts(
 
 	const postsMap: Record<string, PostRow> = {};
 	(postsRows as PostRow[]).forEach((p) => {
-		if (p && p.id) postsMap[p.id] = p;
+		if (p?.id) postsMap[p.id] = p;
 	});
 
-	const countsMap: Record<string, PostCounts> = await getCountsForPostIds(bookmarkedIds, requesterId);
+	const countsMap: Record<string, PostCounts> = await getCountsForPostIds(
+		bookmarkedIds,
+		requesterId,
+	);
 
 	const result = bookmarkedPosts
 		.map((bookmark) => {
@@ -149,15 +152,14 @@ export async function getBookmarkedPosts(
 				content: post.content,
 				createdAt: post.createdAt,
 				updatedAt: post.updatedAt,
-				author:
-					post.author && post.author.id
-						? {
-							  id: post.author.id,
-							  username: post.author.username ?? "",
-							  displayName: post.author.displayName ?? null,
-							  avatarUrl: post.author.avatarUrl ?? null,
-						  }
-						: undefined,
+				author: post.author?.id
+					? {
+							id: post.author.id,
+							username: post.author.username ?? "",
+							displayName: post.author.displayName ?? null,
+							avatarUrl: post.author.avatarUrl ?? null,
+						}
+					: undefined,
 				likeCount: counts.likeCount,
 				commentCount: counts.commentCount,
 				isLiked: counts.isLiked,

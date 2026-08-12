@@ -2,7 +2,7 @@
 // some server-side utilities. This is a no-op placeholder for
 // browser/dev environments so bundlers can resolve the import.
 export class AsyncLocalStorage {
-	run(store, callback, ...args) {
+	run(_store, callback, ...args) {
 		return callback(...args);
 	}
 	getStore() {

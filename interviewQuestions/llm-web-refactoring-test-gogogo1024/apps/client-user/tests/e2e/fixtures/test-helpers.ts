@@ -38,7 +38,7 @@ export async function waitForHydration(page: Page): Promise<void> {
 	// Wait for page to start loading and initialize
 	try {
 		await page.waitForLoadState("domcontentloaded", { timeout: 30_000 });
-	} catch (e) {
+	} catch (_e) {
 		// ignore — continue anyway
 	}
 
@@ -75,7 +75,7 @@ export async function waitForHydration(page: Page): Promise<void> {
 		// Fallback: wait for network to be idle as a signal that page is interactive
 		try {
 			await page.waitForLoadState("networkidle", { timeout: 60_000 });
-		} catch (e) {
+		} catch (_e) {
 			// Give up gracefully — page may be loaded anyway
 		}
 	}
@@ -156,7 +156,7 @@ export async function loginAs(
 		// Wait for form to be ready
 		try {
 			await page.waitForSelector('input[name="email"]', { state: "visible", timeout: 10000 });
-		} catch (err) {
+		} catch (_err) {
 			console.log(`Form input not found on attempt ${attempt}`);
 			continue;
 		}
@@ -232,7 +232,7 @@ export async function loginAs(
 		const logoutBtn = page.locator('button[title="Logout"]');
 		await expect(logoutBtn).toBeVisible({ timeout: 15000 });
 		console.log(`✓ Logout button visible, login complete`);
-	} catch (err) {
+	} catch (_err) {
 		console.log(`Warning: Logout button not visible after 15s`);
 		console.log(`Current URL: ${page.url()}`);
 		console.log(`Page console messages: ${consoleMessages.join("\n")}`);
