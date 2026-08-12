@@ -1,10 +1,43 @@
 import { and, desc, eq, inArray } from "drizzle-orm";
 import { db, schema } from "../db";
 import { notFound } from "../observability/errors";
-import { getCountsForPostIds } from "./postMetrics.service";
+import { getCountsForPostIds, type PostCounts } from "./postMetrics.service";
 import { generateId } from "./utils";
 
 const { bookmarks, posts, users } = schema;
+
+type NullableString = string | null;
+
+type AuthorRow = {
+	id: NullableString;
+	username: NullableString;
+	displayName?: NullableString;
+	avatarUrl?: NullableString;
+} | null;
+
+type PostRow = {
+	id: string;
+	content: string;
+	createdAt: Date | string;
+	updatedAt: Date | string | null;
+	author?: AuthorRow;
+};
+
+export type PostWithCounts = {
+	id: string;
+	content: string;
+	createdAt: Date | string;
+	updatedAt: Date | string | null;
+	author?: {
+		id: string;
+		username: string;
+		displayName?: string | null;
+		avatarUrl?: string | null;
+	};
+	likeCount: number;
+	commentCount: number;
+	isLiked: boolean;
+};
 
 /**
  * Toggle bookmark for a post (create if not exists, delete if exists)
@@ -60,7 +93,7 @@ export async function getBookmarkedPosts(
 	requesterId?: string,
 	limit = 20,
 	offset = 0,
-) {
+): Promise<PostWithCounts[]> {
 	// Get bookmarked post IDs
 	const bookmarkedPosts = await db
 		.select({
@@ -97,23 +130,40 @@ export async function getBookmarkedPosts(
 		.leftJoin(users, eq(posts.authorId, users.id))
 		.where(inArray(posts.id, bookmarkedIds));
 
-	const postsMap: Record<string, unknown> = {};
-	postsRows.forEach((p) => {
-		postsMap[p.id] = p;
+	const postsMap: Record<string, PostRow> = {};
+	(postsRows as PostRow[]).forEach((p) => {
+		if (p && p.id) postsMap[p.id] = p;
 	});
 
-	const countsMap = await getCountsForPostIds(bookmarkedIds, requesterId);
+	const countsMap: Record<string, PostCounts> = await getCountsForPostIds(bookmarkedIds, requesterId);
 
-	return bookmarkedPosts
+	const result = bookmarkedPosts
 		.map((bookmark) => {
 			const post = postsMap[bookmark.postId];
 			if (!post) return null;
+
+			const counts = countsMap[post.id] || { likeCount: 0, commentCount: 0, isLiked: false };
+
 			return {
-				...post,
-				likeCount: countsMap[post.id]?.likeCount || 0,
-				commentCount: countsMap[post.id]?.commentCount || 0,
-				isLiked: countsMap[post.id]?.isLiked || false,
-			};
+				id: post.id,
+				content: post.content,
+				createdAt: post.createdAt,
+				updatedAt: post.updatedAt,
+				author:
+					post.author && post.author.id
+						? {
+							  id: post.author.id,
+							  username: post.author.username ?? "",
+							  displayName: post.author.displayName ?? null,
+							  avatarUrl: post.author.avatarUrl ?? null,
+						  }
+						: undefined,
+				likeCount: counts.likeCount,
+				commentCount: counts.commentCount,
+				isLiked: counts.isLiked,
+			} as PostWithCounts;
 		})
-		.filter((p) => p !== null);
+		.filter((p): p is PostWithCounts => p !== null);
+
+	return result;
 }

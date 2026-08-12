@@ -50,14 +50,14 @@ export const bookmarksHandler: IBookmarksService = {
 			return {
 				posts: posts.map((post) => ({
 					id: post.id,
-					content: post.content,
-					createdAt: toProtoTimestamp(post.createdAt),
-					updatedAt: toProtoTimestamp(post.updatedAt),
+					content: post.content ?? "",
+					createdAt: toProtoTimestamp(new Date(post.createdAt)),
+					updatedAt: post.updatedAt ? toProtoTimestamp(new Date(post.updatedAt)) : undefined,
 					author: post.author
 						? {
 								id: post.author.id,
 								username: post.author.username,
-								displayName: post.author.displayName,
+								displayName: post.author.displayName || "",
 								avatarUrl: post.author.avatarUrl || undefined,
 							}
 						: undefined,
