@@ -20,12 +20,14 @@ export default defineConfig({
 				...devices["Desktop Chrome"],
 				// Workaround for macOS CVDisplayLink crash (CVReturn: -6670)
 				// Use software rendering instead of GPU to avoid display driver issues
-				launchArgs: [
-					"--disable-features=VizDisplayCompositor",
-					"--disable-gpu-compositing",
-					"--disable-gpu",
-					"--use-software-rasterizer",
-				],
+				launchOptions: {
+					args: [
+						"--disable-features=VizDisplayCompositor",
+						"--disable-gpu-compositing",
+						"--disable-gpu",
+						"--use-software-rasterizer",
+					],
+				},
 			},
 		},
 	],
