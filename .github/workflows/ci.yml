@@ -10,6 +10,9 @@ jobs:
   validate:
     name: Validate PR
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: interviewQuestions/llm-web-refactoring-test-gogogo1024
     steps:
       - name: Checkout
         uses: actions/checkout@v4
