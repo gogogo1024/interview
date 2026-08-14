@@ -94,6 +94,9 @@ jobs:
       - name: Run type checker
         run: pnpm run typecheck
 
+      - name: Generate proto
+        run: pnpm run proto:generate
+
   # Unit tests
   unit-tests:
     name: Unit Tests
