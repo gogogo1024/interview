@@ -75,6 +75,9 @@ jobs:
           echo "Installing per-package dependencies for frontends"
           pnpm --filter @chirp/client-admin install --frozen-lockfile
           pnpm --filter @chirp/client-user install --frozen-lockfile
+          echo "Installing per-package dependencies for packages needed at build-time"
+          pnpm --filter @chirp/db-schema install --frozen-lockfile
+          pnpm --filter @chirp/api install --frozen-lockfile
           echo "Verify vite binaries"
           pnpm --filter @chirp/client-admin exec -- which vite || true
           pnpm --filter @chirp/client-user exec -- which vite || true
