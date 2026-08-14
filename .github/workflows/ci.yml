@@ -48,7 +48,10 @@ jobs:
 
       - name: Generate DB
         run: |
-          # Execute drizzle-kit from workspace context so pnpm resolves the binary
+          # Ensure @chirp/api devDependencies are installed so pnpm can resolve drizzle-kit
+          pnpm --filter @chirp/api install --frozen-lockfile
+          # Quick diagnostics to help CI debugging (non-fatal)
+          pnpm --filter @chirp/api exec -- which drizzle-kit || true
           pnpm --filter @chirp/api exec -- drizzle-kit generate
 
       - name: Build (all)
