@@ -101,6 +101,11 @@ jobs:
           pnpm install --frozen-lockfile
           pnpm exec protoc --plugin=protoc-gen-ts=./node_modules/.bin/protoc-gen-ts --ts_out=./generated --proto_path=./protos ./protos/*.proto
 
+      - name: Generate DB
+        run: |
+          # Execute drizzle-kit from workspace context so pnpm resolves the binary
+          pnpm --filter @chirp/api exec -- drizzle-kit generate
+
   # Unit tests
   unit-tests:
     name: Unit Tests
