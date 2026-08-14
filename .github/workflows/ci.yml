@@ -36,6 +36,12 @@ jobs:
       - name: Lint (all)
         run: pnpm -w turbo run lint
 
+      - name: Generate proto
+        run: pnpm run proto:generate
+
+      - name: Generate DB
+        run: pnpm --filter @chirp/api run db:generate
+
       - name: Build (all)
         run: pnpm -w turbo run build
 
