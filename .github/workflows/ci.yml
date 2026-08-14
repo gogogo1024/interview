@@ -66,6 +66,18 @@ jobs:
           echo "Attempt per-package install (non-fatal) to ensure package binaries are present"
           pnpm --filter @chirp/client-admin install --frozen-lockfile || true
           pnpm --filter @chirp/client-admin exec -- which vite || true
+          echo "Also ensure @chirp/client-user node_modules exist"
+          pnpm --filter @chirp/client-user install --frozen-lockfile || true
+          pnpm --filter @chirp/client-user exec -- which vite || true
+
+      - name: Ensure per-package node_modules before turbo build
+        run: |
+          echo "Installing per-package dependencies for frontends"
+          pnpm --filter @chirp/client-admin install --frozen-lockfile
+          pnpm --filter @chirp/client-user install --frozen-lockfile
+          echo "Verify vite binaries"
+          pnpm --filter @chirp/client-admin exec -- which vite || true
+          pnpm --filter @chirp/client-user exec -- which vite || true
 
       - name: Build (all)
         run: pnpm -w -r run build
