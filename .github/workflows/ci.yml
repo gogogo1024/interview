@@ -34,7 +34,7 @@ jobs:
 
 
       - name: Lint (affected)
-        run: pnpm -w turbo run lint -- --since=origin/master
+        run: pnpm -w turbo run lint -- --changed --since=origin/master
 
       - name: Typecheck (affected)
         run: pnpm -w turbo run typecheck -- --since=origin/master
