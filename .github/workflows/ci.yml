@@ -33,27 +33,17 @@ jobs:
         run: pnpm install -w --frozen-lockfile
 
 
-      - name: Lint (affected)
-        run: |
-          set -o pipefail
-          out=$(pnpm -w turbo run lint -- --changed --since=origin/master 2>&1) || rc=$?
-          echo "$out"
-          if [ -n "${rc:-}" ]; then
-            if echo "$out" | grep -q 'No files were processed'; then
-              echo "No changed files to lint; continuing."
-            else
-              exit $rc
-            fi
-          fi
+      - name: Lint (all)
+        run: pnpm -w turbo run lint
 
-      - name: Typecheck (affected)
-        run: pnpm -w turbo run typecheck -- --since=origin/master
+      - name: Typecheck (all)
+        run: pnpm -w turbo run typecheck
 
-      - name: Unit tests (affected)
-        run: pnpm -w turbo run test:unit -- --since=origin/master
+      - name: Unit tests (all)
+        run: pnpm -w turbo run test:unit
 
-      - name: Build (affected)
-        run: pnpm -w turbo run build -- --since=origin/master
+      - name: Build (all)
+        run: pnpm -w turbo run build
 
       - name: E2E (full)
         run: pnpm run test:e2e
