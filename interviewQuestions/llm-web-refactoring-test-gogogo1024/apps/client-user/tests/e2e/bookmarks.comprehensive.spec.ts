@@ -253,10 +253,8 @@ test.describe("Bookmarks - Comprehensive", () => {
 			await page.goto("/", { waitUntil: "networkidle" });
 			await waitForHydration(page);
 
-			// Log out (use waitForURL to ensure logout completes)
-			const logoutButton = page.locator('button[title="Logout"]');
-			await logoutButton.click();
-			await page.waitForURL(/\/auth\/login/, { timeout: 10000 });
+			// Log out (use logout helper to ensure a reliable logout flow)
+			await logout(page);
 			await waitForHydration(page);
 
 			// Log back in as alice

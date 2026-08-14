@@ -2,6 +2,7 @@ import { expect, test } from "@playwright/test";
 import {
 	createPost,
 	loginAs,
+	logout,
 	uniqueId,
 	waitForCommentForm,
 	waitForHydration,
@@ -39,7 +40,7 @@ test.describe("Notifications - Comprehensive", () => {
 			}
 
 			// Log out and login as alice
-			await page.click('button[title="Logout"]');
+			await logout(page);
 			await waitForHydration(page);
 			await loginAs(page, "alice");
 
@@ -73,7 +74,7 @@ test.describe("Notifications - Comprehensive", () => {
 			if (!postUrl) throw new Error("post url not found");
 
 			// Log out and login as bob
-			await page.click('button[title="Logout"]');
+			await logout(page);
 			await waitForHydration(page);
 			await loginAs(page, "bob");
 
@@ -86,7 +87,7 @@ test.describe("Notifications - Comprehensive", () => {
 			await waitForHydration(page);
 
 			// Log out and login as alice to check notification
-			await page.click('button[title="Logout"]');
+			await logout(page);
 			await waitForHydration(page);
 			await loginAs(page, "alice");
 
@@ -112,7 +113,7 @@ test.describe("Notifications - Comprehensive", () => {
 			if (!postUrl) throw new Error("post url not found");
 
 			// Log out and login as bob
-			await page.click('button[title="Logout"]');
+			await logout(page);
 			await waitForHydration(page);
 			await loginAs(page, "bob");
 
@@ -127,7 +128,7 @@ test.describe("Notifications - Comprehensive", () => {
 			await waitForHydration(page);
 
 			// Log out and login as alice to check notification
-			await page.click('button[title="Logout"]');
+			await logout(page);
 			await waitForHydration(page);
 			await loginAs(page, "alice");
 
@@ -178,7 +179,7 @@ test.describe("Notifications - Comprehensive", () => {
 			).toBeVisible({ timeout: 10000 });
 
 			// Log out and login as diana to check notification
-			await page.click('button[title="Logout"]');
+			await logout(page);
 			await waitForHydration(page);
 			await loginAs(page, "diana");
 

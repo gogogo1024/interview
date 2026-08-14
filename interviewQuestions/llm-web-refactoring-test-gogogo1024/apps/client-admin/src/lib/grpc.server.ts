@@ -7,14 +7,37 @@ const GRPC_HOST = process.env.GRPC_API_HOST || "localhost:50051";
 // Singleton gRPC client
 let grpcClient: ChirpClient | null = null;
 
+function readEnv(): NodeJS.ProcessEnv | undefined {
+	try {
+		// Avoid bundler inlining by using bracket access to process.env.
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
+		const p: any = typeof process !== "undefined" ? process : undefined;
+		return p && p["env"] ? p["env"] : undefined;
+	} catch {
+		return undefined;
+	}
+}
+
+function isGrpcSecureAtRuntime(): boolean {
+	const env = readEnv();
+	if (env && env["GRPC_API_SECURE"] !== undefined) {
+		return env["GRPC_API_SECURE"] === "true";
+	}
+	if (env && env["NODE_ENV"]) {
+		return env["NODE_ENV"] === "production";
+	}
+	return false;
+}
+
 /**
  * Get or create the gRPC client singleton
  */
 export function getGrpcClient(): ChirpClient {
 	if (!grpcClient) {
+		const runtimeSecure = isGrpcSecureAtRuntime();
 		grpcClient = createChirpClient({
 			host: GRPC_HOST,
-			secure: process.env.NODE_ENV === "production",
+			secure: runtimeSecure,
 		});
 	}
 	return grpcClient;

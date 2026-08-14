@@ -228,15 +228,38 @@ export async function loginAs(
 	await waitForHydration(page);
 
 	// Verify we can see the logout button
-	try {
-		const logoutBtn = page.locator('button[title="Logout"]');
-		await expect(logoutBtn).toBeVisible({ timeout: 15000 });
-		console.log(`✓ Logout button visible, login complete`);
-	} catch (_err) {
-		console.log(`Warning: Logout button not visible after 15s`);
+	// Robustly wait for header/login state to settle (prefer logout button or notification bell)
+	const headerLocators = [
+		page.locator('button[title="Logout"]'),
+		page.locator('a[title="Notifications"]'),
+		page.locator('header [data-testid="user-menu"]'),
+		page.locator(`text=${credentials.displayName || credentials.email}`),
+	];
+	let headerReady = false;
+	for (const loc of headerLocators) {
+		try {
+			await loc.first().waitFor({ state: "visible", timeout: 15000 });
+			headerReady = true;
+			break;
+		} catch {
+			// try next locator
+		}
+	}
+	if (!headerReady) {
+		try {
+			// Fallback: wait briefly for network idle
+			await page.waitForLoadState("networkidle", { timeout: 15000 });
+		} catch {
+			// ignore
+		}
+	}
+
+	if (headerReady) {
+		console.log(`✓ Header ready (logout/notification visible)`);
+	} else {
+		console.log(`Warning: header/login UI not visible after waits`);
 		console.log(`Current URL: ${page.url()}`);
 		console.log(`Page console messages: ${consoleMessages.join("\n")}`);
-		// Don't fail here, the test might still work
 	}
 }
 
