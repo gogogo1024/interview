@@ -108,7 +108,13 @@ const filterInvalidPreloadsPlugin = (): Plugin => ({
 
 const config = defineConfig({
 	ssr: {
-		external: ["drizzle-orm", "@grpc/grpc-js", "@protobuf-ts/grpc-transport", "@protobuf-ts/runtime-rpc", "@chirp/grpc-client"],
+		external: [
+			"drizzle-orm",
+			"@grpc/grpc-js",
+			"@protobuf-ts/grpc-transport",
+			"@protobuf-ts/runtime-rpc",
+			"@chirp/grpc-client",
+		],
 	},
 	resolve: {
 		alias: {
