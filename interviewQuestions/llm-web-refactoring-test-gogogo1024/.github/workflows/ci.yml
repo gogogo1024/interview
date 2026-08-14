@@ -95,7 +95,11 @@ jobs:
         run: pnpm run typecheck
 
       - name: Generate proto
-        run: pnpm run proto:generate
+        run: |
+          # Ensure proto package devDependencies are present, then run protoc
+          cd interviewQuestions/llm-web-refactoring-test-gogogo1024/packages/proto
+          pnpm install --frozen-lockfile
+          pnpm exec protoc --plugin=protoc-gen-ts=./node_modules/.bin/protoc-gen-ts --ts_out=./generated --proto_path=./protos ./protos/*.proto
 
   # Unit tests
   unit-tests:
@@ -150,7 +154,11 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Generate proto
-        run: pnpm run proto:generate
+        run: |
+          # Ensure proto package devDependencies are present, then run protoc
+          cd interviewQuestions/llm-web-refactoring-test-gogogo1024/packages/proto
+          pnpm install --frozen-lockfile
+          pnpm exec protoc --plugin=protoc-gen-ts=./node_modules/.bin/protoc-gen-ts --ts_out=./generated --proto_path=./protos ./protos/*.proto
 
       - name: Setup database
         run: pnpm run db:generate && pnpm run db:migrate
@@ -185,7 +193,11 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Generate proto
-        run: pnpm run proto:generate
+        run: |
+          # Ensure proto package devDependencies are present, then run protoc
+          cd interviewQuestions/llm-web-refactoring-test-gogogo1024/packages/proto
+          pnpm install --frozen-lockfile
+          pnpm exec protoc --plugin=protoc-gen-ts=./node_modules/.bin/protoc-gen-ts --ts_out=./generated --proto_path=./protos ./protos/*.proto
 
       - name: Setup database
         run: pnpm run db:generate && pnpm run db:migrate && pnpm run db:seed
