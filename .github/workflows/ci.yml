@@ -34,7 +34,7 @@ jobs:
 
 
       - name: Lint (all)
-        run: pnpm -w turbo run lint
+        run: pnpm -w -r run lint
 
       - name: Install protoc
         run: sudo apt-get update && sudo apt-get install -y protobuf-compiler
@@ -55,13 +55,13 @@ jobs:
           pnpm --filter @chirp/api exec -- drizzle-kit generate
 
       - name: Build (all)
-        run: pnpm -w turbo run build
+        run: pnpm -w -r run build
 
       - name: Typecheck (all)
-        run: pnpm -w turbo run typecheck
+        run: pnpm -w -r run typecheck
 
       - name: Unit tests (all)
-        run: pnpm -w turbo run test:unit
+        run: pnpm -w -r run test:unit
 
       - name: E2E (full)
         run: pnpm run test:e2e
