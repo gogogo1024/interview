@@ -110,6 +110,7 @@ const config = defineConfig({
 	resolve: {
 		alias: {
 			"@": path.resolve(currentDir, "src"),
+			"@chirp/proto": path.resolve(rootDir, "packages/proto/src"),
 		},
 	},
 	plugins: [

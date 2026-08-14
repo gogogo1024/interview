@@ -115,6 +115,7 @@ const config = defineConfig({
 		alias: {
 			"@": path.resolve(currentDir, "src"),
 			"@chirp/ui": uiPackageDir,
+			"@chirp/proto": path.resolve(rootDir, "packages/proto/src"),
 		},
 	},
 	build: {
