@@ -35,7 +35,7 @@ jobs:
           version: 9.15.0
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install -w --frozen-lockfile
 
       - name: Check for vulnerabilities (npm audit)
         run: pnpm audit --audit-level=moderate || true
@@ -62,7 +62,7 @@ jobs:
           version: 9.15.0
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install -w --frozen-lockfile
 
       - name: Run linter
         run: pnpm run lint
@@ -89,7 +89,7 @@ jobs:
           version: 9.15.0
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install -w --frozen-lockfile
 
       - name: Run type checker
         run: pnpm run typecheck
@@ -131,7 +131,7 @@ jobs:
           version: 9.15.0
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install -w --frozen-lockfile
 
       - name: Run unit tests
         run: pnpm run test:unit
@@ -159,7 +159,7 @@ jobs:
           version: 9.15.0
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install -w --frozen-lockfile
 
       - name: Generate proto
         run: |
