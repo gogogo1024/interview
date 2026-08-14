@@ -36,6 +36,9 @@ jobs:
       - name: Lint (all)
         run: pnpm -w turbo run lint
 
+      - name: Install protoc
+        run: sudo apt-get update && sudo apt-get install -y protobuf-compiler
+
       - name: Generate proto
         run: pnpm run proto:generate
 
