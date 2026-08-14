@@ -34,7 +34,17 @@ jobs:
 
 
       - name: Lint (affected)
-        run: pnpm -w turbo run lint -- --changed --since=origin/master
+        run: |
+          set -o pipefail
+          out=$(pnpm -w turbo run lint -- --changed --since=origin/master 2>&1) || rc=$?
+          echo "$out"
+          if [ -n "${rc:-}" ]; then
+            if echo "$out" | grep -q 'No files were processed'; then
+              echo "No changed files to lint; continuing."
+            else
+              exit $rc
+            fi
+          fi
 
       - name: Typecheck (affected)
         run: pnpm -w turbo run typecheck -- --since=origin/master
