@@ -36,14 +36,14 @@ jobs:
       - name: Lint (all)
         run: pnpm -w turbo run lint
 
+      - name: Build (all)
+        run: pnpm -w turbo run build
+
       - name: Typecheck (all)
         run: pnpm -w turbo run typecheck
 
       - name: Unit tests (all)
         run: pnpm -w turbo run test:unit
-
-      - name: Build (all)
-        run: pnpm -w turbo run build
 
       - name: E2E (full)
         run: pnpm run test:e2e
