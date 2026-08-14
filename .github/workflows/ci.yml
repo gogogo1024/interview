@@ -54,6 +54,19 @@ jobs:
           pnpm --filter @chirp/api exec -- which drizzle-kit || true
           pnpm --filter @chirp/api exec -- drizzle-kit generate
 
+      - name: Pre-build diagnostics
+        run: |
+          echo "Diagnose vite availability for @chirp/client-admin"
+          pnpm --filter @chirp/client-admin exec -- which vite || true
+          echo "List apps/client-admin and its node_modules"
+          ls -la apps/client-admin || true
+          ls -la apps/client-admin/node_modules || true
+          echo "List root node_modules/.bin"
+          ls -la node_modules/.bin || true
+          echo "Attempt per-package install (non-fatal) to ensure package binaries are present"
+          pnpm --filter @chirp/client-admin install --frozen-lockfile || true
+          pnpm --filter @chirp/client-admin exec -- which vite || true
+
       - name: Build (all)
         run: pnpm -w -r run build
 
