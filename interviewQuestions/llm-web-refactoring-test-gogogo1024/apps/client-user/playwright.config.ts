@@ -36,6 +36,7 @@ export default defineConfig({
 		command: "pnpm run build && pnpm run start",
 		url: "http://localhost:3000",
 		reuseExistingServer: true,
-		timeout: 180000, // 3 minutes to allow build + start
+		timeout: 300000, // 5 minutes - increased to handle parallel startup and resource constraints
+		readyTimeout: 30000, // Wait up to 30s for server to be ready after port opens
 	},
 });
