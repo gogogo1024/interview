@@ -29,100 +29,31 @@ jobs:
         with:
           version: 9
 
+      - name: Install protoc (for proto code generation)
+        run: sudo apt-get update && sudo apt-get install -y protobuf-compiler
+
       - name: Install dependencies
         run: pnpm install -w --frozen-lockfile
 
+      - name: Generate proto definitions (protoc)
+        run: |
+          cd packages/proto
+          pnpm exec protoc --ts_out ./generated --proto_path ./protos ./protos/*.proto
 
-      - name: Lint (all)
+      - name: Generate database migrations
+        run: pnpm --filter @chirp/api exec drizzle-kit generate
+
+      - name: Lint (fast feedback)
         run: pnpm -w -r run lint
 
-      - name: Install protoc
-        run: sudo apt-get update && sudo apt-get install -y protobuf-compiler
-
-      - name: Generate proto
-        run: |
-          # Ensure proto package devDependencies are present, then run protoc
-          pnpm --filter @chirp/proto install --frozen-lockfile
-          cd packages/proto
-          pnpm exec protoc --plugin=protoc-gen-ts=./node_modules/.bin/protoc-gen-ts --ts_out=./generated --proto_path=./protos ./protos/*.proto
-          # Build proto package so its compiled types are available to dependents
-          cd ../..
-          pnpm --filter @chirp/proto run build
-
-      - name: Generate DB
-        run: |
-          # Ensure @chirp/api devDependencies are installed so pnpm can resolve drizzle-kit
-          pnpm --filter @chirp/api install --frozen-lockfile
-          # Quick diagnostics to help CI debugging (non-fatal)
-          pnpm --filter @chirp/api exec -- which drizzle-kit || true
-          pnpm --filter @chirp/api exec -- drizzle-kit generate
-
-      - name: Pre-build diagnostics
-        run: |
-          echo "Diagnose vite availability for @chirp/client-admin"
-          pnpm --filter @chirp/client-admin exec -- which vite || true
-          echo "List apps/client-admin and its node_modules"
-          ls -la apps/client-admin || true
-          ls -la apps/client-admin/node_modules || true
-          echo "List root node_modules/.bin"
-          ls -la node_modules/.bin || true
-          echo "Attempt per-package install (non-fatal) to ensure package binaries are present"
-          pnpm --filter @chirp/client-admin install --frozen-lockfile || true
-          pnpm --filter @chirp/client-admin exec -- which vite || true
-          echo "Also ensure @chirp/client-user node_modules exist"
-          pnpm --filter @chirp/client-user install --frozen-lockfile || true
-          pnpm --filter @chirp/client-user exec -- which vite || true
-
-      - name: Ensure per-package node_modules before turbo build
-        run: |
-          echo "Installing per-package dependencies for frontends"
-          pnpm --filter @chirp/client-admin install --frozen-lockfile
-          pnpm --filter @chirp/client-user install --frozen-lockfile
-          pnpm --filter @chirp/grpc-client install --frozen-lockfile
-          echo "Installing per-package dependencies for packages needed at build-time"
-          pnpm --filter @chirp/db-schema install --frozen-lockfile
-          pnpm --filter @chirp/api install --frozen-lockfile
-          echo "Verify vite binaries"
-          pnpm --filter @chirp/client-admin exec -- which vite || true
-          pnpm --filter @chirp/client-user exec -- which vite || true
-
-      - name: CI debug: inspect grpc-client package
-        run: |
-          echo "--- CI debug: node & pnpm versions ---"
-          node -v || true
-          pnpm -v || true
-          echo "--- List packages/grpc-client ---"
-          ls -la packages/grpc-client || true
-          echo "--- List packages/grpc-client/node_modules ---"
-          ls -la packages/grpc-client/node_modules || true
-          echo "--- List packages/proto/dist ---"
-          ls -la packages/proto/dist || true
-          echo "--- Show packages/grpc-client/package.json ---"
-          cat packages/grpc-client/package.json || true
-          echo "--- Show generated proto dist files (if any) ---"
-          find packages/proto/dist -maxdepth 2 -type f -print || true
-          echo "--- List root node_modules/.pnpm and .bin ---"
-          ls -la node_modules/.pnpm || true
-          ls -la node_modules/.bin || true
-
-      - name: Prebuild: ensure proto and grpc-client
-        run: |
-          echo "Ensure @chirp/proto is built and @chirp/grpc-client node_modules exist"
-          # Rebuild proto to guarantee compiled types are present for dependents
-          pnpm --filter @chirp/proto run build
-          # Ensure grpc-client has its package-level node_modules (pnpm will link workspace deps)
-          pnpm --filter @chirp/grpc-client install --frozen-lockfile
-          # Build grpc-client early and fail fast if types/deps are missing
-          pnpm --filter @chirp/grpc-client run build
-
-      - name: Build (all)
-        run: pnpm -w -r run build
-
-      - name: Typecheck (all)
+      - name: Typecheck (fast feedback)
         run: pnpm -w -r run typecheck
 
-      - name: Unit tests (all)
+      - name: Build (all packages)
+        run: pnpm -w -r run build
+
+      - name: Unit tests
         run: pnpm -w -r run test:unit
 
-      - name: E2E (full)
+      - name: E2E tests
         run: pnpm run test:e2e
