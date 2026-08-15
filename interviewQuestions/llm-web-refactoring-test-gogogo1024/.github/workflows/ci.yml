@@ -101,9 +101,8 @@ jobs:
 
       - name: Generate proto
         run: |
-          # Use the proto package's build script which properly handles protoc
-          pnpm --filter @chirp/proto install --frozen-lockfile
-          pnpm --filter @chirp/proto run proto:generate
+          cd packages/proto
+          pnpm run proto:generate
 
       - name: Prebuild proto package
         run: |
@@ -177,9 +176,8 @@ jobs:
 
       - name: Generate proto
         run: |
-          # Use the proto package's build script which properly handles protoc
-          pnpm --filter @chirp/proto install --frozen-lockfile
-          pnpm --filter @chirp/proto run proto:generate
+          cd packages/proto
+          pnpm run proto:generate
 
       - name: Setup database
         run: |
