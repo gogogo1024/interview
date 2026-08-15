@@ -38,7 +38,8 @@ jobs:
       - name: Generate proto definitions (protoc)
         run: |
           cd packages/proto
-          pnpm exec protoc --ts_out ./generated --proto_path ./protos ./protos/*.proto
+          pnpm install --frozen-lockfile
+          pnpm exec protoc --plugin=protoc-gen-ts=./node_modules/.bin/protoc-gen-ts --ts_out ./generated --proto_path ./protos ./protos/*.proto
 
       - name: Generate database migrations
         run: pnpm --filter @chirp/api exec drizzle-kit generate
