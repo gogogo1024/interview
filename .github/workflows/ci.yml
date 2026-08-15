@@ -46,16 +46,13 @@ jobs:
           cd packages/proto
           pnpm run build
 
+      - name: Build grpc-client package (generate types for dependents)
+        run: |
+          cd packages/grpc-client
+          pnpm run build
+
       - name: Generate database migrations
         run: pnpm --filter @chirp/api exec drizzle-kit generate
-
-      - name: Debug workspace links
-        run: |
-          echo "=== Checking node_modules symlinks ==="
-          ls -la node_modules/@chirp/grpc-client 2>/dev/null || echo "grpc-client not found in root node_modules"
-          ls -la packages/*/node_modules/@chirp/grpc-client 2>/dev/null | head -5 || echo "grpc-client not found in packages"
-          echo "=== pnpm list @chirp/grpc-client ==="
-          pnpm list @chirp/grpc-client --depth=0 2>&1 | head -10
 
       - name: Lint (fast feedback)
         run: pnpm -w -r run lint
