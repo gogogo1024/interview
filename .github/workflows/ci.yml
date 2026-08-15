@@ -72,3 +72,5 @@ jobs:
         run: pnpm run test:e2e
         continue-on-error: true
         timeout-minutes: 10
+        env:
+          GRPC_JWT_SECRET: "test-secret-key-32-characters-long-for-testing-only-do-not-use-production"
