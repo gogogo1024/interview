@@ -39,7 +39,12 @@ jobs:
         run: |
           cd packages/proto
           pnpm install --frozen-lockfile
-          pnpm exec protoc --plugin=protoc-gen-ts=./node_modules/.bin/protoc-gen-ts --ts_out ./generated --proto_path ./protos ./protos/*.proto
+          pnpm exec protoc --plugin=protoc-gen-ts=./node_modules/.bin/protoc-gen-ts --ts_out=./generated --proto_path=./protos ./protos/*.proto
+
+      - name: Build proto package (generate types for dependents)
+        run: |
+          cd packages/proto
+          pnpm run build
 
       - name: Generate database migrations
         run: pnpm --filter @chirp/api exec drizzle-kit generate
