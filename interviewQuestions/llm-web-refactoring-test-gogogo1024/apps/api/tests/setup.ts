@@ -1,5 +1,12 @@
 import { beforeEach, vi } from "vitest";
 
+// SECURITY FIX: Ensure JWT_SECRET is set for tests
+// This is required by the auth middleware which validates the secret
+// on module load. Without this, tests will fail with a fatal error.
+if (!process.env.GRPC_JWT_SECRET) {
+	process.env.GRPC_JWT_SECRET = "test-jwt-secret-key-at-least-32-characters-long";
+}
+
 export async function resetDatabase() {
 	const { client } = await import("../src/db");
 
