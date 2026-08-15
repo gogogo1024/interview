@@ -51,6 +51,9 @@ jobs:
           pnpm --filter @chirp/grpc-client install --frozen-lockfile
           pnpm --filter @chirp/api install --frozen-lockfile
 
+      - name: Clear turbo cache before typecheck
+        run: rm -rf .turbo
+
       - name: Generate database migrations
         run: pnpm --filter @chirp/api exec drizzle-kit generate
 
