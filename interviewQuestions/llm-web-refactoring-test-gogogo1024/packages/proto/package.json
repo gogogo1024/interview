@@ -13,7 +13,7 @@
 		"./protos/*": "./protos/*"
 	},
 	"scripts": {
-		"proto:generate": "pnpm exec protoc --ts_out ./generated --proto_path ./protos ./protos/*.proto",
+		"proto:generate": "pnpm exec protoc --plugin=protoc-gen-ts=./node_modules/.bin/protoc-gen-ts --ts_out ./generated --proto_path ./protos ./protos/*.proto",
 		"typecheck": "tsc --noEmit",
 		"build": "pnpm run proto:generate && tsc -p tsconfig.json"
 	},
