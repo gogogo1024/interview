@@ -24,6 +24,5 @@ export default defineConfig({
 		url: "http://localhost:3002",
 		reuseExistingServer: true,
 		timeout: 180000, // 3 minutes - increased to handle resource constraints
-		readyTimeout: 30000, // Wait up to 30s for server to be ready after port opens
 	},
 });
