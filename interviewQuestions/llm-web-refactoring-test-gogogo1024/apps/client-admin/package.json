@@ -10,7 +10,7 @@
 		"preview": "vite preview",
 		"lint": "biome check .",
 		"lint:fix": "biome check --write .",
-		"typecheck": "tsc --noEmit",
+		"typecheck": "node gen-routes.mjs && tsc --noEmit",
 		"test": "pnpm run test:unit",
 		"test:unit": "vitest run",
 		"test:e2e": "playwright test"
