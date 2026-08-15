@@ -106,6 +106,17 @@ jobs:
           pnpm install --frozen-lockfile
           pnpm exec protoc --plugin=protoc-gen-ts=./node_modules/.bin/protoc-gen-ts --ts_out=./generated --proto_path=./protos ./protos/*.proto
 
+      - name: Prebuild proto package
+        run: |
+          # Build the proto package early so its compiled `dist` (types) are available for dependent packages
+          pnpm --filter @chirp/proto install --frozen-lockfile
+          pnpm --filter @chirp/proto run build
+
+      - name: Ensure per-package deps for grpc-client
+        run: |
+          # Install per-package dependencies for packages that run tsc directly
+          pnpm --filter @chirp/grpc-client install --frozen-lockfile
+
       - name: Generate DB
         run: |
           # Ensure @chirp/api devDependencies are installed so pnpm can resolve drizzle-kit
