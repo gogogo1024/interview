@@ -101,15 +101,13 @@ jobs:
 
       - name: Generate proto
         run: |
-          # Ensure proto package devDependencies are present, then run protoc
-          cd interviewQuestions/llm-web-refactoring-test-gogogo1024/packages/proto
-          pnpm install --frozen-lockfile
-          pnpm exec protoc --plugin=protoc-gen-ts=./node_modules/.bin/protoc-gen-ts --ts_out=./generated --proto_path=./protos ./protos/*.proto
+          # Use the proto package's build script which properly handles protoc
+          pnpm --filter @chirp/proto install --frozen-lockfile
+          pnpm --filter @chirp/proto run proto:generate
 
       - name: Prebuild proto package
         run: |
           # Build the proto package early so its compiled `dist` (types) are available for dependent packages
-          pnpm --filter @chirp/proto install --frozen-lockfile
           pnpm --filter @chirp/proto run build
 
       - name: Ensure per-package deps for grpc-client
@@ -179,10 +177,9 @@ jobs:
 
       - name: Generate proto
         run: |
-          # Ensure proto package devDependencies are present, then run protoc
-          cd interviewQuestions/llm-web-refactoring-test-gogogo1024/packages/proto
-          pnpm install --frozen-lockfile
-          pnpm exec protoc --plugin=protoc-gen-ts=./node_modules/.bin/protoc-gen-ts --ts_out=./generated --proto_path=./protos ./protos/*.proto
+          # Use the proto package's build script which properly handles protoc
+          pnpm --filter @chirp/proto install --frozen-lockfile
+          pnpm --filter @chirp/proto run proto:generate
 
       - name: Setup database
         run: |
