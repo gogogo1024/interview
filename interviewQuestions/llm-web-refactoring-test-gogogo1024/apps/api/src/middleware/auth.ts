@@ -3,23 +3,29 @@ import jwt from "jsonwebtoken";
 import { forbidden, unauthorized } from "../observability/errors";
 
 // JWT_SECRET must be set in environment. Using a hardcoded default is a critical security vulnerability.
-const JWT_SECRET = process.env.GRPC_JWT_SECRET;
+function getJwtSecret(): string {
+	const secret = process.env.GRPC_JWT_SECRET;
 
-if (!JWT_SECRET) {
-	throw new Error(
-		"FATAL: GRPC_JWT_SECRET environment variable not set. " +
-			"This is required for secure session token generation. " +
-			"Set a random 32+ character string in your environment configuration.",
-	);
+	if (!secret) {
+		throw new Error(
+			"FATAL: GRPC_JWT_SECRET environment variable not set. " +
+				"This is required for secure session token generation. " +
+				"Set a random 32+ character string in your environment configuration.",
+		);
+	}
+
+	if (secret.length < 32) {
+		throw new Error(
+			"FATAL: GRPC_JWT_SECRET must be at least 32 characters long. " +
+				"Current length: " +
+				secret.length,
+		);
+	}
+
+	return secret;
 }
 
-if (JWT_SECRET.length < 32) {
-	throw new Error(
-		"FATAL: GRPC_JWT_SECRET must be at least 32 characters long. " +
-			"Current length: " +
-			JWT_SECRET.length,
-	);
-}
+const JWT_SECRET: string = getJwtSecret();
 
 export interface AuthContext {
 	userId: string;
