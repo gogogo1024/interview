@@ -46,11 +46,6 @@ jobs:
           cd packages/proto
           pnpm run build
 
-      - name: Ensure per-package dependencies (grpc-client, api)
-        run: |
-          pnpm --filter @chirp/grpc-client install --frozen-lockfile
-          pnpm --filter @chirp/api install --frozen-lockfile
-
       - name: Clear turbo cache before typecheck
         run: rm -rf .turbo
 
