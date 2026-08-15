@@ -101,7 +101,7 @@ jobs:
 
       - name: Generate proto
         run: |
-          cd packages/proto
+          cd interviewQuestions/llm-web-refactoring-test-gogogo1024/packages/proto
           pnpm install --frozen-lockfile
           pnpm run proto:generate
 
@@ -177,7 +177,7 @@ jobs:
 
       - name: Generate proto
         run: |
-          cd packages/proto
+          cd interviewQuestions/llm-web-refactoring-test-gogogo1024/packages/proto
           pnpm install --frozen-lockfile
           pnpm run proto:generate
 
