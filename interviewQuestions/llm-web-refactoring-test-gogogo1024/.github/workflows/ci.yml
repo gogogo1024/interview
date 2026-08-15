@@ -37,6 +37,11 @@ jobs:
       - name: Install dependencies
         run: pnpm install -w --frozen-lockfile
 
+      - name: Ensure per-package deps for grpc-client
+        run: |
+          # Install per-package dependencies for packages that run tsc directly
+          pnpm --filter @chirp/grpc-client install --frozen-lockfile
+
       - name: Check for vulnerabilities (npm audit)
         run: pnpm audit --audit-level=moderate || true
 
