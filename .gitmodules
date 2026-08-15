@@ -1,0 +1,3 @@
+[submodule "interviewQuestions/interview-autopilot"]
+	path = interviewQuestions/interview-autopilot
+	url = git@github.com:autopilot-team/interview.git

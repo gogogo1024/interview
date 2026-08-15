@@ -3,6 +3,8 @@
 	"include": ["src/**/*.ts"],
 	"compilerOptions": {
 		"outDir": "./dist",
+		"noEmit": false,
+		"allowImportingTsExtensions": false,
 		"noUncheckedIndexedAccess": false,
 		"skipLibCheck": true
 	}
