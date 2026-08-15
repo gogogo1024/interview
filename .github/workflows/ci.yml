@@ -86,6 +86,25 @@ jobs:
           pnpm --filter @chirp/client-admin exec -- which vite || true
           pnpm --filter @chirp/client-user exec -- which vite || true
 
+      - name: CI debug: inspect grpc-client package
+        run: |
+          echo "--- CI debug: node & pnpm versions ---"
+          node -v || true
+          pnpm -v || true
+          echo "--- List packages/grpc-client ---"
+          ls -la packages/grpc-client || true
+          echo "--- List packages/grpc-client/node_modules ---"
+          ls -la packages/grpc-client/node_modules || true
+          echo "--- List packages/proto/dist ---"
+          ls -la packages/proto/dist || true
+          echo "--- Show packages/grpc-client/package.json ---"
+          cat packages/grpc-client/package.json || true
+          echo "--- Show generated proto dist files (if any) ---"
+          find packages/proto/dist -maxdepth 2 -type f -print || true
+          echo "--- List root node_modules/.pnpm and .bin ---"
+          ls -la node_modules/.pnpm || true
+          ls -la node_modules/.bin || true
+
       - name: Build (all)
         run: pnpm -w -r run build
 
