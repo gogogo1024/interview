@@ -102,6 +102,7 @@ jobs:
       - name: Generate proto
         run: |
           cd packages/proto
+          pnpm install --frozen-lockfile
           pnpm run proto:generate
 
       - name: Prebuild proto package
@@ -177,6 +178,7 @@ jobs:
       - name: Generate proto
         run: |
           cd packages/proto
+          pnpm install --frozen-lockfile
           pnpm run proto:generate
 
       - name: Setup database
