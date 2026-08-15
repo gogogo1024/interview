@@ -46,6 +46,11 @@ jobs:
           cd packages/proto
           pnpm run build
 
+      - name: Ensure per-package dependencies (grpc-client, api)
+        run: |
+          pnpm --filter @chirp/grpc-client install --frozen-lockfile
+          pnpm --filter @chirp/api install --frozen-lockfile
+
       - name: Generate database migrations
         run: pnpm --filter @chirp/api exec drizzle-kit generate
 
