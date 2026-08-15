@@ -54,33 +54,6 @@ jobs:
       - name: Generate database migrations
         run: pnpm --filter @chirp/api exec drizzle-kit generate
 
-      - name: Generate route trees for typecheck
-        run: |
-          node -e "
-          const fs = require('fs');
-          const path = require('path');
-          
-          const apps = ['client-admin', 'client-user'];
-          const minimalRouteTree = \`/* eslint-disable */
-          /* biome-ignore lint: generated file */
-          // @ts-nocheck
-          
-          import { RootRoute } from '@tanstack/react-router';
-          
-          export const __ROOT__ = new RootRoute({});
-          export const routeTree = __ROOT__.getRoutes();
-          \`;
-          
-          apps.forEach(app => {
-            const dir = path.join('apps', app, 'src');
-            const filePath = path.join(dir, 'routeTree.gen.ts');
-            fs.mkdirSync(dir, { recursive: true });
-            fs.writeFileSync(filePath, minimalRouteTree);
-          });
-          
-          console.log('✓ Generated route tree placeholders');
-          "
-
       - name: Lint (fast feedback)
         run: pnpm -w -r run lint
 
