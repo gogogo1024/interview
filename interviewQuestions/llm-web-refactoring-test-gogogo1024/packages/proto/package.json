@@ -14,7 +14,7 @@
 	},
 	"scripts": {
 		"proto:generate": "pnpm exec protoc --plugin=protoc-gen-ts=./node_modules/.bin/protoc-gen-ts --ts_out ./generated --proto_path ./protos ./protos/*.proto",
-		"typecheck": "tsc --noEmit",
+		"typecheck": "pnpm run proto:generate && tsc --noEmit",
 		"build": "pnpm run proto:generate && tsc -p tsconfig.json"
 	},
 	"dependencies": {
