@@ -39,7 +39,6 @@ Thumbs.db
 *.swo
 
 # Generated files
-routeTree.gen.ts
 packages/proto/generated/*
 !packages/proto/generated/.gitkeep
 
