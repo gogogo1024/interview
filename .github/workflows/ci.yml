@@ -105,6 +105,16 @@ jobs:
           ls -la node_modules/.pnpm || true
           ls -la node_modules/.bin || true
 
+      - name: Prebuild: ensure proto and grpc-client
+        run: |
+          echo "Ensure @chirp/proto is built and @chirp/grpc-client node_modules exist"
+          # Rebuild proto to guarantee compiled types are present for dependents
+          pnpm --filter @chirp/proto run build
+          # Ensure grpc-client has its package-level node_modules (pnpm will link workspace deps)
+          pnpm --filter @chirp/grpc-client install --frozen-lockfile
+          # Build grpc-client early and fail fast if types/deps are missing
+          pnpm --filter @chirp/grpc-client run build
+
       - name: Build (all)
         run: pnpm -w -r run build
 
