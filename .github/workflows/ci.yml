@@ -58,6 +58,8 @@ jobs:
 
       - name: Typecheck (fast feedback)
         run: pnpm -w -r run typecheck --no-cache
+        env:
+          TURBO_SKIP_PRUNE: "true"
 
       - name: Build (all packages)
         run: pnpm -w -r run build
