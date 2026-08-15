@@ -45,6 +45,9 @@ jobs:
           pnpm --filter @chirp/proto install --frozen-lockfile
           cd packages/proto
           pnpm exec protoc --plugin=protoc-gen-ts=./node_modules/.bin/protoc-gen-ts --ts_out=./generated --proto_path=./protos ./protos/*.proto
+          # Build proto package so its compiled types are available to dependents
+          cd ../..
+          pnpm --filter @chirp/proto run build
 
       - name: Generate DB
         run: |
@@ -75,6 +78,7 @@ jobs:
           echo "Installing per-package dependencies for frontends"
           pnpm --filter @chirp/client-admin install --frozen-lockfile
           pnpm --filter @chirp/client-user install --frozen-lockfile
+          pnpm --filter @chirp/grpc-client install --frozen-lockfile
           echo "Installing per-package dependencies for packages needed at build-time"
           pnpm --filter @chirp/db-schema install --frozen-lockfile
           pnpm --filter @chirp/api install --frozen-lockfile
