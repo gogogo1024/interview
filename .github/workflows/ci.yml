@@ -61,7 +61,7 @@ jobs:
         run: pnpm -w -r run lint
 
       - name: Typecheck (fast feedback)
-        run: pnpm -w -r run typecheck
+        run: pnpm -w -r run typecheck --no-cache
 
       - name: Build (all packages)
         run: pnpm -w -r run build
