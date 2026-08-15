@@ -1,5 +1,5 @@
 /* eslint-disable */
-/* biome-ignore lint: generated file */
+// biome-ignore lint: generated file
 // @ts-nocheck
 
 // noinspection JSUnusedGlobalSymbols
@@ -230,7 +230,6 @@ export const routeTree = rootRouteImport
 	._addFileChildren(rootRouteChildren)
 	._addFileTypes<FileRouteTypes>();
 
-import type { createStart } from "@tanstack/react-start";
 import type { getRouter } from "./router.tsx";
 
 declare module "@tanstack/react-start" {
