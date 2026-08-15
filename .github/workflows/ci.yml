@@ -44,6 +44,7 @@ jobs:
       - name: Build proto package (generate types for dependents)
         run: |
           cd packages/proto
+          ls -la node_modules/.bin/ 2>/dev/null || echo "protoc-gen-ts binary directory not found"
           pnpm run build
 
       - name: Clear turbo cache before typecheck
