@@ -24,7 +24,7 @@ export default defineConfig({
 			"TANSTACK_DEVTOOLS_DISABLED=true GRPC_API_HOST=localhost:50051 GRPC_API_SECURE=false pnpm run build && pnpm run start",
 		url: "http://localhost:3002",
 		reuseExistingServer: true,
-		timeout: 600000, // 10 minutes - increased to handle CI resource constraints and slow builds
+		timeout: 1200000, // 20 minutes - production build is faster than dev mode but still needs significant time in CI
 		env: {
 			TANSTACK_DEVTOOLS_DISABLED: "true",
 			GRPC_API_HOST: "localhost:50051",
