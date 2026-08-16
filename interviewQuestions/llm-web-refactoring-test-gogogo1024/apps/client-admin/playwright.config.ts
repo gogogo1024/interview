@@ -21,11 +21,12 @@ export default defineConfig({
 	],
 	webServer: {
 		command:
-			"TANSTACK_DEVTOOLS_DISABLED=true GRPC_API_HOST=localhost:50051 GRPC_API_SECURE=false pnpm run build && pnpm run start",
+			"TANSTACK_DEVTOOLS_DISABLED=true GRPC_API_HOST=localhost:50051 GRPC_API_SECURE=false PORT=3002 pnpm run build && pnpm run start",
 		url: "http://localhost:3002",
 		reuseExistingServer: true,
 		timeout: 1200000, // 20 minutes - production build is faster than dev mode but still needs significant time in CI
 		env: {
+			PORT: "3002",
 			TANSTACK_DEVTOOLS_DISABLED: "true",
 			GRPC_API_HOST: "localhost:50051",
 			GRPC_API_SECURE: "false",
