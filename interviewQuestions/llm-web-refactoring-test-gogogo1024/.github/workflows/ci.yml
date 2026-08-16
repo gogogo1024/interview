@@ -197,6 +197,18 @@ jobs:
       - name: Run build
         run: pnpm run build
 
+      - name: Cache build outputs
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-outputs
+          path: |
+            apps/*/dist/**
+            apps/*/.output/**
+            apps/*/.vinxi/**
+            apps/*/.tanstack/**
+            packages/*/dist/**
+          retention-days: 1
+
   # E2E tests (only on PRs and main branch, optional for now due to hydration issues)
   e2e-tests:
     name: E2E Tests
@@ -223,6 +235,11 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Restore build outputs
+        uses: actions/download-artifact@v4
+        with:
+          name: build-outputs
+
       - name: Generate proto
         run: |
           # Ensure proto package devDependencies are present, then run protoc
@@ -234,7 +251,7 @@ jobs:
         run: pnpm run db:generate && pnpm run db:migrate && pnpm run db:seed
 
       - name: Run E2E tests
-        run: pnpm run test:e2e
+        run: pnpm run test:e2e:ci
         continue-on-error: true
 
       - name: Upload test results
