@@ -20,7 +20,7 @@ export default defineConfig({
 		},
 	],
 	webServer: {
-		command: "pnpm run dev",
+		command: "TANSTACK_DEVTOOLS_DISABLED=true pnpm run dev",
 		url: "http://localhost:3002",
 		reuseExistingServer: true,
 		timeout: 180000, // 3 minutes - increased to handle resource constraints

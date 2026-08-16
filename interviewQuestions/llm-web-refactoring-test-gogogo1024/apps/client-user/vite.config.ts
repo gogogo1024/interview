@@ -153,7 +153,7 @@ const config = defineConfig({
 		},
 	},
 	plugins: [
-		devtools(),
+		process.env.TANSTACK_DEVTOOLS_DISABLED !== "true" && devtools(),
 		nitro(),
 		stylexUnplugin.vite({
 			useCSSLayers: true,
@@ -169,7 +169,7 @@ const config = defineConfig({
 		tanstackStart(),
 		viteReact(),
 		filterInvalidPreloadsPlugin(),
-	],
+	].filter(Boolean),
 });
 
 export default config;

@@ -144,7 +144,7 @@ const config = defineConfig({
 		},
 	},
 	plugins: [
-		devtools({ eventBusConfig: { port: 42070 } }),
+		process.env.TANSTACK_DEVTOOLS_DISABLED !== "true" && devtools({ eventBusConfig: { port: 42070 } }),
 		nitro(),
 		stylexUnplugin.vite({
 			useCSSLayers: true,
@@ -162,7 +162,7 @@ const config = defineConfig({
 		tanstackStart(),
 		viteReact(),
 		filterInvalidPreloadsPlugin(),
-	],
+	].filter(Boolean),
 });
 
 export default config;
