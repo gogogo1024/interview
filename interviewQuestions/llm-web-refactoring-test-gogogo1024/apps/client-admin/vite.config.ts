@@ -144,7 +144,8 @@ const config = defineConfig({
 		},
 	},
 	plugins: [
-		process.env.TANSTACK_DEVTOOLS_DISABLED !== "true" && devtools({ eventBusConfig: { port: 42070 } }),
+		process.env.TANSTACK_DEVTOOLS_DISABLED !== "true" &&
+			devtools({ eventBusConfig: { port: 42070 } }),
 		nitro(),
 		stylexUnplugin.vite({
 			useCSSLayers: true,
