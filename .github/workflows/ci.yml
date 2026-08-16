@@ -57,6 +57,12 @@ jobs:
       - name: Generate database migrations
         run: pnpm --filter @chirp/api exec drizzle-kit generate
 
+      - name: Generate routes for client-admin
+        run: pnpm --filter @chirp/client-admin exec -- vite build --mode ssr
+
+      - name: Generate routes for client-user
+        run: pnpm --filter @chirp/client-user exec -- vite build --mode ssr
+
       - name: Lint (fast feedback)
         run: pnpm -w -r run lint
 
