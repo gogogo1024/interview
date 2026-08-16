@@ -230,6 +230,7 @@ export const routeTree = rootRouteImport
 	._addFileChildren(rootRouteChildren)
 	._addFileTypes<FileRouteTypes>();
 
+import type { createStart } from "@tanstack/react-start";
 import type { getRouter } from "./router.tsx";
 
 declare module "@tanstack/react-start" {
