@@ -96,6 +96,12 @@ jobs:
       - name: Install dependencies
         run: pnpm install -w --frozen-lockfile
 
+      - name: Generate routes for client-admin
+        run: pnpm --filter @chirp/client-admin exec -- vite build --mode ssr
+
+      - name: Generate routes for client-user
+        run: pnpm --filter @chirp/client-user exec -- vite build --mode ssr
+
       - name: Run type checker
         run: pnpm run typecheck
 
