@@ -46,3 +46,6 @@ packages/proto/generated/*
 count.txt
 todos.json
 *.log
+
+# Auto-generated route tree files
+**/routeTree.gen.ts

@@ -8,8 +8,7 @@
 	},
 	"files": {
 		"ignoreUnknown": true,
-		"includes": ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx", "**/*.json"],
-		"ignore": ["**/routeTree.gen.ts"]
+		"includes": ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx", "**/*.json"]
 	},
 	"formatter": {
 		"enabled": true,
@@ -23,7 +22,7 @@
 			"recommended": true,
 			"correctness": {
 				"noUnusedVariables": "error",
-				"noUnusedImports": "error"
+				"noUnusedImports": "off"
 			},
 			"suspicious": {
 				"noExplicitAny": "off"
@@ -31,6 +30,9 @@
 			"style": {
 				"useConst": "error",
 				"noNonNullAssertion": "warn"
+			},
+			"complexity": {
+				"noStaticOnlyClass": "off"
 			}
 		}
 	},

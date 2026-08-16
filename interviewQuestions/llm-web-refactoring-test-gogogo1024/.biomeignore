@@ -1,1 +1,2 @@
-**/routeTree.gen.ts
+apps/client-admin/src/routeTree.gen.ts
+apps/client-user/src/routeTree.gen.ts
