@@ -16,7 +16,7 @@
 		"test": "turbo run test",
 		"test:unit": "turbo run test:unit",
 		"test:integration": "turbo run test:integration",
-		"test:e2e": "export GRPC_JWT_SECRET=\"test-secret-key-32-characters-long-for-testing-only-do-not-use-production\"; export GRPC_API_HOST=\"localhost:50051\"; export GRPC_API_SECURE=\"false\"; turbo run build || exit 1; echo '[E2E] Starting API server...'; pnpm --filter api start & API_PID=$!; echo '[E2E] Waiting for API health check (up to 30s)...'; for i in {0..60}; do if curl -sf http://localhost:3001/health > /dev/null 2>&1; then echo '[E2E] API ready!'; break; fi; if [ $i -eq 60 ]; then echo '[E2E] FATAL: API health check timeout'; kill $API_PID 2>/dev/null; exit 1; fi; sleep 0.5; done; echo '[E2E] Running playwright tests...'; turbo run test:e2e; EXIT=$?; echo '[E2E] Cleaning up...'; kill $API_PID 2>/dev/null; exit $EXIT",
+		"test:e2e": "turbo run build || exit 1; echo '[E2E] Starting API server...'; pnpm --filter api start & API_PID=$!; echo '[E2E] Waiting for API health check (up to 30s)...'; for i in {0..60}; do if curl -sf http://localhost:3001/health > /dev/null 2>&1; then echo '[E2E] API ready!'; break; fi; if [ $i -eq 60 ]; then echo '[E2E] FATAL: API health check timeout'; kill $API_PID 2>/dev/null; exit 1; fi; sleep 0.5; done; echo '[E2E] Running playwright tests...'; turbo run test:e2e; EXIT=$?; echo '[E2E] Cleaning up...'; kill $API_PID 2>/dev/null; exit $EXIT",
 		"proto:generate": "turbo run proto:generate --filter=@chirp/proto",
 		"db:generate": "turbo run db:generate",
 		"db:migrate": "turbo run db:migrate",
