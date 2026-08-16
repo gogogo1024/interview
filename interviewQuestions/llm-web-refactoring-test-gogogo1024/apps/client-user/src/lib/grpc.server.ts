@@ -2,11 +2,9 @@ import { type ChirpClient, createChirpClient } from "@chirp/grpc-client";
 import { getSessionData } from "./session.server";
 
 // gRPC API host (read at runtime using bracket access to avoid bundler inlining)
-// biome-ignore lint/suspicious/noExplicitAny: process.env access
 const GRPC_HOST = (process as any).env?.GRPC_API_HOST || "localhost:50051";
 
 // Helpers to read env at runtime without allowing bundlers to inline values
-// biome-ignore lint/suspicious/noExplicitAny: process.env access
 function readEnv(name: string): string | undefined {
 	const env = (process as any).env;
 	return env ? env[name] : undefined;
