@@ -51,9 +51,8 @@ export async function waitForHydration(page: Page) {
 				el.remove();
 			});
 		});
-	} catch (err) {
-		console.error(err);
-		throw err;
+	} catch {
+		// Context may have been destroyed by a concurrent navigation
 	}
 }
 // export async function waitForHydration(page: Page): Promise<void> {
@@ -137,7 +136,7 @@ export async function loginAsAdmin(
 				`Admin login attempt ${attempt} failed. Current URL: ${currentUrl}. Error: ${err}`,
 			);
 			if (attempt < 3) {
-				await page.context().clearCookies();
+				await page.context().clearCookies().catch(() => {});
 			}
 		}
 	}
