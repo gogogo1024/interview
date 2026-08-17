@@ -20,11 +20,14 @@ export default defineConfig({
 		},
 	],
 	webServer: {
-		command:
-			"TANSTACK_DEVTOOLS_DISABLED=true GRPC_API_HOST=localhost:50051 GRPC_API_SECURE=false PORT=3002 pnpm run build && pnpm run start",
+		// Use production build to avoid dev mode Nitro environment issues
+		// In CI, build outputs are restored from artifacts, so skip build step
+		command: process.env.CI
+			? "TANSTACK_DEVTOOLS_DISABLED=true GRPC_API_HOST=localhost:50051 GRPC_API_SECURE=false PORT=3002 pnpm run start"
+			: "TANSTACK_DEVTOOLS_DISABLED=true GRPC_API_HOST=localhost:50051 GRPC_API_SECURE=false PORT=3002 pnpm run build && pnpm run start",
 		url: "http://localhost:3002",
 		reuseExistingServer: true,
-		timeout: 1200000, // 20 minutes - production build is faster than dev mode but still needs significant time in CI
+		timeout: 1200000, // 20 minutes - increased to handle CI resource constraints and slow builds
 		env: {
 			PORT: "3002",
 			TANSTACK_DEVTOOLS_DISABLED: "true",
