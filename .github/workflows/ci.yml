@@ -126,11 +126,11 @@ jobs:
         with:
           name: build-outputs
           path: |
-            apps/*/dist/**
-            apps/*/.output/**
-            apps/*/.vinxi/**
-            apps/*/.tanstack/**
-            packages/*/dist/**
+            interviewQuestions/llm-web-refactoring-test-gogogo1024/apps/*/dist
+            interviewQuestions/llm-web-refactoring-test-gogogo1024/apps/*/.output
+            interviewQuestions/llm-web-refactoring-test-gogogo1024/apps/*/.vinxi
+            interviewQuestions/llm-web-refactoring-test-gogogo1024/apps/*/.tanstack
+            interviewQuestions/llm-web-refactoring-test-gogogo1024/packages/*/dist
           retention-days: 1
 
   # E2E Tests
