@@ -7,12 +7,14 @@ on:
     branches: [ master ]
 
 jobs:
+  # Validate: lint, typecheck, unit tests
   validate:
     name: Validate PR
     runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: interviewQuestions/llm-web-refactoring-test-gogogo1024
+    timeout-minutes: 30
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -34,9 +36,6 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install -w --frozen-lockfile
-
-      - name: Install Playwright browsers
-        run: pnpm exec playwright install
 
       - name: Generate proto definitions (protoc)
         run: |
@@ -71,45 +70,121 @@ jobs:
         env:
           TURBO_SKIP_PRUNE: "true"
 
-      - name: Build (all packages)
-        run: pnpm -w -r run build
-
       - name: Unit tests
         run: pnpm -w -r run test:unit
 
-      - name: Start API server in background
+  # Build: compile all packages
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: interviewQuestions/llm-web-refactoring-test-gogogo1024
+    timeout-minutes: 40
+    needs: [validate]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 9
+
+      - name: Install protoc
+        run: sudo apt-get update && sudo apt-get install -y protobuf-compiler
+
+      - name: Install dependencies
+        run: pnpm install -w --frozen-lockfile
+
+      - name: Generate proto definitions (protoc)
         run: |
-          export GRPC_JWT_SECRET="${GRPC_JWT_SECRET:-test-secret-key-32-characters-long-for-testing-only-do-not-use-production}"
-          export GRPC_API_HOST="${GRPC_API_HOST:-localhost:50051}"
-          export GRPC_API_SECURE="${GRPC_API_SECURE:-false}"
-          pnpm --filter api start > /tmp/api.log 2>&1 &
-          echo $! > /tmp/api.pid
-          echo "API PID saved: $(cat /tmp/api.pid)"
+          cd packages/proto
+          pnpm install --frozen-lockfile
+          pnpm exec protoc --plugin=protoc-gen-ts=./node_modules/.bin/protoc-gen-ts --ts_out=./generated --proto_path=./protos ./protos/*.proto
 
-      - name: Wait for API server to be ready
+      - name: Build proto and grpc-client packages
         run: |
-          echo "Waiting for API server to be ready (up to 30s)..."
-          for i in {0..60}; do
-            if curl -sf http://localhost:3001/health > /dev/null 2>&1; then
-              echo "✅ API is ready"
-              exit 0
-            fi
-            if [ $i -eq 60 ]; then
-              echo "❌ API health check timeout"
-              cat /tmp/api.log
-              exit 1
-            fi
-            sleep 0.5
-          done
+          cd packages/proto && pnpm run build
+          cd ../grpc-client && pnpm run build
 
-      - name: E2E tests (optional - may timeout in CI)
-        run: pnpm run test:e2e:only
-        timeout-minutes: 15
+      - name: Generate database migrations
+        run: pnpm --filter @chirp/api exec drizzle-kit generate
 
-      - name: Cleanup API server
+      - name: Build (all packages)
+        run: pnpm -w -r run build
+
+      - name: Cache build outputs for E2E tests
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-outputs
+          path: |
+            apps/*/dist/**
+            apps/*/.output/**
+            apps/*/.vinxi/**
+            apps/*/.tanstack/**
+            packages/*/dist/**
+          retention-days: 1
+
+  # E2E Tests
+  e2e-tests:
+    name: E2E Tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: interviewQuestions/llm-web-refactoring-test-gogogo1024
+    timeout-minutes: 180
+    needs: [build]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 9
+
+      - name: Install dependencies
+        run: pnpm install -w --frozen-lockfile
+
+      - name: Install Playwright browsers
+        run: pnpm exec playwright install
+
+      - name: Restore build outputs
+        uses: actions/download-artifact@v4
+        with:
+          name: build-outputs
+
+      - name: Generate proto definitions (protoc)
+        run: |
+          cd packages/proto
+          pnpm install --frozen-lockfile
+          pnpm exec protoc --plugin=protoc-gen-ts=./node_modules/.bin/protoc-gen-ts --ts_out=./generated --proto_path=./protos ./protos/*.proto
+
+      - name: Setup database
+        run: pnpm run db:generate && pnpm run db:migrate && pnpm run db:seed
+
+      - name: E2E tests
+        run: pnpm run test:e2e:ci
+
+      - name: Upload test results
         if: always()
-        run: |
-          if [ -f /tmp/api.pid ]; then
-            kill $(cat /tmp/api.pid) 2>/dev/null || true
-            rm /tmp/api.pid
-          fi
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: apps/*/playwright-report/
+          retention-days: 7
