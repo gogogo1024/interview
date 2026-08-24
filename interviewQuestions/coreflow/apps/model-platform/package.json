@@ -1,0 +1,26 @@
+{
+  "name": "@coreflow/model-platform",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx src/main.ts",
+    "build": "tsc",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@temporalio/worker": "^1.11.0",
+    "zod": "^3.23.0",
+    "@coreflow/gpu-sdk": "workspace:*",
+    "@coreflow/prisma-models": "workspace:*",
+    "@coreflow/temporal-common": "workspace:*",
+    "@coreflow/common-utils": "workspace:*",
+    "@coreflow/trpc-types": "workspace:*"
+  },
+  "devDependencies": {
+    "tsx": "^4.19.0",
+    "typescript": "^5.5.4",
+    "@types/node": "^20.14.10",
+    "@types/ws": "^8.5.12"
+  }
+}

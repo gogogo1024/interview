@@ -1,13 +1,71 @@
 #history
 .history
 .vscode/*
-build/
-interviewQuestions/secondspectrum/node_modules
-interviewQuestions/*/node_modules
-distribute_system_in_nodejs/node_modules
-distribute_system_in_nodejs/grpc/node_modules
-distribute_system_in_nodejs/*/node_modules
-distribute_system_in_nodejs/*/*/node_modules
-distribute_system_in_nodejs/*/*/*/node_modules
+# General
+.DS_Store
+Thumbs.db
 
-./idea/*
+# Node / JS
+node_modules/
+**/node_modules/
+
+# pnpm
+.pnpm-store/
+.pnpm-debug.log*
+pnpm-debug.log*
+
+# Build outputs
+dist/
+**/dist/
+build/
+**/build/
+out/
+
+# Next.js
+.next/
+**/.next/
+.next/cache/
+
+# TypeScript
+*.tsbuildinfo
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Environment
+.env
+.env.*
+.env.local
+.env.*.local
+
+# Coverage
+coverage/
+**/coverage/
+
+# IDEs
+.vscode/
+.idea/
+/.idea/
+*.sublime-workspace
+
+# OS / Temp
+tmp/
+temp/
+*.tmp
+
+# Caches / tooling
+.turbo/
+.vercel/
+.cache/
+
+# Preserve any project-specific node_modules rules (legacy entries)
+interviewQuestions/secondspectrum/node_modules/
+distribute_system_in_nodejs/node_modules/
+distribute_system_in_nodejs/grpc/node_modules/
+distribute_system_in_nodejs/*/node_modules/
+distribute_system_in_nodejs/*/*/node_modules/

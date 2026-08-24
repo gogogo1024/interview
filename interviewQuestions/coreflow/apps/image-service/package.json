@@ -1,0 +1,31 @@
+{
+  "name": "@coreflow/image-service",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev:scheduler": "tsx src/scheduler/main.ts",
+    "dev:worker": "tsx src/worker/main.ts",
+    "dev:temporal": "tsx src/temporal/worker.ts",
+    "build": "tsc",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@temporalio/worker": "^1.11.0",
+    "@temporalio/workflow": "^1.11.0",
+    "@temporalio/activity": "^1.11.0",
+    "bullmq": "^5.8.0",
+    "ioredis": "^5.4.0",
+    "zod": "^3.23.0",
+    "@coreflow/gpu-sdk": "workspace:*",
+    "@coreflow/prisma-models": "workspace:*",
+    "@coreflow/temporal-common": "workspace:*",
+    "@coreflow/common-utils": "workspace:*",
+    "@coreflow/trpc-types": "workspace:*"
+  },
+  "devDependencies": {
+    "tsx": "^4.19.0",
+    "typescript": "^5.5.4",
+    "@types/node": "^20.14.10"
+  }
+}

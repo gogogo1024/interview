@@ -1,0 +1,28 @@
+{
+  "name": "@coreflow/video-call-service",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev:signaling": "tsx src/signaling/main.ts",
+    "dev:sfu": "tsx src/sfu/main.ts",
+    "dev:processor": "tsx src/realtime-processor/main.ts",
+    "build": "tsc",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@trpc/server": "^10.45.0",
+    "ws": "^8.17.0",
+    "mediasoup": "^3.14.0",
+    "@coreflow/gpu-sdk": "workspace:*",
+    "@coreflow/prisma-models": "workspace:*",
+    "@coreflow/common-utils": "workspace:*",
+    "@coreflow/trpc-types": "workspace:*"
+  },
+  "devDependencies": {
+    "tsx": "^4.19.0",
+    "typescript": "^5.5.4",
+    "@types/node": "^20.14.10",
+    "@types/ws": "^8.5.12"
+  }
+}

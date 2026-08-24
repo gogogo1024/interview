@@ -1,0 +1,91 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  // Prisma 7 不再在 schema 中支持 `url` 字段。
+  // 连接字符串请通过 `prisma.config.ts` 或在运行时传入 PrismaClient 构造器。
+}
+
+// 全业务统一数据模型（示例）
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  name      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  imageTasks ImageTask[]
+  videoSessions VideoCallSession[]
+}
+
+model ModelInfo {
+  id          String   @id @default(cuid())
+  name        String
+  type        String
+  version     String?
+  quantized   Boolean  @default(false)
+  sizeBytes   Int?
+  tags        String[]
+  createdAt   DateTime @default(now())
+  description String?
+}
+
+model ImageTask {
+  id          String     @id @default(cuid())
+  prompt      String
+  width       Int?
+  height      Int?
+  steps       Int?
+  seed        Int?
+  modelId     String?
+  numImages   Int?       @default(1)
+  status      TaskStatus @default(QUEUED)
+  outputs     Json?
+  createdBy   User?      @relation(fields: [createdById], references: [id])
+  createdById Int?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+}
+
+enum TaskStatus {
+  QUEUED
+  RUNNING
+  SUCCEEDED
+  FAILED
+}
+
+model VideoCallSession {
+  id          String     @id @default(cuid())
+  roomId      String
+  status      VideoStatus @default(ACTIVE)
+  participants Participant[]
+  createdAt   DateTime   @default(now())
+  endedAt     DateTime?
+  createdBy   User?      @relation(fields: [createdById], references: [id])
+  createdById Int?
+}
+
+model Participant {
+  id           String   @id @default(cuid())
+  userId       String?
+  displayName  String?
+  joinedAt     DateTime @default(now())
+  muted        Boolean  @default(false)
+  videoEnabled Boolean  @default(true)
+  session      VideoCallSession? @relation(fields: [sessionId], references: [id])
+  sessionId    String?
+}
+
+enum VideoStatus {
+  ACTIVE
+  ENDED
+  PAUSED
+}
+
+model Idempotency {
+  key       String   @id
+  value     Json?
+  expiresAt DateTime?
+  createdAt DateTime @default(now())
+}
