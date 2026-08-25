@@ -1,19 +1,15 @@
 {
+  "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "target": "ES2022",
     "module": "nodenext",
-    "declaration": true,
+    "moduleResolution": "nodenext",
     "outDir": "dist",
     "rootDir": "src",
-    "strict": true,
     "allowImportingTsExtensions": true,
-    "esModuleInterop": true,
-    "emitDeclarationOnly": true,
-    "skipLibCheck": true,
-    "moduleResolution": "nodenext",
-    "resolveJsonModule": true,
-    "forceConsistentCasingInFileNames": true,
-    "lib": ["ES2022"]
+    "rewriteRelativeImportExtensions": true
+    ,
+    "declaration": true,
+    "declarationMap": true
   },
   "include": ["src"]
 }

@@ -117,11 +117,16 @@ export class PrismaIdempotencyStore<T = any> implements IdempotencyStore<T> {
     if (this.prismaClient) return this.prismaClient;
     try {
       const mod = await import('@coreflow/prisma-models');
-      // our prisma-models exports default prisma client
+      // Prefer explicit async initializer if available (strict API)
       const anyMod: any = mod;
-      const p = anyMod.default ?? anyMod.prisma ?? anyMod;
-      this.prismaClient = p;
-      return p;
+      if (typeof anyMod.initPrismaClient === 'function') {
+        this.prismaClient = await anyMod.initPrismaClient();
+      } else {
+        // Backwards-compatible fallback: default export / named `prisma` / module itself
+        const p = anyMod.default ?? anyMod.prisma ?? anyMod;
+        this.prismaClient = p;
+      }
+      return this.prismaClient;
     } catch (err) {
       throw new Error('Prisma client not available. Run prisma generate in packages/prisma-models');
     }

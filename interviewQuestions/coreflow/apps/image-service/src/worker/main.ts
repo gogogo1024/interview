@@ -17,6 +17,18 @@ async function main() {
   await worker.start();
   logger.info('GPU worker started', { workerId });
 
+  // 仅在开发/本地模式下启动内置 HTTP API，便于本地调试与集成测试
+  if (process.env.IMAGE_SERVICE_ENABLE_API === 'true') {
+    try {
+      // 延迟导入以避免在 worker-only 运行时引入 HTTP 依赖
+      const { startApiServer } = await import('../api/server.js');
+      startApiServer();
+      logger.info('image-service API enabled (IMAGE_SERVICE_ENABLE_API=true)');
+    } catch (err) {
+      logger.warn('failed enabling image api', err as any);
+    }
+  }
+
   // 示例：接收任务并加入批处理（真实场景来自消息队列或 gRPC/tRPC）
   process.on('message', async (msg: any) => {
     if (msg?.type === 'work') {
