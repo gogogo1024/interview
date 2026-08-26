@@ -144,7 +144,7 @@ export function testNonTunableParametersUnchanged() {
 // Test 6: Validate parameter ranges
 export function testParameterRangeValidation() {
   // These validations would be in AppConfig Schema
-  const validParams = [
+  const validParams: Record<string, number>[] = [
     { pollMs: 100 },
     { pollMs: 1000 },
     { pollMs: 60000 },
@@ -157,11 +157,11 @@ export function testParameterRangeValidation() {
   ];
 
   for (const param of validParams) {
-    // Just verify they parse correctly as numbers
-    const key = Object.keys(param)[0];
-    const value = param[key as keyof typeof param] as any;
-    assert.strictEqual(typeof value, 'number', `${key} should be a number`);
-    assert(value > 0, `${key} should be positive`);
+    // Verify they parse correctly as numbers
+    for (const [key, value] of Object.entries(param)) {
+      assert.strictEqual(typeof value, 'number', `${key} should be a number`);
+      assert(value > 0, `${key} should be positive`);
+    }
   }
 
   console.log('✓ Test 6 passed: Parameter range validation');
