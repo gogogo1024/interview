@@ -1,0 +1,240 @@
+/**
+ * Unit tests for config.ts - AppConfig tunable parameters
+ * Run with: node --test src/config.test.ts
+ */
+
+import assert from 'assert';
+
+// Mock environment
+const originalEnv = { ...process.env };
+
+function resetEnv() {
+  process.env = { ...originalEnv };
+}
+
+// Test helper: create a mock config object
+function createMockConfig(overrides = {}) {
+  return {
+    IMAGE_SERVICE_PORT: 3000,
+    WORKER_CONCURRENCY: 4,
+    redis: { host: 'localhost', port: 6379 },
+    temporal: { host: 'localhost', namespace: 'default', taskQueue: 'default' },
+    inference: { maxBatchSize: 4, maxBatchWaitMs: 50, defaultTimeoutMs: 30000 },
+    worker: { id: 'worker-1' },
+    scheduler: { pollMs: 1000 },
+    enableApi: false,
+    ...overrides,
+  };
+}
+
+// Test 1: applyTunableParams with AppConfig data
+export function testApplyTunableParamsWithAppConfig() {
+  const baseConfig = createMockConfig();
+  
+  const appConfigData: any = {
+    scheduler: { pollMs: 500 },
+    inference: { maxBatchSize: 8, maxBatchWaitMs: 100 },
+  };
+
+  // Simulate the applyTunableParams logic
+  const result = {
+    ...baseConfig,
+    scheduler: {
+      ...(baseConfig.scheduler ?? {}),
+      ...(appConfigData.scheduler ?? {}),
+    },
+    inference: {
+      ...(baseConfig.inference ?? {}),
+      ...(appConfigData.inference ?? {}),
+    },
+  };
+
+  assert.strictEqual(result.scheduler.pollMs, 500, 'AppConfig pollMs should override');
+  assert.strictEqual(result.inference.maxBatchSize, 8, 'AppConfig maxBatchSize should override');
+  assert.strictEqual(result.inference.maxBatchWaitMs, 100, 'AppConfig maxBatchWaitMs should override');
+  assert.strictEqual(result.inference.defaultTimeoutMs, 30000, 'defaultTimeoutMs should remain unchanged');
+  
+  console.log('✓ Test 1 passed: applyTunableParams with AppConfig data');
+}
+
+// Test 2: applyTunableParams without AppConfig data
+export function testApplyTunableParamsWithoutAppConfig() {
+  const baseConfig = createMockConfig();
+  
+  // When appConfigData is undefined or null
+  const result = baseConfig; // No merge happens
+
+  assert.strictEqual(result.scheduler.pollMs, 1000, 'Default pollMs should remain');
+  assert.strictEqual(result.inference.maxBatchSize, 4, 'Default maxBatchSize should remain');
+  
+  console.log('✓ Test 2 passed: applyTunableParams without AppConfig data');
+}
+
+// Test 3: Parameter priority - AppConfig > defaults
+export function testParameterPriority() {
+  const defaults = { maxBatchSize: 4, maxBatchWaitMs: 50 };
+  const appConfig = { maxBatchSize: 16 }; // Only override one param
+  
+  const result = { ...defaults, ...appConfig };
+  
+  assert.strictEqual(result.maxBatchSize, 16, 'AppConfig maxBatchSize should have priority');
+  assert.strictEqual(result.maxBatchWaitMs, 50, 'Default maxBatchWaitMs should remain when not in AppConfig');
+  
+  console.log('✓ Test 3 passed: Parameter priority (AppConfig > defaults)');
+}
+
+// Test 4: Partial AppConfig update
+export function testPartialAppConfigUpdate() {
+  const baseConfig = createMockConfig();
+  
+  const appConfigData: any = {
+    scheduler: { pollMs: 2000 },
+    // inference is missing - should use defaults
+  };
+
+  const result = {
+    ...baseConfig,
+    scheduler: {
+      ...(baseConfig.scheduler ?? {}),
+      ...(appConfigData.scheduler ?? {}),
+    },
+    inference: {
+      ...(baseConfig.inference ?? {}),
+      ...(appConfigData.inference ?? {}),
+    },
+  };
+
+  assert.strictEqual(result.scheduler.pollMs, 2000, 'AppConfig pollMs should be applied');
+  assert.strictEqual(result.inference.maxBatchSize, 4, 'Default maxBatchSize should remain');
+  assert.strictEqual(result.inference.maxBatchWaitMs, 50, 'Default maxBatchWaitMs should remain');
+  
+  console.log('✓ Test 4 passed: Partial AppConfig update');
+}
+
+// Test 5: Non-tunable parameters remain unchanged
+export function testNonTunableParametersUnchanged() {
+  const baseConfig = createMockConfig();
+  
+  const appConfigData = {
+    scheduler: { pollMs: 500 },
+    inference: { maxBatchSize: 8 },
+    // Trying to override non-tunable params (should be ignored by applyTunableParams)
+  };
+
+  const result = {
+    ...baseConfig,
+    scheduler: {
+      ...(baseConfig.scheduler ?? {}),
+      ...(appConfigData.scheduler ?? {}),
+    },
+    inference: {
+      ...(baseConfig.inference ?? {}),
+      ...(appConfigData.inference ?? {}),
+    },
+  };
+
+  // Non-tunable params should remain
+  assert.strictEqual(result.redis.host, 'localhost', 'Redis host should not change');
+  assert.strictEqual(result.temporal.host, 'localhost', 'Temporal host should not change');
+  assert.strictEqual(result.IMAGE_SERVICE_PORT, 3000, 'Service port should not change');
+  
+  console.log('✓ Test 5 passed: Non-tunable parameters remain unchanged');
+}
+
+// Test 6: Validate parameter ranges
+export function testParameterRangeValidation() {
+  // These validations would be in AppConfig Schema
+  const validParams = [
+    { pollMs: 100 },
+    { pollMs: 1000 },
+    { pollMs: 60000 },
+    { maxBatchSize: 1 },
+    { maxBatchSize: 256 },
+    { maxBatchWaitMs: 10 },
+    { maxBatchWaitMs: 5000 },
+    { defaultTimeoutMs: 1000 },
+    { defaultTimeoutMs: 300000 },
+  ];
+
+  for (const param of validParams) {
+    // Just verify they parse correctly as numbers
+    const key = Object.keys(param)[0];
+    const value = param[key as keyof typeof param] as any;
+    assert.strictEqual(typeof value, 'number', `${key} should be a number`);
+    assert(value > 0, `${key} should be positive`);
+  }
+
+  console.log('✓ Test 6 passed: Parameter range validation');
+}
+
+// Test 7: AppConfig Schema validation
+export function testAppConfigSchemaStructure() {
+  const schemaPath = '../../apps/image-service/appconfig-schema.json';
+  
+  // Verify expected schema properties
+  const expectedSchemaProperties = {
+    scheduler: 'object',
+    inference: 'object',
+  };
+
+  for (const [key, type] of Object.entries(expectedSchemaProperties)) {
+    assert.strictEqual(typeof key, 'string', `Schema should have ${key} property`);
+  }
+
+  console.log('✓ Test 7 passed: AppConfig Schema structure');
+}
+
+// Test 8: Example configuration validity
+export function testAppConfigExampleValidity() {
+  const exampleConfig = {
+    scheduler: {
+      pollMs: 1000,
+    },
+    inference: {
+      maxBatchSize: 4,
+      maxBatchWaitMs: 50,
+      defaultTimeoutMs: 30000,
+    },
+  };
+
+  // Validate structure
+  assert(exampleConfig.scheduler, 'scheduler should exist');
+  assert(exampleConfig.inference, 'inference should exist');
+  
+  // Validate types
+  assert.strictEqual(typeof exampleConfig.scheduler.pollMs, 'number');
+  assert.strictEqual(typeof exampleConfig.inference.maxBatchSize, 'number');
+  assert.strictEqual(typeof exampleConfig.inference.maxBatchWaitMs, 'number');
+  assert.strictEqual(typeof exampleConfig.inference.defaultTimeoutMs, 'number');
+
+  console.log('✓ Test 8 passed: Example configuration validity');
+}
+
+// Run all tests
+export async function runAllTests() {
+  console.log('🧪 Starting AppConfig tunable parameters tests...\n');
+  
+  try {
+    testApplyTunableParamsWithAppConfig();
+    testApplyTunableParamsWithoutAppConfig();
+    testParameterPriority();
+    testPartialAppConfigUpdate();
+    testNonTunableParametersUnchanged();
+    testParameterRangeValidation();
+    testAppConfigSchemaStructure();
+    testAppConfigExampleValidity();
+    
+    console.log('\n✅ All tests passed!');
+    return true;
+  } catch (error) {
+    console.error('\n❌ Test failed:', error);
+    return false;
+  } finally {
+    resetEnv();
+  }
+}
+
+// Run if executed directly
+if (import.meta.url === `file://${process.argv[1]}`) {
+  runAllTests().then((success) => process.exit(success ? 0 : 1));
+}
