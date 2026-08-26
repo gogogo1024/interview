@@ -2,7 +2,7 @@ import { SimpleGpuWorker } from '@coreflow/gpu-sdk';
 import { createLogger } from '@coreflow/common-utils';
 import { BatchProcessor } from './batch-processor.js';
 import { createModelRegistry } from './models/index.js';
-import { initConfig, getConfig } from '../config';
+import { initConfig, getConfig, subscribeToConfigUpdates } from '../config';
 
 const logger = createLogger('image-service:worker');
 
@@ -10,6 +10,8 @@ let started = false;
 let workerInstance: SimpleGpuWorker | undefined;
 let batcherInstance: BatchProcessor | undefined;
 let apiModuleRef: any | undefined;
+
+let configUpdateHandler: ((cfg: any) => void) | null = null;
 
 export async function start() {
   if (started) return;
@@ -40,6 +42,29 @@ export async function start() {
       logger.warn('failed enabling image api', err as any);
     }
   }
+
+  // Setup hot-reload handler for core inference parameters
+  configUpdateHandler = (updatedCfg: any) => {
+    const changes: string[] = [];
+    
+    // Only hot-reload inference parameters (batch size, wait time)
+    if (batcherInstance && updatedCfg.inference) {
+      const updated = batcherInstance.updateOptions({
+        maxBatchSize: updatedCfg.inference.maxBatchSize,
+        maxWaitMs: updatedCfg.inference.maxBatchWaitMs,
+      });
+      if (updated) {
+        changes.push(...updated);
+      }
+    }
+    
+    if (changes.length > 0) {
+      logger.info('Worker hot-reload applied', { changes });
+    }
+  };
+
+  // Register for remote config updates
+  subscribeToConfigUpdates(configUpdateHandler);
 
   // 示例：接收任务并加入批处理（真实场景来自消息队列或 gRPC/tRPC）
   process.on('message', async (msg: any) => {

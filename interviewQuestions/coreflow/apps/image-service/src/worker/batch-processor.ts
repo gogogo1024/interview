@@ -5,7 +5,33 @@ export type BatchOptions = { maxBatchSize?: number; maxWaitMs?: number };
 export class BatchProcessor {
   private queue: WorkUnit[] = [];
   private timer: NodeJS.Timeout | null = null;
-  constructor(private handler: (units: WorkUnit[]) => Promise<void>, private opts: BatchOptions = {}) {}
+  private opts: BatchOptions = {};
+  
+  constructor(private handler: (units: WorkUnit[]) => Promise<void>, initialOpts: BatchOptions = {}) {
+    this.opts = initialOpts;
+  }
+
+  /**
+   * Hot-update batch processing parameters
+   * Safe to call while processing; will take effect on next batch cycle
+   */
+  updateOptions(newOpts: Partial<BatchOptions>) {
+    const changed: string[] = [];
+    if (newOpts.maxBatchSize !== undefined && newOpts.maxBatchSize !== this.opts.maxBatchSize) {
+      this.opts.maxBatchSize = newOpts.maxBatchSize;
+      changed.push(`maxBatchSize=${newOpts.maxBatchSize}`);
+    }
+    if (newOpts.maxWaitMs !== undefined && newOpts.maxWaitMs !== this.opts.maxWaitMs) {
+      // Reset timer to pick up new wait time
+      if (this.timer) {
+        clearTimeout(this.timer);
+        this.timer = null;
+      }
+      this.opts.maxWaitMs = newOpts.maxWaitMs;
+      changed.push(`maxWaitMs=${newOpts.maxWaitMs}`);
+    }
+    return changed.length > 0 ? changed : null;
+  }
 
   async add(unit: WorkUnit) {
     this.queue.push(unit);

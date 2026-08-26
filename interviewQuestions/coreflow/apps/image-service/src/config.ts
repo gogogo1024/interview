@@ -2,6 +2,13 @@ import { createLogger, loadImageServiceEnv } from '@coreflow/common-utils';
 
 const logger = createLogger('image-service:config');
 
+// Hot-reload callbacks
+let onConfigUpdateHandlers: Array<(cfg: any) => void> = [];
+
+export function subscribeToConfigUpdates(handler: (cfg: any) => void) {
+  onConfigUpdateHandlers.push(handler);
+}
+
 export function getConfig() {
   const env = loadImageServiceEnv();
   const cfg = {
@@ -64,7 +71,7 @@ export async function initConfig() {
     logger.info('Applied remote config', { sources: { ssm: ssm?.length ?? 0, secrets: secrets?.length ?? 0 } });
 
     // start background poll if configured
-      if (env.REMOTE_CONFIG_POLL_MS && env.REMOTE_CONFIG_POLL_MS > 0) {
+    if (env.REMOTE_CONFIG_POLL_MS && env.REMOTE_CONFIG_POLL_MS > 0) {
       try {
         const dynImport = new Function('m', 'return import(m)') as (m: string) => Promise<any>;
         const mod = await dynImport('@coreflow/common-utils/dist/config/aws-appconfig.js');
@@ -87,7 +94,20 @@ export async function initConfig() {
                 worker: { ...(runtimeConfig as any).worker, ...(cfg.worker ?? {}) },
                 scheduler: { ...(runtimeConfig as any).scheduler, ...(cfg.scheduler ?? {}) },
               } as any;
-              logger.info('Remote config updated (hot-reload applied)');
+              
+              logger.info('Remote config updated', { 
+                updatedFields: Object.keys(cfg),
+                handlerCount: onConfigUpdateHandlers.length 
+              });
+              
+              // Trigger hot-reload for interested components
+              for (const handler of onConfigUpdateHandlers) {
+                try {
+                  handler(runtimeConfig);
+                } catch (err) {
+                  logger.error('Config update handler failed', { error: (err as Error).message });
+                }
+              }
             },
           });
         }
