@@ -1,6 +1,6 @@
 import { createServer } from 'http';
 import { parse as parseUrl } from 'url';
-import { createLogger } from '@coreflow/common-utils';
+import { createLogger, parseRequestJson } from '@coreflow/common-utils';
 import { getConfig } from '../config';
 import {
   ImageGenerateInputSchema,
@@ -17,22 +17,6 @@ const tasks = new Map<string, ImageTask>();
 function jsonResponse(res: any, status: number, body: any) {
   res.writeHead(status, { 'content-type': 'application/json; charset=utf-8' });
   res.end(JSON.stringify(body));
-}
-
-async function readJson(req: any) {
-  return new Promise<any>((resolve, reject) => {
-    let s = '';
-    req.on('data', (chunk: any) => (s += chunk));
-    req.on('end', () => {
-      if (!s) return resolve({});
-      try {
-        resolve(JSON.parse(s));
-      } catch (err) {
-        reject(err);
-      }
-    });
-    req.on('error', reject);
-  });
 }
 
 // Use a Symbol.for key to avoid global name conflicts for the image API server.
@@ -55,7 +39,7 @@ export function startApiServer(port = Number(getConfig().IMAGE_SERVICE_PORT)) {
       const pathname = parsed.pathname || '/';
 
       if (req.method === 'POST' && pathname === '/generate') {
-        const body = await readJson(req).catch((e) => {
+        const body = await parseRequestJson(req).catch((e) => {
           logger.warn('invalid json', e);
           return null;
         });
@@ -82,7 +66,7 @@ export function startApiServer(port = Number(getConfig().IMAGE_SERVICE_PORT)) {
       }
 
       if ((req.method === 'GET' && pathname === '/status') || (req.method === 'POST' && pathname === '/status')) {
-        const inputBody = req.method === 'POST' ? await readJson(req).catch(() => ({})) : parsed.query;
+        const inputBody = req.method === 'POST' ? await parseRequestJson(req).catch(() => ({})) : parsed.query;
         const parsedIn = TaskIdInputSchema.safeParse(inputBody);
         if (!parsedIn.success) return jsonResponse(res, 400, { error: 'validation failed', issues: parsedIn.error.format() });
 
