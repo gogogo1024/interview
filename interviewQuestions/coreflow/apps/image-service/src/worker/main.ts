@@ -2,7 +2,7 @@ import { SimpleGpuWorker } from '@coreflow/gpu-sdk';
 import { createLogger } from '@coreflow/common-utils';
 import { BatchProcessor } from './batch-processor.js';
 import { createModelRegistry } from './models/index.js';
-import { initConfig, getConfig, subscribeToConfigUpdates } from '../config';
+import { initConfig, getConfig, subscribeToConfigUpdates, getTunableParams } from '../config';
 
 const logger = createLogger('image-service:worker');
 
@@ -29,6 +29,14 @@ export async function start() {
 
   await workerInstance.start();
   logger.info('GPU worker started', { workerId });
+
+  // Log AppConfig tunable parameters if available
+  const tunableParams = getTunableParams();
+  if (tunableParams) {
+    logger.info('AppConfig tunable parameters applied', { tunableParams });
+  } else {
+    logger.info('Using default tunable parameters (AppConfig not loaded)');
+  }
 
   // 仅在开发/本地模式下启动内置 HTTP API，便于本地调试与集成测试
   if (cfg.enableApi) {

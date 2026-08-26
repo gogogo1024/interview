@@ -9,6 +9,28 @@ export function subscribeToConfigUpdates(handler: (cfg: any) => void) {
   onConfigUpdateHandlers.push(handler);
 }
 
+/**
+ * Apply tunable parameters from AppConfig to configuration
+ * Merges AppConfig values (if present) with defaults, prioritizing AppConfig
+ */
+function applyTunableParams(cfg: any, appConfigData?: Record<string, any>): any {
+  if (!appConfigData) {
+    return cfg;
+  }
+
+  return {
+    ...cfg,
+    scheduler: {
+      ...(cfg.scheduler ?? {}),
+      ...(appConfigData.scheduler ?? {}),
+    },
+    inference: {
+      ...(cfg.inference ?? {}),
+      ...(appConfigData.inference ?? {}),
+    },
+  };
+}
+
 export function getConfig() {
   const env = loadImageServiceEnv();
   const cfg = {
@@ -21,13 +43,14 @@ export function getConfig() {
     scheduler: { pollMs: env.SCHEDULE_POLL_MS },
     enableApi: env.IMAGE_SERVICE_ENABLE_API,
   } as const;
-  logger.debug('config loaded', cfg);
+  logger.debug('config loaded from env', cfg);
   return cfg;
 }
 
 export default getConfig;
 
 let runtimeConfig = getConfig();
+let lastAppConfigData: Record<string, any> | undefined;
 
 export async function initConfig() {
   const env = loadImageServiceEnv();
@@ -67,8 +90,14 @@ export async function initConfig() {
       scheduler: { ...(runtimeConfig as any).scheduler, ...(remote.scheduler ?? {}) },
     } as any;
 
-    runtimeConfig = merged;
-    logger.info('Applied remote config', { sources: { ssm: ssm?.length ?? 0, secrets: secrets?.length ?? 0 } });
+    // Apply tunable parameters from AppConfig (prioritizes AppConfig values)
+    runtimeConfig = applyTunableParams(merged, remote);
+    lastAppConfigData = remote;
+    
+    logger.info('Applied remote config', { 
+      sources: { ssm: ssm?.length ?? 0, secrets: secrets?.length ?? 0 },
+      tunableParams: { scheduler: remote.scheduler, inference: remote.inference }
+    });
 
     // start background poll if configured
     if (env.REMOTE_CONFIG_POLL_MS && env.REMOTE_CONFIG_POLL_MS > 0) {
@@ -95,9 +124,14 @@ export async function initConfig() {
                 scheduler: { ...(runtimeConfig as any).scheduler, ...(cfg.scheduler ?? {}) },
               } as any;
               
+              // Apply tunable parameters from AppConfig (prioritizes AppConfig values)
+              runtimeConfig = applyTunableParams(runtimeConfig, cfg);
+              lastAppConfigData = cfg;
+              
               logger.info('Remote config updated', { 
                 updatedFields: Object.keys(cfg),
-                handlerCount: onConfigUpdateHandlers.length 
+                handlerCount: onConfigUpdateHandlers.length,
+                tunableParams: { scheduler: cfg.scheduler, inference: cfg.inference }
               });
               
               // Trigger hot-reload for interested components
@@ -120,4 +154,20 @@ export async function initConfig() {
   }
 
   return runtimeConfig;
+}
+
+/**
+ * Get current tunable parameters from AppConfig
+ * Returns the last loaded AppConfig data with tunable parameters
+ * Useful for logging/monitoring which parameters came from AppConfig
+ */
+export function getTunableParams() {
+  if (!lastAppConfigData) {
+    return null;
+  }
+  
+  return {
+    scheduler: lastAppConfigData.scheduler,
+    inference: lastAppConfigData.inference,
+  };
 }

@@ -1,0 +1,77 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Image Service Configuration Schema",
+  "description": "AWS AppConfig configuration schema for tunable image service parameters",
+  "type": "object",
+  "properties": {
+    "scheduler": {
+      "type": "object",
+      "description": "GPU scheduler configuration",
+      "properties": {
+        "pollMs": {
+          "type": "number",
+          "description": "Node heartbeat polling interval in milliseconds",
+          "default": 1000,
+          "minimum": 100,
+          "maximum": 60000,
+          "examples": [500, 1000, 2000, 5000]
+        }
+      },
+      "additionalProperties": false
+    },
+    "inference": {
+      "type": "object",
+      "description": "GPU worker inference batch processing configuration",
+      "properties": {
+        "maxBatchSize": {
+          "type": "number",
+          "description": "Maximum items per batch before flush",
+          "default": 4,
+          "minimum": 1,
+          "maximum": 256,
+          "examples": [1, 2, 4, 8, 16, 32]
+        },
+        "maxBatchWaitMs": {
+          "type": "number",
+          "description": "Maximum wait time before flushing batch (in milliseconds)",
+          "default": 50,
+          "minimum": 10,
+          "maximum": 5000,
+          "examples": [10, 50, 100, 200, 500]
+        },
+        "defaultTimeoutMs": {
+          "type": "number",
+          "description": "Default inference request timeout in milliseconds",
+          "default": 30000,
+          "minimum": 1000,
+          "maximum": 300000,
+          "examples": [5000, 10000, 30000, 60000]
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false,
+  "examples": [
+    {
+      "scheduler": {
+        "pollMs": 1000
+      },
+      "inference": {
+        "maxBatchSize": 4,
+        "maxBatchWaitMs": 50,
+        "defaultTimeoutMs": 30000
+      }
+    },
+    {
+      "scheduler": {
+        "pollMs": 500
+      },
+      "inference": {
+        "maxBatchSize": 8,
+        "maxBatchWaitMs": 100,
+        "defaultTimeoutMs": 60000
+      }
+    }
+  ]
+}

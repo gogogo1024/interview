@@ -1,7 +1,7 @@
 import { GpuScheduler } from '@coreflow/gpu-sdk';
 import { createLogger } from '@coreflow/common-utils';
 import { NodeManager } from './node-manager.js';
-import { initConfig, getConfig, subscribeToConfigUpdates } from '../config';
+import { initConfig, getConfig, subscribeToConfigUpdates, getTunableParams } from '../config';
 
 const logger = createLogger('image-service:scheduler');
 
@@ -18,6 +18,14 @@ async function main() {
   nodeManagerInstance.start(cfg.scheduler.pollMs);
 
   logger.info('Scheduler started', { pollMs: cfg.scheduler.pollMs });
+
+  // Log AppConfig tunable parameters if available
+  const tunableParams = getTunableParams();
+  if (tunableParams) {
+    logger.info('AppConfig tunable parameters applied', { tunableParams });
+  } else {
+    logger.info('Using default tunable parameters (AppConfig not loaded)');
+  }
 
   schedulerInterval = setInterval(() => {
     const assignment = scheduler.scheduleNext();

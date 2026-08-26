@@ -1,0 +1,10 @@
+{
+  "scheduler": {
+    "pollMs": 1000
+  },
+  "inference": {
+    "maxBatchSize": 4,
+    "maxBatchWaitMs": 50,
+    "defaultTimeoutMs": 30000
+  }
+}
