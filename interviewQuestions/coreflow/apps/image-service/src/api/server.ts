@@ -1,6 +1,6 @@
 import { createServer } from 'http';
 import { parse as parseUrl } from 'url';
-import { createLogger, parseRequestJson } from '@coreflow/common-utils';
+import { createLogger } from '@coreflow/common-utils';
 import { getConfig } from '../config';
 import {
   ImageGenerateInputSchema,
@@ -39,7 +39,7 @@ export function startApiServer(port = Number(getConfig().IMAGE_SERVICE_PORT)) {
       const pathname = parsed.pathname || '/';
 
       if (req.method === 'POST' && pathname === '/generate') {
-        const body = await parseRequestJson(req).catch((e) => {
+        const body = await (req as any).json().catch((e: any) => {
           logger.warn('invalid json', e);
           return null;
         });
@@ -66,7 +66,8 @@ export function startApiServer(port = Number(getConfig().IMAGE_SERVICE_PORT)) {
       }
 
       if ((req.method === 'GET' && pathname === '/status') || (req.method === 'POST' && pathname === '/status')) {
-        const inputBody = req.method === 'POST' ? await parseRequestJson(req).catch(() => ({})) : parsed.query;
+        const inputBody =
+          req.method === 'POST' ? await (req as any).json().catch(() => ({})) : parsed.query;
         const parsedIn = TaskIdInputSchema.safeParse(inputBody);
         if (!parsedIn.success) return jsonResponse(res, 400, { error: 'validation failed', issues: parsedIn.error.format() });
 
