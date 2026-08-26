@@ -1,10 +1,38 @@
 /**
- * Adapters 层负责把 API 请求转发到后端服务（tRPC / HTTP / gRPC / MQ）
- * 这里为 video-call-service 的占位转发逻辑。
+ * Adapter to forward signaling calls to video-call-service.
  */
+import { getConfig } from '../config';
+
 export async function forwardToVideoService(path: string, payload?: any) {
-  // 占位：可替换为 HTTP 请求或内部 tRPC 客户端调用
-  return { ok: true, path, payload };
+  const base = getConfig().VIDEO_SERVICE_URL;
+  if (base) {
+    try {
+      const url = `${base.replace(/\/$/, '')}/${path.replace(/^\//, '')}`;
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify(payload ?? {}),
+      });
+      const body = await res.json().catch(() => null);
+      return { ok: res.ok, status: res.status, body };
+    } catch (err) {
+      return { ok: false, error: (err as any)?.message || String(err) };
+    }
+  }
+
+  // Mock behavior for local development
+  if (path === 'createCall' || path === '/createCall') {
+    return { ok: true, body: { call_id: `call_${Date.now()}`, status: 'calling' } };
+  }
+  if (path === 'hangup' || path === '/hangup') {
+    return { ok: true, body: { success: true } };
+  }
+  if (path === 'subscribe' || path === '/subscribe') {
+    return { ok: true, body: { status: 'connected', participants: [] } };
+  }
+
+  return { ok: true, body: { path, payload } };
 }
 
 export default forwardToVideoService;
+

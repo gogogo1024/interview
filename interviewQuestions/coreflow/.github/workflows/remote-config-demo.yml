@@ -1,0 +1,55 @@
+name: Remote Config Demo
+
+on:
+  workflow_dispatch: {}
+
+jobs:
+  remote-config-demo:
+    name: Demo enabling remote config for image-service
+    runs-on: ubuntu-latest
+    env:
+      ENABLE_REMOTE_CONFIG: 'true'
+      REMOTE_CONFIG_POLL_MS: '30000'
+      AWS_REGION: ${{ secrets.AWS_REGION }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build monorepo
+        run: pnpm -w -r build
+
+      - name: Typecheck image-service
+        env:
+          ENABLE_REMOTE_CONFIG: ${{ env.ENABLE_REMOTE_CONFIG }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
+        run: pnpm --filter @coreflow/image-service typecheck
+
+      - name: Demo run (optional)
+        if: false # set to true to run the service in CI; requires proper runtime & secrets
+        env:
+          ENABLE_REMOTE_CONFIG: ${{ env.ENABLE_REMOTE_CONFIG }}
+          REMOTE_CONFIG_POLL_MS: ${{ env.REMOTE_CONFIG_POLL_MS }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
+        run: |
+          pnpm --filter @coreflow/image-service build
+          # Example to run the image-service binary after build; adjust as needed
+          node apps/image-service/dist/worker/main.js

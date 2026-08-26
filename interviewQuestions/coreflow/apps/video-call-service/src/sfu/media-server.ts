@@ -1,10 +1,11 @@
 import { createLogger } from '@coreflow/common-utils';
+import { getConfig } from '../config';
 
 export class MediaServer {
   private logger = createLogger('video-call:media-server');
   private running = false;
 
-  constructor(private port = Number(process.env.SFU_PORT ?? 5004)) {}
+  constructor(private port = Number(getConfig().SFU_PORT ?? 5004)) {}
 
   async start() {
     if (this.running) return;

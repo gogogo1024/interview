@@ -26,3 +26,5 @@ export class NodeManager {
     logger.info('Registered node', { id });
   }
 }
+
+export default NodeManager;

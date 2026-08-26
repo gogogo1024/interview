@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web-console
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: web-console
+  template:
+    metadata:
+      labels:
+        app: web-console
+    spec:
+      serviceAccountName: web-console-sa
+      containers:
+        - name: web-console
+          image: your-registry/coreflow/web-console:latest
+          imagePullPolicy: IfNotPresent
+          envFrom:
+            - configMapRef:
+                name: web-console-config
+            - secretRef:
+                name: web-console-secret
+          ports:
+            - containerPort: 3000
+          livenessProbe:
+            httpGet:
+              path: /_next/health
+              port: 3000
+            initialDelaySeconds: 10
+            periodSeconds: 10

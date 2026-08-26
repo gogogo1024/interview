@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: model-platform-config
+data:
+  MODEL_PLATFORM_PORT: "4100"
+  MODEL_PLATFORM_ENABLE_API: "true"

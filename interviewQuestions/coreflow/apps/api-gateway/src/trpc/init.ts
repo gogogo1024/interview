@@ -3,9 +3,14 @@ import { createContext } from './context';
 
 const logger = createLogger('api-gateway:trpc:init');
 
+// 简单的 router builder 工具 — 在 root.ts 中会用到它来构造 `appRouter`
+export function router<T extends Record<string, any>>(r: T): T {
+  return r;
+}
+
 /**
- * 占位 tRPC handler 工厂。
- * 真实项目中此处会创建 tRPC router 并将其适配到 Next / Express 等。
+ * tRPC-like HTTP handler — 在运行时通过动态导入 `./root.js` 获取 `appRouter`，
+ * 避免模块循环引用在初始化阶段影响导入。
  */
 export function createTRPCHandler() {
   return {
@@ -18,9 +23,38 @@ export function createTRPCHandler() {
         } catch (_) {}
         return {};
       })();
+
       const ctx = await createContext({ headers });
-      // TODO: 将来在此处调用真正的 tRPC router，例如 `appRouter.invoke(req, ctx)`
-      return { status: 501, body: 'tRPC handler not implemented', ctx };
+
+      let body: any = {};
+      try {
+        body = await req.json();
+      } catch (err) {
+        logger.debug('no json body on request');
+      }
+
+      const method: string = body?.method || body?.path || '';
+      const params = body?.params ?? body?.input ?? {};
+
+      try {
+        // 动态导入 appRouter，避免循环导入问题
+        const { appRouter } = await import('./root');
+
+        // 使用 trpc 的 createCaller 调用 procedure（appRouter 是 @trpc/server 的 router）
+        const caller = (appRouter as any).createCaller ? (appRouter as any).createCaller(ctx) : appRouter;
+        const [ns, proc] = (method || '').split('.');
+        const namespace = (caller as any)[ns];
+        if (!namespace) return { status: 404, body: { error: 'namespace not found', ns } };
+        const handler = namespace[proc];
+        if (typeof handler !== 'function') return { status: 404, body: { error: 'procedure not found', proc } };
+
+        // 调用 caller 上的方法，传入解析后的参数
+        const result = await handler(params);
+        return { status: 200, body: { result, ctx } };
+      } catch (err) {
+        logger.warn('trpc handler validation/dispatch error', err as any);
+        return { status: 400, body: { error: 'validation or dispatch failed', details: (err as any)?.message || err } };
+      }
     },
   };
 }

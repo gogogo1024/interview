@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: api-gateway-config
+data:
+  IMAGE_SERVICE_URL: "http://image-service:4001"
+  MODEL_PLATFORM_URL: "http://model-platform:4100"
+  VIDEO_SERVICE_URL: "http://video-call-service:4000"
+  # Add other runtime config keys here (e.g., feature flags)

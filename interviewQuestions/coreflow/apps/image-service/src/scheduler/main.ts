@@ -1,6 +1,7 @@
 import { GpuScheduler } from '@coreflow/gpu-sdk';
 import { createLogger } from '@coreflow/common-utils';
 import { NodeManager } from './node-manager.js';
+import { initConfig, getConfig } from '../config';
 
 const logger = createLogger('image-service:scheduler');
 
@@ -11,10 +12,11 @@ async function main() {
 
   logger.info('Scheduler started');
 
+  const cfg = getConfig();
   setInterval(() => {
     const assignment = scheduler.scheduleNext();
     if (assignment) logger.info('Assigned task', assignment);
-  }, Number(process.env.SCHEDULE_POLL_MS || 1000));
+  }, cfg.scheduler.pollMs);
 
   process.on('SIGINT', async () => {
     logger.info('Scheduler shutting down');

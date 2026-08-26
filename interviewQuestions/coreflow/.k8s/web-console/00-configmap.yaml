@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: web-console-config
+data:
+  NEXT_PUBLIC_API_BASE: "http://api-gateway"
+  # Other public envs for web console
