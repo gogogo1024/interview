@@ -1,6 +1,6 @@
 import { createServer } from 'http';
 import { parse as parseUrl } from 'url';
-import { createLogger } from '@coreflow/common-utils';
+import { createLogger, Symbols } from '@coreflow/common-utils';
 import { getConfig } from '../config';
 import {
   ImageGenerateInputSchema,
@@ -19,19 +19,24 @@ function jsonResponse(res: any, status: number, body: any) {
   res.end(JSON.stringify(body));
 }
 
-// Use a Symbol.for key to avoid global name conflicts for the image API server.
-const IMAGE_API_KEY = Symbol.for('coreflow.image.api') as symbol;
-
 type ImageApiState = {
   started?: boolean;
   server?: import('http').Server;
 };
 
+/**
+ * Get the current API server state from the global registry
+ */
+function getApiState(): ImageApiState {
+  const g = globalThis as any;
+  return g[Symbols.IMAGE_API_STATE] || {};
+}
+
 export function startApiServer(port = Number(getConfig().IMAGE_SERVICE_PORT)) {
-  const g = globalThis as unknown as Record<symbol, ImageApiState | undefined>;
-  const state = g[IMAGE_API_KEY];
-  if (state?.started) return;
-  g[IMAGE_API_KEY] = { ...(state || {}), started: true };
+  const g = globalThis as any;
+  const state = getApiState();
+  if (state.started) return;
+  g[Symbols.IMAGE_API_STATE] = { ...state, started: true };
 
   const server = createServer(async (req, res) => {
     try {
@@ -86,15 +91,16 @@ export function startApiServer(port = Number(getConfig().IMAGE_SERVICE_PORT)) {
   });
 
   // store server instance for potential shutdown/restart handling
-  (g[IMAGE_API_KEY] as ImageApiState).server = server;
+  (globalThis as any)[Symbols.IMAGE_API_STATE] = { ...getApiState(), server };
 
   server.listen(port, () => logger.info('image-service API listening', { port }));
 
   server.on('close', () => {
-    const s = g[IMAGE_API_KEY];
+    const s = getApiState();
     if (s) {
       s.started = false;
       delete s.server;
+      (globalThis as any)[Symbols.IMAGE_API_STATE] = s;
     }
   });
 
@@ -102,24 +108,29 @@ export function startApiServer(port = Number(getConfig().IMAGE_SERVICE_PORT)) {
 }
 
 export function stopApiServer(): Promise<void> {
-  const gLocal = globalThis as unknown as Record<symbol, ImageApiState | undefined>;
-  const s = gLocal[IMAGE_API_KEY];
+  const s = getApiState();
   if (!s?.server) return Promise.resolve();
   return new Promise((resolve, reject) => {
     try {
       s.server!.close((err?: Error) => {
-        if (s) {
-          s.started = false;
-          delete s.server;
+        const g = globalThis as any;
+        const state = getApiState();
+        if (state) {
+          state.started = false;
+          delete state.server;
+          g[Symbols.IMAGE_API_STATE] = state;
         }
         if (err) reject(err);
         else resolve();
       });
     } catch (e) {
       // if close throws, ensure state cleaned
-      if (s) {
-        s.started = false;
-        delete s.server;
+      const g = globalThis as any;
+      const state = getApiState();
+      if (state) {
+        state.started = false;
+        delete state.server;
+        g[Symbols.IMAGE_API_STATE] = state;
       }
       resolve();
     }
