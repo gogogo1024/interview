@@ -1,11 +1,58 @@
+import { z } from 'zod';
 import { createLogger, loadImageServiceEnv } from '@coreflow/common-utils';
 
 const logger = createLogger('image-service:config');
 
-// Hot-reload callbacks
-let onConfigUpdateHandlers: Array<(cfg: any) => void> = [];
+// ============================================================================
+// Zod Schema for configuration validation
+// ============================================================================
 
-export function subscribeToConfigUpdates(handler: (cfg: any) => void) {
+const RedisConfigSchema = z.object({
+  host: z.string().min(1, 'Redis host cannot be empty'),
+  port: z.number().int().min(1).max(65535, 'Redis port must be between 1 and 65535'),
+});
+
+const TemporalConfigSchema = z.object({
+  host: z.string().min(1, 'Temporal host cannot be empty'),
+  namespace: z.string().min(1, 'Temporal namespace cannot be empty'),
+  taskQueue: z.string().min(1, 'Temporal task queue cannot be empty'),
+});
+
+const InferenceConfigSchema = z.object({
+  maxBatchSize: z.number().int().min(1).max(256, 'Batch size must be 1-256'),
+  maxBatchWaitMs: z.number().int().min(10).max(5000, 'Batch wait must be 10-5000ms'),
+  defaultTimeoutMs: z.number().int().min(1000).max(300000, 'Timeout must be 1000-300000ms'),
+});
+
+const WorkerConfigSchema = z.object({
+  id: z.string().min(1, 'Worker ID cannot be empty'),
+});
+
+const SchedulerConfigSchema = z.object({
+  pollMs: z.number().int().min(100).max(60000, 'Poll interval must be 100-60000ms'),
+});
+
+const ImageServiceConfigSchema = z.object({
+  IMAGE_SERVICE_PORT: z.number().int().min(1).max(65535, 'Port must be 1-65535'),
+  WORKER_CONCURRENCY: z.number().int().min(1, 'Concurrency must be at least 1'),
+  redis: RedisConfigSchema,
+  temporal: TemporalConfigSchema,
+  inference: InferenceConfigSchema,
+  worker: WorkerConfigSchema,
+  scheduler: SchedulerConfigSchema,
+  enableApi: z.boolean(),
+});
+
+export type ImageServiceConfig = z.infer<typeof ImageServiceConfigSchema>;
+
+// ============================================================================
+// Configuration Loading & Validation
+// ============================================================================
+
+// Hot-reload callbacks
+let onConfigUpdateHandlers: Array<(cfg: ImageServiceConfig) => void> = [];
+
+export function subscribeToConfigUpdates(handler: (cfg: ImageServiceConfig) => void) {
   onConfigUpdateHandlers.push(handler);
 }
 
@@ -13,7 +60,7 @@ export function subscribeToConfigUpdates(handler: (cfg: any) => void) {
  * Apply tunable parameters from AppConfig to configuration
  * Merges AppConfig values (if present) with defaults, prioritizing AppConfig
  */
-function applyTunableParams(cfg: any, appConfigData?: Record<string, any>): any {
+function applyTunableParams(cfg: ImageServiceConfig, appConfigData?: Record<string, any>): ImageServiceConfig {
   if (!appConfigData) {
     return cfg;
   }
@@ -31,9 +78,10 @@ function applyTunableParams(cfg: any, appConfigData?: Record<string, any>): any 
   };
 }
 
-export function getConfig() {
+export function getConfig(): ImageServiceConfig {
   const env = loadImageServiceEnv();
-  const cfg = {
+  
+  const rawConfig = {
     IMAGE_SERVICE_PORT: env.IMAGE_SERVICE_PORT,
     WORKER_CONCURRENCY: env.WORKER_CONCURRENCY,
     redis: { host: env.REDIS_HOST, port: env.REDIS_PORT },
@@ -42,17 +90,20 @@ export function getConfig() {
     worker: { id: env.WORKER_ID },
     scheduler: { pollMs: env.SCHEDULE_POLL_MS },
     enableApi: env.IMAGE_SERVICE_ENABLE_API,
-  } as const;
-  logger.debug('config loaded from env', cfg);
-  return cfg;
+  };
+
+  // Validate configuration
+  const validated = ImageServiceConfigSchema.parse(rawConfig);
+  logger.debug('config loaded and validated from env', validated);
+  return validated;
 }
 
 export default getConfig;
 
-let runtimeConfig = getConfig();
+let runtimeConfig: ImageServiceConfig = getConfig();
 let lastAppConfigData: Record<string, any> | undefined;
 
-export async function initConfig() {
+export async function initConfig(): Promise<ImageServiceConfig> {
   const env = loadImageServiceEnv();
   if (!env.ENABLE_REMOTE_CONFIG) return runtimeConfig;
 
@@ -80,7 +131,7 @@ export async function initConfig() {
     }
 
     // Merge remote values into runtimeConfig (shallow merge for known keys)
-    const merged = {
+    const merged: any = {
       ...runtimeConfig,
       ...(remote.imageService ?? {}),
       redis: { ...(runtimeConfig as any).redis, ...(remote.redis ?? {}) },
@@ -88,10 +139,13 @@ export async function initConfig() {
       inference: { ...(runtimeConfig as any).inference, ...(remote.inference ?? {}) },
       worker: { ...(runtimeConfig as any).worker, ...(remote.worker ?? {}) },
       scheduler: { ...(runtimeConfig as any).scheduler, ...(remote.scheduler ?? {}) },
-    } as any;
+    };
+
+    // Validate merged configuration
+    runtimeConfig = ImageServiceConfigSchema.parse(merged);
 
     // Apply tunable parameters from AppConfig (prioritizes AppConfig values)
-    runtimeConfig = applyTunableParams(merged, remote);
+    runtimeConfig = applyTunableParams(runtimeConfig, remote);
     lastAppConfigData = remote;
     
     logger.info('Applied remote config', { 
@@ -114,33 +168,45 @@ export async function initConfig() {
             appConfigProfile: env.AWS_APP_CONFIG_PROFILE,
             pollMs: env.REMOTE_CONFIG_POLL_MS,
             onUpdate: (cfg: Record<string, any>) => {
-              runtimeConfig = {
-                ...runtimeConfig,
-                ...(cfg.imageService ?? {}),
-                redis: { ...(runtimeConfig as any).redis, ...(cfg.redis ?? {}) },
-                temporal: { ...(runtimeConfig as any).temporal, ...(cfg.temporal ?? {}) },
-                inference: { ...(runtimeConfig as any).inference, ...(cfg.inference ?? {}) },
-                worker: { ...(runtimeConfig as any).worker, ...(cfg.worker ?? {}) },
-                scheduler: { ...(runtimeConfig as any).scheduler, ...(cfg.scheduler ?? {}) },
-              } as any;
+              try {
+                // Merge remote values with current config
+                const merged: any = {
+                  ...runtimeConfig,
+                  ...(cfg.imageService ?? {}),
+                  redis: { ...runtimeConfig.redis, ...(cfg.redis ?? {}) },
+                  temporal: { ...runtimeConfig.temporal, ...(cfg.temporal ?? {}) },
+                  inference: { ...runtimeConfig.inference, ...(cfg.inference ?? {}) },
+                  worker: { ...runtimeConfig.worker, ...(cfg.worker ?? {}) },
+                  scheduler: { ...runtimeConfig.scheduler, ...(cfg.scheduler ?? {}) },
+                };
+
+                // Validate merged configuration against schema
+                const validated = ImageServiceConfigSchema.parse(merged);
+                runtimeConfig = validated;
               
-              // Apply tunable parameters from AppConfig (prioritizes AppConfig values)
-              runtimeConfig = applyTunableParams(runtimeConfig, cfg);
-              lastAppConfigData = cfg;
-              
-              logger.info('Remote config updated', { 
-                updatedFields: Object.keys(cfg),
-                handlerCount: onConfigUpdateHandlers.length,
-                tunableParams: { scheduler: cfg.scheduler, inference: cfg.inference }
-              });
-              
-              // Trigger hot-reload for interested components
-              for (const handler of onConfigUpdateHandlers) {
-                try {
-                  handler(runtimeConfig);
-                } catch (err) {
-                  logger.error('Config update handler failed', { error: (err as Error).message });
+                // Apply tunable parameters from AppConfig (prioritizes AppConfig values)
+                runtimeConfig = applyTunableParams(runtimeConfig, cfg);
+                lastAppConfigData = cfg;
+                
+                logger.info('Remote config updated', { 
+                  updatedFields: Object.keys(cfg),
+                  handlerCount: onConfigUpdateHandlers.length,
+                  tunableParams: { scheduler: cfg.scheduler, inference: cfg.inference }
+                });
+                
+                // Trigger hot-reload for interested components
+                for (const handler of onConfigUpdateHandlers) {
+                  try {
+                    handler(runtimeConfig);
+                  } catch (err) {
+                    logger.error('Config update handler failed', { error: (err as Error).message });
+                  }
                 }
+              } catch (err) {
+                logger.error('Failed to apply remote config update', { 
+                  error: (err as Error).message,
+                  validationError: err instanceof z.ZodError ? err.errors : undefined
+                });
               }
             },
           });

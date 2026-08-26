@@ -43,7 +43,7 @@ type ImageApiState = {
   server?: import('http').Server;
 };
 
-export function startApiServer(port = Number(getConfig().IMAGE_SERVICE_PORT || 4001)) {
+export function startApiServer(port = Number(getConfig().IMAGE_SERVICE_PORT)) {
   const g = globalThis as unknown as Record<symbol, ImageApiState | undefined>;
   const state = g[IMAGE_API_KEY];
   if (state?.started) return;

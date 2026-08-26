@@ -1,9 +1,47 @@
 /**
- * Unit tests for config.ts - AppConfig tunable parameters
+ * Unit tests for config.ts - AppConfig tunable parameters and Zod validation
  * Run with: node --test src/config.test.ts
  */
 
 import assert from 'assert';
+import { z } from 'zod';
+
+// Import Zod schema from config
+const RedisConfigSchema = z.object({
+  host: z.string().min(1, 'Redis host cannot be empty'),
+  port: z.number().int().min(1).max(65535, 'Redis port must be between 1 and 65535'),
+});
+
+const TemporalConfigSchema = z.object({
+  host: z.string().min(1, 'Temporal host cannot be empty'),
+  namespace: z.string().min(1, 'Temporal namespace cannot be empty'),
+  taskQueue: z.string().min(1, 'Temporal task queue cannot be empty'),
+});
+
+const InferenceConfigSchema = z.object({
+  maxBatchSize: z.number().int().min(1).max(256, 'Batch size must be 1-256'),
+  maxBatchWaitMs: z.number().int().min(10).max(5000, 'Batch wait must be 10-5000ms'),
+  defaultTimeoutMs: z.number().int().min(1000).max(300000, 'Timeout must be 1000-300000ms'),
+});
+
+const WorkerConfigSchema = z.object({
+  id: z.string().min(1, 'Worker ID cannot be empty'),
+});
+
+const SchedulerConfigSchema = z.object({
+  pollMs: z.number().int().min(100).max(60000, 'Poll interval must be 100-60000ms'),
+});
+
+const ImageServiceConfigSchema = z.object({
+  IMAGE_SERVICE_PORT: z.number().int().min(1).max(65535, 'Port must be 1-65535'),
+  WORKER_CONCURRENCY: z.number().int().min(1, 'Concurrency must be at least 1'),
+  redis: RedisConfigSchema,
+  temporal: TemporalConfigSchema,
+  inference: InferenceConfigSchema,
+  worker: WorkerConfigSchema,
+  scheduler: SchedulerConfigSchema,
+  enableApi: z.boolean(),
+});
 
 // Mock environment
 const originalEnv = { ...process.env };
@@ -210,9 +248,128 @@ export function testAppConfigExampleValidity() {
   console.log('✓ Test 8 passed: Example configuration validity');
 }
 
+// Test 9: Zod schema validates valid config
+export function testZodValidatesValidConfig() {
+  const validConfig = {
+    IMAGE_SERVICE_PORT: 3000,
+    WORKER_CONCURRENCY: 4,
+    redis: { host: 'localhost', port: 6379 },
+    temporal: { host: 'temporal.default', namespace: 'default', taskQueue: 'image-gen' },
+    inference: { maxBatchSize: 4, maxBatchWaitMs: 50, defaultTimeoutMs: 30000 },
+    worker: { id: 'worker-1' },
+    scheduler: { pollMs: 1000 },
+    enableApi: false,
+  };
+
+  const result = ImageServiceConfigSchema.safeParse(validConfig);
+  assert(result.success, 'Valid config should pass validation');
+  
+  console.log('✓ Test 9 passed: Zod validates valid config');
+}
+
+// Test 10: Zod rejects invalid port (out of range)
+export function testZodRejectsInvalidPort() {
+  const invalidConfig = {
+    IMAGE_SERVICE_PORT: 70000, // Out of range
+    WORKER_CONCURRENCY: 4,
+    redis: { host: 'localhost', port: 6379 },
+    temporal: { host: 'temporal.default', namespace: 'default', taskQueue: 'image-gen' },
+    inference: { maxBatchSize: 4, maxBatchWaitMs: 50, defaultTimeoutMs: 30000 },
+    worker: { id: 'worker-1' },
+    scheduler: { pollMs: 1000 },
+    enableApi: false,
+  };
+
+  const result = ImageServiceConfigSchema.safeParse(invalidConfig);
+  assert(!result.success, 'Invalid port should fail validation');
+  assert(result.error?.issues[0]?.code === 'too_big', 'Should report too_big error');
+  
+  console.log('✓ Test 10 passed: Zod rejects invalid port');
+}
+
+// Test 11: Zod rejects invalid batch size (out of range)
+export function testZodRejectsInvalidBatchSize() {
+  const invalidConfig = {
+    IMAGE_SERVICE_PORT: 3000,
+    WORKER_CONCURRENCY: 4,
+    redis: { host: 'localhost', port: 6379 },
+    temporal: { host: 'temporal.default', namespace: 'default', taskQueue: 'image-gen' },
+    inference: { maxBatchSize: 512, maxBatchWaitMs: 50, defaultTimeoutMs: 30000 }, // Out of range
+    worker: { id: 'worker-1' },
+    scheduler: { pollMs: 1000 },
+    enableApi: false,
+  };
+
+  const result = ImageServiceConfigSchema.safeParse(invalidConfig);
+  assert(!result.success, 'Invalid batch size should fail validation');
+  
+  console.log('✓ Test 11 passed: Zod rejects invalid batch size');
+}
+
+// Test 12: Zod rejects missing required fields
+export function testZodRejectsMissingFields() {
+  const incompleteConfig = {
+    IMAGE_SERVICE_PORT: 3000,
+    WORKER_CONCURRENCY: 4,
+    redis: { host: 'localhost', port: 6379 },
+    // Missing temporal, inference, worker, scheduler, enableApi
+  };
+
+  const result = ImageServiceConfigSchema.safeParse(incompleteConfig);
+  assert(!result.success, 'Config with missing fields should fail validation');
+  
+  console.log('✓ Test 12 passed: Zod rejects missing required fields');
+}
+
+// Test 13: Zod validates poll interval range
+export function testZodValidatesPollIntervalRange() {
+  const validConfigs = [
+    { ...createMockConfig(), scheduler: { pollMs: 100 } },    // Minimum
+    { ...createMockConfig(), scheduler: { pollMs: 1000 } },   // Normal
+    { ...createMockConfig(), scheduler: { pollMs: 60000 } },  // Maximum
+  ];
+
+  for (const config of validConfigs) {
+    const result = ImageServiceConfigSchema.safeParse(config);
+    assert(result.success, `Poll interval ${config.scheduler.pollMs} should be valid`);
+  }
+
+  const invalidConfigs = [
+    { ...createMockConfig(), scheduler: { pollMs: 50 } },     // Too small
+    { ...createMockConfig(), scheduler: { pollMs: 90000 } },  // Too large
+  ];
+
+  for (const config of invalidConfigs) {
+    const result = ImageServiceConfigSchema.safeParse(config);
+    assert(!result.success, `Poll interval ${config.scheduler.pollMs} should be invalid`);
+  }
+
+  console.log('✓ Test 13 passed: Zod validates poll interval range');
+}
+
+// Test 14: Zod provides clear error messages
+export function testZodClearErrorMessages() {
+  const invalidConfig = {
+    IMAGE_SERVICE_PORT: 'not-a-number', // Wrong type
+    WORKER_CONCURRENCY: 4,
+    redis: { host: 'localhost', port: 6379 },
+    temporal: { host: 'temporal.default', namespace: 'default', taskQueue: 'image-gen' },
+    inference: { maxBatchSize: 4, maxBatchWaitMs: 50, defaultTimeoutMs: 30000 },
+    worker: { id: 'worker-1' },
+    scheduler: { pollMs: 1000 },
+    enableApi: false,
+  };
+
+  const result = ImageServiceConfigSchema.safeParse(invalidConfig);
+  assert(!result.success, 'Invalid type should fail');
+  assert(result.error?.issues.length > 0, 'Should have error details');
+  
+  console.log('✓ Test 14 passed: Zod provides clear error messages');
+}
+
 // Run all tests
 export async function runAllTests() {
-  console.log('🧪 Starting AppConfig tunable parameters tests...\n');
+  console.log('🧪 Starting AppConfig tunable parameters and Zod validation tests...\n');
   
   try {
     testApplyTunableParamsWithAppConfig();
@@ -223,6 +380,12 @@ export async function runAllTests() {
     testParameterRangeValidation();
     testAppConfigSchemaStructure();
     testAppConfigExampleValidity();
+    testZodValidatesValidConfig();
+    testZodRejectsInvalidPort();
+    testZodRejectsInvalidBatchSize();
+    testZodRejectsMissingFields();
+    testZodValidatesPollIntervalRange();
+    testZodClearErrorMessages();
     
     console.log('\n✅ All tests passed!');
     return true;

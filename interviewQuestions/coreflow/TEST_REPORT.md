@@ -1,21 +1,21 @@
 # AppConfig Tunable Parameters - Test Report
 
-**Date**: 2026-08-26T05:17:45.587Z
+**Date**: 2026-08-26T05:16:23.179Z
 
 ## Summary
 
-- **Status**: ✅ ALL PASSED
-- **Passed**: 3
-- **Failed**: 0
-- **Total Time**: 2425ms
+- **Status**: ❌ SOME FAILED
+- **Passed**: 0
+- **Failed**: 3
+- **Total Time**: 2554ms
 
 ## Test Results
 
 | Test | Status | Duration | File |
 |------|--------|----------|------|
-| CONFIG.TEST | ✅ PASS | 870ms | src/config.test.ts |
-| INTEGRATION.TEST | ✅ PASS | 774ms | src/integration.test.ts |
-| CONFIG-VALIDATION.TEST | ✅ PASS | 780ms | src/config-validation.test.ts |
+| CONFIG.TEST | ❌ FAIL | 1053ms | src/config.test.ts |
+| INTEGRATION.TEST | ❌ FAIL | 759ms | src/integration.test.ts |
+| CONFIG-VALIDATION.TEST | ❌ FAIL | 742ms | src/config-validation.test.ts |
 
 ## Test Coverage
 
@@ -84,9 +84,4 @@
 
 ## Conclusion
 
-✅ **All tests passed.** The feature is ready for deployment.
-
-### Checklist for Next Steps
-- [ ] Code review approved
-- [ ] Merge to master
-- [ ] Deploy to staging for functional testing
+❌ **Some tests failed.** Please review the errors above.

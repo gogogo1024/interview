@@ -7,7 +7,10 @@
 
 import { spawn } from 'child_process';
 import { writeFileSync } from 'fs';
-import { join } from 'path';
+import { join, dirname } from 'path';
+import { fileURLToPath } from 'url';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const testFiles = [
   'src/config.test.ts',
@@ -29,7 +32,7 @@ async function runTest(file: string): Promise<TestResult> {
     let output = '';
     
     const proc = spawn('npx', ['tsx', file], {
-      cwd: process.cwd(),
+      cwd: __dirname,
       stdio: ['pipe', 'pipe', 'pipe'],
     });
     
@@ -110,7 +113,7 @@ async function runAllTests() {
   }
   
   // Save report
-  const reportPath = join(process.cwd(), 'TEST_REPORT.md');
+  const reportPath = join(__dirname, 'TEST_REPORT.md');
   const reportContent = generateMarkdownReport(results, totalDuration);
   writeFileSync(reportPath, reportContent);
   console.log(`📝 Test report saved to: ${reportPath}`);
