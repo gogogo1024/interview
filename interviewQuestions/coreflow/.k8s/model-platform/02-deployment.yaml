@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: model-platform
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: model-platform
+  template:
+    metadata:
+      labels:
+        app: model-platform
+    spec:
+      serviceAccountName: model-platform-sa
+      containers:
+        - name: model-platform
+          image: your-registry/coreflow/model-platform:latest
+          imagePullPolicy: IfNotPresent
+          envFrom:
+            - configMapRef:
+                name: model-platform-config
+            - secretRef:
+                name: model-platform-secret
+          ports:
+            - containerPort: 4100
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 4100
+            initialDelaySeconds: 10
+            periodSeconds: 10

@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: video-call-service-config
+data:
+  SIGNALING_PORT: "4000"
+  SFU_PORT: "5004"
+  SIGNALING_ENABLE_API: "true"

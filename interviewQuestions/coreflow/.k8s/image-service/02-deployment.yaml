@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: image-service
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: image-service
+  template:
+    metadata:
+      labels:
+        app: image-service
+      annotations:
+        # Example: EKS IRSA role annotation (replace with your ARN if using IRSA)
+        # eks.amazonaws.com/role-arn: arn:aws:iam::123456789012:role/your-role
+    spec:
+      serviceAccountName: image-service-sa
+      containers:
+        - name: image-service
+          image: your-registry/coreflow/image-service:latest
+          imagePullPolicy: IfNotPresent
+          envFrom:
+            - configMapRef:
+                name: image-service-config
+            - secretRef:
+                name: image-service-secret
+          ports:
+            - containerPort: 4001
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 4001
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 4001
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "256Mi"
+            limits:
+              cpu: "1000m"
+              memory: "1Gi"

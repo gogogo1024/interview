@@ -9,6 +9,7 @@
   "scripts": {
     "build": "pnpm -r build",
     "dev": "pnpm -r --parallel dev",
+    "dev:supervised": "tsx scripts/dev-supervised.ts",
     "lint": "pnpm -r lint",
     "typecheck": "pnpm -r typecheck",
     "db:generate": "pnpm --filter @coreflow/prisma-models db:generate",
@@ -16,6 +17,7 @@
   },
 
   "devDependencies": {
+    "tsx": "^4.19.0",
     "typescript": "^5.5.4",
     "@types/node": "^20.14.10",
     "eslint": "^8.57.0",

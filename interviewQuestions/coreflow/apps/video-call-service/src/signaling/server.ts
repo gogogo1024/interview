@@ -36,9 +36,23 @@ async function readJson(req: any) {
   });
 }
 
-export function startSignalingServer(port = Number(process.env.SIGNALING_PORT || 4000)) {
-  if ((globalThis as any).__coreflow_video_signaling_started) return;
-  (globalThis as any).__coreflow_video_signaling_started = true;
+import { getConfig } from '../config';
+
+// Use a Symbol.for key to avoid global name conflicts.
+// Cast to `symbol` (widen from `unique symbol`) so it can be used as an index type on `globalThis`.
+const SIGNALING_KEY = Symbol.for('coreflow.video.signaling') as symbol;
+
+type SignalingState = {
+  started?: boolean;
+  server?: import('http').Server;
+};
+
+export function startSignalingServer(port = Number(getConfig().SIGNALING_PORT || 4000)) {
+  const g = globalThis as unknown as Record<symbol, SignalingState | undefined>;
+  const state = g[SIGNALING_KEY];
+  if (state?.started) return;
+  // mark started (merge with existing state if any)
+  g[SIGNALING_KEY] = { ...(state || {}), started: true };
 
   const server = createServer(async (req, res) => {
     try {
@@ -95,8 +109,44 @@ export function startSignalingServer(port = Number(process.env.SIGNALING_PORT ||
     }
   });
 
+  // store server instance on the global state for potential shutdown/restart handling
+  (g[SIGNALING_KEY] as SignalingState).server = server;
+
   server.listen(port, () => logger.info('video-call-service signaling API listening', { port }));
+
+  server.on('close', () => {
+    const s = g[SIGNALING_KEY];
+    if (s) {
+      s.started = false;
+      delete s.server;
+    }
+  });
+
   return server;
+}
+
+export function stopSignalingServer(): Promise<void> {
+  const gLocal = globalThis as unknown as Record<symbol, SignalingState | undefined>;
+  const s = gLocal[SIGNALING_KEY];
+  if (!s?.server) return Promise.resolve();
+  return new Promise((resolve, reject) => {
+    try {
+      s.server!.close((err?: Error) => {
+        if (s) {
+          s.started = false;
+          delete s.server;
+        }
+        if (err) reject(err);
+        else resolve();
+      });
+    } catch (e) {
+      if (s) {
+        s.started = false;
+        delete s.server;
+      }
+      resolve();
+    }
+  });
 }
 
 export default startSignalingServer;

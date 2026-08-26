@@ -1,6 +1,6 @@
-import type { ImageRouter } from './image.types.js';
-import type { ModelRouter } from './model.types.js';
-import type { VideoRouter } from './video.types.js';
+import type { ImageRouter } from './image.types';
+import type { ModelRouter } from './model.types';
+import type { VideoRouter } from './video.types';
 
 // 全局 AppRouter 类型定义
 export interface AppRouter {
@@ -10,6 +10,6 @@ export interface AppRouter {
 }
 
 // 统一导出所有类型与Schema
-export * from './image.types.js';
-export * from './model.types.js';
-export * from './video.types.js';
+export * from './image.types';
+export * from './model.types';
+export * from './video.types';

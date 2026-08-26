@@ -2,8 +2,10 @@
  * 简单 adapter：将请求转发到 image-service（若设置了 IMAGE_SERVICE_URL），
  * 否则返回一个模拟响应，便于本地开发与单元测试。
  */
+import { getConfig } from '../config';
+
 export async function forwardToImageService(path: string, payload?: any) {
-  const base = process.env.IMAGE_SERVICE_URL;
+  const base = getConfig().IMAGE_SERVICE_URL;
   if (base) {
     try {
       const url = `${base.replace(/\/$/, '')}/${path.replace(/^\//, '')}`;

@@ -1,20 +1,16 @@
 import { createLogger } from '@coreflow/common-utils';
 import { createContext } from './context';
-import {
-  ImageGenerateInputSchema,
-  ImageGenerateOutputSchema,
-  TaskIdInputSchema,
-  ImageTaskSchema,
-} from '@coreflow/trpc-types';
-import { forwardToImageService } from '../adapters/imageService';
 
 const logger = createLogger('api-gateway:trpc:init');
 
+// 简单的 router builder 工具 — 在 root.ts 中会用到它来构造 `appRouter`
+export function router<T extends Record<string, any>>(r: T): T {
+  return r;
+}
+
 /**
- * 简单的 tRPC-like handler：
- * - 接收带 `method` 和 `params` 的 JSON 请求
- * - 使用 `@coreflow/trpc-types` 提供的 Zod schema 做输入/输出校验
- * - 对 image 相关方法转发到 image-service（或本地 mock）
+ * tRPC-like HTTP handler — 在运行时通过动态导入 `./root.js` 获取 `appRouter`，
+ * 避免模块循环引用在初始化阶段影响导入。
  */
 export function createTRPCHandler() {
   return {
@@ -41,29 +37,20 @@ export function createTRPCHandler() {
       const params = body?.params ?? body?.input ?? {};
 
       try {
-        switch (method) {
-          case 'image.generate': {
-            const input = ImageGenerateInputSchema.parse(params);
-            const res = await forwardToImageService('generate', input);
-            if (!res?.ok) return { status: 502, body: { error: 'upstream error', details: res } };
-            // validate upstream output against our schema
-            const output = ImageGenerateOutputSchema.parse(res.body);
-            return { status: 200, body: { result: output, ctx } };
-          }
+        // 动态导入 appRouter，避免循环导入问题
+        const { appRouter } = await import('./root');
 
-          case 'image.getStatus':
-          case 'image.subscribe': {
-            const input = TaskIdInputSchema.parse(params);
-            // 查询上游服务
-            const res = await forwardToImageService(`status`, input);
-            if (!res?.ok) return { status: 502, body: { error: 'upstream error', details: res } };
-            const task = ImageTaskSchema.parse(res.body);
-            return { status: 200, body: { result: task, ctx } };
-          }
+        // 使用 trpc 的 createCaller 调用 procedure（appRouter 是 @trpc/server 的 router）
+        const caller = (appRouter as any).createCaller ? (appRouter as any).createCaller(ctx) : appRouter;
+        const [ns, proc] = (method || '').split('.');
+        const namespace = (caller as any)[ns];
+        if (!namespace) return { status: 404, body: { error: 'namespace not found', ns } };
+        const handler = namespace[proc];
+        if (typeof handler !== 'function') return { status: 404, body: { error: 'procedure not found', proc } };
 
-          default:
-            return { status: 404, body: { error: 'method not found', method } };
-        }
+        // 调用 caller 上的方法，传入解析后的参数
+        const result = await handler(params);
+        return { status: 200, body: { result, ctx } };
       } catch (err) {
         logger.warn('trpc handler validation/dispatch error', err as any);
         return { status: 400, body: { error: 'validation or dispatch failed', details: (err as any)?.message || err } };

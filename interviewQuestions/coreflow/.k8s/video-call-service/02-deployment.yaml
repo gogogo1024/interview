@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: video-call-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: video-call-service
+  template:
+    metadata:
+      labels:
+        app: video-call-service
+    spec:
+      serviceAccountName: video-call-service-sa
+      containers:
+        - name: video-call-service
+          image: your-registry/coreflow/video-call-service:latest
+          imagePullPolicy: IfNotPresent
+          envFrom:
+            - configMapRef:
+                name: video-call-service-config
+            - secretRef:
+                name: video-call-service-secret
+          ports:
+            - containerPort: 4000
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 4000
+            initialDelaySeconds: 10
+            periodSeconds: 10

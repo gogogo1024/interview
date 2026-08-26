@@ -1,16 +1,30 @@
-// Next App Router route for tRPC entrypoint (placeholder implementation)
-import { createTRPCHandler } from '../init';
+import { fetchRequestHandler } from '@trpc/server/adapters/fetch';
+import { appRouter } from '../../../../trpc/root';
+import { createContext as createTrpcContext } from '../../../../trpc/context';
 
-const handler = createTRPCHandler();
+function headersFromReq(req: Request) {
+  try {
+    // @ts-ignore
+    if (req?.headers?.entries) return Object.fromEntries((req as any).headers.entries());
+    // @ts-ignore
+    if (req?.headers) return (req as any).headers;
+  } catch (_) {}
+  return {} as Record<string, any>;
+}
 
-export async function POST(req: any): Promise<Response> {
-  const r = await handler.handle(req);
-  return new Response(typeof r.body === 'string' ? r.body : JSON.stringify(r.body), {
-    status: r.status ?? 200,
-    headers: { 'content-type': 'application/json; charset=utf-8' },
+const handler = (req: Request) =>
+  fetchRequestHandler({
+    endpoint: '/api/trpc',
+    req,
+    router: appRouter as any,
+    createContext: async ({ req: incoming }: { req: Request }) => {
+      const headers = headersFromReq(incoming ?? req);
+      return createTrpcContext({ headers });
+    },
+    onError({ error }) {
+      console.error('[tRPC]', (error as any)?.code, error.message);
+    },
   });
-}
 
-export async function GET(): Promise<Response> {
-  return new Response('Method Not Allowed', { status: 405 });
-}
+export { handler as GET, handler as POST };
+

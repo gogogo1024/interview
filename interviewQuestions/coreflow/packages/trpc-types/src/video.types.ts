@@ -56,3 +56,11 @@ export type CallIdInput = z.infer<typeof CallIdInputSchema>;
 
 export const SubscribeOutputSchema = z.object({ status: CallStatusSchema, participants: z.array(z.string()) });
 export type SubscribeOutput = z.infer<typeof SubscribeOutputSchema>;
+
+// CreateCall output schema
+export const CreateCallOutputSchema = z.object({ call_id: z.string(), status: CallStatusSchema });
+export type CreateCallOutput = z.infer<typeof CreateCallOutputSchema>;
+
+// Hangup output schema
+export const HangupOutputSchema = z.object({ success: z.boolean() });
+export type HangupOutput = z.infer<typeof HangupOutputSchema>;

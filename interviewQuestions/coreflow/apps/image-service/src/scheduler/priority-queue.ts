@@ -17,3 +17,5 @@ export class PriorityQueue<T> {
     return this.items.length;
   }
 }
+
+export default PriorityQueue;

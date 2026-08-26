@@ -1,13 +1,10 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "module": "nodenext",
-    "moduleResolution": "nodenext",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
     "outDir": "dist",
     "rootDir": "src",
-    "allowImportingTsExtensions": true,
-    "rewriteRelativeImportExtensions": true
-    ,
     "declaration": true,
     "declarationMap": true
   },

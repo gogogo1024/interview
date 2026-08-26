@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api-gateway
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: api-gateway
+  template:
+    metadata:
+      labels:
+        app: api-gateway
+    spec:
+      serviceAccountName: api-gateway-sa
+      containers:
+        - name: api-gateway
+          image: your-registry/coreflow/api-gateway:latest
+          imagePullPolicy: IfNotPresent
+          envFrom:
+            - configMapRef:
+                name: api-gateway-config
+            - secretRef:
+                name: api-gateway-secret
+          ports:
+            - containerPort: 3000
+          livenessProbe:
+            httpGet:
+              path: /_next/health
+              port: 3000
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /_next/static
+              port: 3000
+            initialDelaySeconds: 5
+            periodSeconds: 5

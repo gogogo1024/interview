@@ -1,0 +1,26 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: image-service-config
+data:
+  IMAGE_SERVICE_PORT: "4001"
+  WORKER_CONCURRENCY: "1"
+  SCHEDULE_POLL_MS: "1000"
+  MAX_BATCH_SIZE: "4"
+  MAX_WAIT_MS: "50"
+  DEFAULT_TIMEOUT_MS: "30000"
+  IMAGE_SERVICE_ENABLE_API: "false"
+  WORKER_ID: "worker-1"
+  REDIS_HOST: "redis.default.svc.cluster.local"
+  REDIS_PORT: "6379"
+  TEMPORAL_HOST: "temporal.default.svc.cluster.local:7233"
+  TEMPORAL_NAMESPACE: "default"
+  TEMPORAL_TASK_QUEUE: "image-gen"
+  ENABLE_REMOTE_CONFIG: "false"
+  REMOTE_CONFIG_POLL_MS: "30000"
+  AWS_REGION: ""
+  AWS_APP_CONFIG_APPLICATION: ""
+  AWS_APP_CONFIG_ENVIRONMENT: ""
+  AWS_APP_CONFIG_PROFILE: ""
+  AWS_SSM_PATHS: ""
+  AWS_SECRET_NAMES: ""

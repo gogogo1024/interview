@@ -1,6 +1,7 @@
 import { createServer } from 'http';
 import { parse as parseUrl } from 'url';
 import { createLogger } from '@coreflow/common-utils';
+import { getConfig } from '../config';
 import {
   ImageGenerateInputSchema,
   ImageGenerateOutputSchema,
@@ -34,10 +35,19 @@ async function readJson(req: any) {
   });
 }
 
-export function startApiServer(port = Number(process.env.IMAGE_SERVICE_PORT || 4001)) {
-  // 防止重复启动
-  if ((globalThis as any).__coreflow_image_api_started) return;
-  (globalThis as any).__coreflow_image_api_started = true;
+// Use a Symbol.for key to avoid global name conflicts for the image API server.
+const IMAGE_API_KEY = Symbol.for('coreflow.image.api') as symbol;
+
+type ImageApiState = {
+  started?: boolean;
+  server?: import('http').Server;
+};
+
+export function startApiServer(port = Number(getConfig().IMAGE_SERVICE_PORT || 4001)) {
+  const g = globalThis as unknown as Record<symbol, ImageApiState | undefined>;
+  const state = g[IMAGE_API_KEY];
+  if (state?.started) return;
+  g[IMAGE_API_KEY] = { ...(state || {}), started: true };
 
   const server = createServer(async (req, res) => {
     try {
@@ -90,8 +100,45 @@ export function startApiServer(port = Number(process.env.IMAGE_SERVICE_PORT || 4
     }
   });
 
+  // store server instance for potential shutdown/restart handling
+  (g[IMAGE_API_KEY] as ImageApiState).server = server;
+
   server.listen(port, () => logger.info('image-service API listening', { port }));
+
+  server.on('close', () => {
+    const s = g[IMAGE_API_KEY];
+    if (s) {
+      s.started = false;
+      delete s.server;
+    }
+  });
+
   return server;
+}
+
+export function stopApiServer(): Promise<void> {
+  const gLocal = globalThis as unknown as Record<symbol, ImageApiState | undefined>;
+  const s = gLocal[IMAGE_API_KEY];
+  if (!s?.server) return Promise.resolve();
+  return new Promise((resolve, reject) => {
+    try {
+      s.server!.close((err?: Error) => {
+        if (s) {
+          s.started = false;
+          delete s.server;
+        }
+        if (err) reject(err);
+        else resolve();
+      });
+    } catch (e) {
+      // if close throws, ensure state cleaned
+      if (s) {
+        s.started = false;
+        delete s.server;
+      }
+      resolve();
+    }
+  });
 }
 
 export default startApiServer;

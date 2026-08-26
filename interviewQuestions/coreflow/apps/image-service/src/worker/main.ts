@@ -2,28 +2,40 @@ import { SimpleGpuWorker } from '@coreflow/gpu-sdk';
 import { createLogger } from '@coreflow/common-utils';
 import { BatchProcessor } from './batch-processor.js';
 import { createModelRegistry } from './models/index.js';
+import { initConfig, getConfig } from '../config';
 
 const logger = createLogger('image-service:worker');
 
-async function main() {
-  const workerId = process.env.WORKER_ID || 'worker-1';
-  const worker = new SimpleGpuWorker(workerId);
+let started = false;
+let workerInstance: SimpleGpuWorker | undefined;
+let batcherInstance: BatchProcessor | undefined;
+let apiModuleRef: any | undefined;
+
+export async function start() {
+  if (started) return;
+  started = true;
+  await initConfig();
+  const cfg = getConfig();
+
+  const workerId = cfg.worker.id || 'worker-1';
+  workerInstance = new SimpleGpuWorker(workerId);
   const models = createModelRegistry();
-  const batcher = new BatchProcessor(async (units) => {
+  batcherInstance = new BatchProcessor(async (units: any[]) => {
     logger.info('Processing batch', { size: units.length });
     // TODO: 调用模型推理并保存结果
-  }, { maxBatchSize: Number(process.env.MAX_BATCH_SIZE || 4), maxWaitMs: 50 });
+  }, { maxBatchSize: cfg.inference.maxBatchSize, maxWaitMs: cfg.inference.maxBatchWaitMs });
 
-  await worker.start();
+  await workerInstance.start();
   logger.info('GPU worker started', { workerId });
 
   // 仅在开发/本地模式下启动内置 HTTP API，便于本地调试与集成测试
-  if (process.env.IMAGE_SERVICE_ENABLE_API === 'true') {
+  if (cfg.enableApi) {
     try {
       // 延迟导入以避免在 worker-only 运行时引入 HTTP 依赖
-      const { startApiServer } = await import('../api/server.js');
-      startApiServer();
-      logger.info('image-service API enabled (IMAGE_SERVICE_ENABLE_API=true)');
+      apiModuleRef = await import('../api/server.js');
+      // start server and keep module ref for graceful shutdown
+      apiModuleRef.startApiServer?.(cfg.IMAGE_SERVICE_PORT);
+      logger.info('image-service API enabled');
     } catch (err) {
       logger.warn('failed enabling image api', err as any);
     }
@@ -32,18 +44,38 @@ async function main() {
   // 示例：接收任务并加入批处理（真实场景来自消息队列或 gRPC/tRPC）
   process.on('message', async (msg: any) => {
     if (msg?.type === 'work') {
-      await batcher.add({ id: String(msg.id), payload: msg.payload });
+      await batcherInstance?.add({ id: String(msg.id), payload: msg.payload });
     }
-  });
-
-  process.on('SIGINT', async () => {
-    logger.info('Shutting down worker');
-    await worker.stop();
-    process.exit(0);
   });
 }
 
-main().catch((err) => {
-  createLogger('image-service:worker').error('Worker failed', err as any);
-  process.exit(1);
-});
+export async function stop() {
+  if (!started) return;
+  logger.info('Stopping image-service worker');
+  started = false;
+  try {
+    await workerInstance?.stop();
+  } catch (e) {
+    logger.warn('error while stopping worker', e as any);
+  }
+  try {
+    await apiModuleRef?.stopApiServer?.();
+  } catch (e) {
+    logger.warn('error while stopping image api', e as any);
+  }
+}
+
+// Auto-run when executed directly
+import { fileURLToPath } from 'url';
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
+  start().catch((err) => {
+    createLogger('image-service:worker').error('Worker failed', err as any);
+    process.exit(1);
+  });
+
+  process.on('SIGINT', async () => {
+    logger.info('Shutting down worker (SIGINT)');
+    await stop();
+    process.exit(0);
+  });
+}
