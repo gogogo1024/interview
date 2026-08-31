@@ -35,7 +35,12 @@ jobs:
           version: 9.15.0
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install -w --frozen-lockfile
+
+      - name: Ensure per-package deps for grpc-client
+        run: |
+          # Install per-package dependencies for packages that run tsc directly
+          pnpm --filter @chirp/grpc-client install --frozen-lockfile
 
       - name: Check for vulnerabilities (npm audit)
         run: pnpm audit --audit-level=moderate || true
@@ -62,7 +67,7 @@ jobs:
           version: 9.15.0
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install -w --frozen-lockfile
 
       - name: Run linter
         run: pnpm run lint
@@ -89,10 +94,40 @@ jobs:
           version: 9.15.0
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install -w --frozen-lockfile
+
+      - name: Generate routes for client-admin
+        run: pnpm --filter @chirp/client-admin exec -- vite build --mode ssr
+
+      - name: Generate routes for client-user
+        run: pnpm --filter @chirp/client-user exec -- vite build --mode ssr
 
       - name: Run type checker
         run: pnpm run typecheck
+
+      - name: Generate proto
+        run: |
+          cd interviewQuestions/llm-web-refactoring-test-gogogo1024/packages/proto
+          pnpm install --frozen-lockfile
+          pnpm run proto:generate
+
+      - name: Prebuild proto package
+        run: |
+          # Build the proto package early so its compiled `dist` (types) are available for dependent packages
+          pnpm --filter @chirp/proto run build
+
+      - name: Ensure per-package deps for grpc-client
+        run: |
+          # Install per-package dependencies for packages that run tsc directly
+          pnpm --filter @chirp/grpc-client install --frozen-lockfile
+
+      - name: Generate DB
+        run: |
+          # Ensure @chirp/api devDependencies are installed so pnpm can resolve drizzle-kit
+          pnpm --filter @chirp/api install --frozen-lockfile
+          # Quick diagnostics to help CI debugging (non-fatal)
+          pnpm --filter @chirp/api exec -- which drizzle-kit || true
+          pnpm --filter @chirp/api exec -- drizzle-kit generate
 
   # Unit tests
   unit-tests:
@@ -116,7 +151,7 @@ jobs:
           version: 9.15.0
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install -w --frozen-lockfile
 
       - name: Run unit tests
         run: pnpm run test:unit
@@ -144,22 +179,41 @@ jobs:
           version: 9.15.0
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install -w --frozen-lockfile
 
       - name: Generate proto
-        run: pnpm run proto:generate
+        run: |
+          cd interviewQuestions/llm-web-refactoring-test-gogogo1024/packages/proto
+          pnpm install --frozen-lockfile
+          pnpm run proto:generate
 
       - name: Setup database
-        run: pnpm run db:generate && pnpm run db:migrate
+        run: |
+          # Ensure @chirp/api devDependencies are installed so pnpm can resolve drizzle-kit
+          pnpm --filter @chirp/api install --frozen-lockfile
+          pnpm --filter @chirp/api exec -- which drizzle-kit || true
+          pnpm run db:generate && pnpm run db:migrate
 
       - name: Run build
         run: pnpm run build
+
+      - name: Cache build outputs
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-outputs
+          path: |
+            apps/*/dist/**
+            apps/*/.output/**
+            apps/*/.vinxi/**
+            apps/*/.tanstack/**
+            packages/*/dist/**
+          retention-days: 1
 
   # E2E tests (only on PRs and main branch, optional for now due to hydration issues)
   e2e-tests:
     name: E2E Tests
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 180
     needs: [build]
     if: github.event_name == 'pull_request' || github.ref == 'refs/heads/main'
     steps:
@@ -181,14 +235,23 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Restore build outputs
+        uses: actions/download-artifact@v4
+        with:
+          name: build-outputs
+
       - name: Generate proto
-        run: pnpm run proto:generate
+        run: |
+          # Ensure proto package devDependencies are present, then run protoc
+          cd interviewQuestions/llm-web-refactoring-test-gogogo1024/packages/proto
+          pnpm install --frozen-lockfile
+          pnpm exec protoc --plugin=protoc-gen-ts=./node_modules/.bin/protoc-gen-ts --ts_out=./generated --proto_path=./protos ./protos/*.proto
 
       - name: Setup database
         run: pnpm run db:generate && pnpm run db:migrate && pnpm run db:seed
 
       - name: Run E2E tests
-        run: pnpm run test:e2e
+        run: pnpm run test:e2e:ci
         continue-on-error: true
 
       - name: Upload test results

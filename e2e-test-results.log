@@ -1,0 +1,3 @@
+ ERR_PNPM_NO_SCRIPT  Missing script: test:e2e
+
+Command "test:e2e" not found.

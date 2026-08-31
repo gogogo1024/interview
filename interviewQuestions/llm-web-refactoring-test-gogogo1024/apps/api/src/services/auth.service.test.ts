@@ -173,3 +173,74 @@ describe("AuthService", () => {
 		});
 	});
 });
+
+describe("SECURITY: Issue 1 - Credential Storage Vulnerabilities", () => {
+	describe("Password Hashing Security Fix", () => {
+		it("stores passwords with bcrypt prefix for new users (not plaintext)", async () => {
+			const result = await registerUser({
+				email: "secure@example.com",
+				username: "secureuser",
+				displayName: "Secure User",
+				password: "MyPassword123!@#",
+			});
+
+			// Fetch the user to verify password storage
+			const user = await db.select().from(users).where(eq(users.id, result.userId)).get();
+
+			// SECURITY FIX VERIFICATION:
+			// Password must be hashed with bcrypt prefix, never plaintext
+			expect(user?.passwordHash).toBeDefined();
+			expect(user?.passwordHash).toContain("bcrypt$");
+			expect(user?.passwordHash).not.toContain("MyPassword123!@#");
+		});
+
+		it("automatically upgrades legacy SHA-256 hashes to bcrypt on login", async () => {
+			// Simulate a legacy user stored with SHA-256 hash
+			const email = `legacy-migration-${Date.now()}@example.com`;
+			const password = "legacy-password-123";
+
+			// Create user with legacy SHA-256 hash
+			const legacyHash = createHash("sha256").update(`${password}salt`).digest("hex");
+			const userId = `legacy-${Date.now()}`;
+
+			await db.insert(users).values({
+				id: userId,
+				email,
+				username: `legacy-${Date.now()}`,
+				displayName: "Legacy User",
+				passwordHash: legacyHash,
+				role: "user",
+			});
+
+			// Login should succeed and upgrade password
+			const result = await loginUser({ email, password });
+			expect(result.sessionToken).toBeDefined();
+
+			// Verify hash was upgraded
+			const upgraded = await db.select().from(users).where(eq(users.id, userId)).get();
+			expect(upgraded?.passwordHash).toContain("bcrypt$");
+			expect(upgraded?.passwordHash).not.toBe(legacyHash);
+		});
+
+		it("rejects login with wrong password even if hashing is correct", async () => {
+			// This test verifies that attacker with plaintext password cannot
+			// login if the application is correctly using hashes
+			const testUser = await createTestUser({
+				email: "newformat@example.com",
+				password: "correct-password",
+			});
+
+			// Verify password is hashed
+			const dbUser = await db.select().from(users).where(eq(users.id, testUser.id)).get();
+			expect(dbUser?.passwordHash).toContain("bcrypt$");
+
+			// Login with wrong password should fail
+			await expect(
+				loginUser({
+					email: "newformat@example.com",
+					password: "wrong-password",
+				}),
+			).rejects.toThrow("Invalid email or password");
+		});
+	});
+});

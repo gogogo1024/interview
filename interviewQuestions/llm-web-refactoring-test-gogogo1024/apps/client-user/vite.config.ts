@@ -109,12 +109,19 @@ const filterInvalidPreloadsPlugin = (): Plugin => ({
 
 const config = defineConfig({
 	ssr: {
-		external: ["drizzle-orm"],
+		external: [
+			"drizzle-orm",
+			"@grpc/grpc-js",
+			"@protobuf-ts/grpc-transport",
+			"@protobuf-ts/runtime-rpc",
+			"@chirp/grpc-client",
+		],
 	},
 	resolve: {
 		alias: {
 			"@": path.resolve(currentDir, "src"),
 			"@chirp/ui": uiPackageDir,
+			"@chirp/proto": path.resolve(rootDir, "packages/proto/src"),
 		},
 	},
 	build: {
@@ -146,7 +153,7 @@ const config = defineConfig({
 		},
 	},
 	plugins: [
-		devtools(),
+		process.env.TANSTACK_DEVTOOLS_DISABLED !== "true" && devtools(),
 		nitro(),
 		stylexUnplugin.vite({
 			useCSSLayers: true,
@@ -162,7 +169,7 @@ const config = defineConfig({
 		tanstackStart(),
 		viteReact(),
 		filterInvalidPreloadsPlugin(),
-	],
+	].filter(Boolean),
 });
 
 export default config;

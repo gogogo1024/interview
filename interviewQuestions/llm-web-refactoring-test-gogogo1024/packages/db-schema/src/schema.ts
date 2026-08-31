@@ -43,7 +43,6 @@ export const comments = sqliteTable("comments", {
 	authorId: text("author_id")
 		.notNull()
 		.references(() => users.id, { onDelete: "cascade" }),
-	// biome-ignore lint/suspicious/noExplicitAny: self-reference requires any
 	parentId: text("parent_id").references((): any => comments.id, { onDelete: "cascade" }),
 	createdAt: integer("created_at", { mode: "timestamp" }).notNull().default(sql`(unixepoch())`),
 });

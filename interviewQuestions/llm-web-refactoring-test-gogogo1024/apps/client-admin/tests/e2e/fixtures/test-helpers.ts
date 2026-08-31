@@ -43,30 +43,22 @@ export const REGULAR_USERS = {
  * Uses networkidle to ensure React/TanStack hydration completes.
  */
 export async function waitForHydration(page: Page) {
+	// Check if page/context is still alive before proceeding
+	if (page.isClosed()) {
+		return;
+	}
+
 	await page.waitForLoadState("networkidle");
 
-	try {
+	// Only attempt to remove error overlay if page is still valid
+	if (!page.isClosed()) {
 		await page.evaluate(() => {
 			document.querySelectorAll("vite-error-overlay").forEach((el) => {
 				el.remove();
 			});
 		});
-	} catch (err) {
-		console.error(err);
-		throw err;
 	}
 }
-// export async function waitForHydration(page: Page): Promise<void> {
-// 	await page.waitForLoadState("networkidle");
-// 	// Remove Nitro dev server error overlay if present
-// 	try {
-// 		await page.evaluate(() => {
-// 			for (const el of document.querySelectorAll("vite-error-overlay")) el.remove();
-// 		});
-// 	} catch {
-// 		// Context may have been destroyed by a concurrent navigation
-// 	}
-// }
 
 /**
  * Login as an admin user
@@ -76,6 +68,11 @@ export async function loginAsAdmin(
 	user: keyof typeof ADMIN_USERS = "admin",
 ): Promise<void> {
 	const credentials = ADMIN_USERS[user];
+
+	// Check if page/context is still alive
+	if (page.isClosed()) {
+		throw new Error("Page context is closed, cannot proceed with login");
+	}
 
 	// Neutralize Nitro dev server error overlays via CSS for this browser context.
 	await page.addInitScript(() => {
@@ -92,8 +89,11 @@ export async function loginAsAdmin(
 		}
 	});
 
-	// Clear browser state
-	await page.context().clearCookies();
+	// Clear browser state - only if context is still valid
+	if (!page.isClosed()) {
+		await page.context().clearCookies();
+	}
+
 	await page.evaluate(() => {
 		try {
 			window.localStorage.clear();
@@ -103,6 +103,11 @@ export async function loginAsAdmin(
 
 	let loggedIn = false;
 	for (let attempt = 1; attempt <= 3; attempt++) {
+		// Check if context is still valid before proceeding
+		if (page.isClosed()) {
+			throw new Error(`Page context was closed during login attempt ${attempt}`);
+		}
+
 		await page.goto("/login", { waitUntil: "domcontentloaded" });
 		await waitForHydration(page);
 
@@ -136,7 +141,7 @@ export async function loginAsAdmin(
 			console.log(
 				`Admin login attempt ${attempt} failed. Current URL: ${currentUrl}. Error: ${err}`,
 			);
-			if (attempt < 3) {
+			if (attempt < 3 && !page.isClosed()) {
 				await page.context().clearCookies();
 			}
 		}

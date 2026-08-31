@@ -7,9 +7,14 @@ on:
     branches: [ master ]
 
 jobs:
+  # Validate: lint, typecheck, unit tests
   validate:
     name: Validate PR
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: interviewQuestions/llm-web-refactoring-test-gogogo1024
+    timeout-minutes: 30
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -20,7 +25,133 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'pnpm'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 9
+
+      - name: Install protoc (for proto code generation)
+        run: sudo apt-get update && sudo apt-get install -y protobuf-compiler
+
+      - name: Install dependencies
+        run: pnpm install -w --frozen-lockfile
+
+      - name: Generate proto definitions (protoc)
+        run: |
+          cd packages/proto
+          pnpm install --frozen-lockfile
+          pnpm exec protoc --plugin=protoc-gen-ts=./node_modules/.bin/protoc-gen-ts --ts_out=./generated --proto_path=./protos ./protos/*.proto
+
+      - name: Build proto package (generate types for dependents)
+        run: |
+          cd packages/proto
+          pnpm run build
+
+      - name: Build grpc-client package (generate types for dependents)
+        run: |
+          cd packages/grpc-client
+          pnpm run build
+
+      - name: Generate database migrations
+        run: pnpm --filter @chirp/api exec drizzle-kit generate
+
+      - name: Generate routes for client-admin
+        run: pnpm --filter @chirp/client-admin exec -- vite build --mode ssr
+
+      - name: Generate routes for client-user
+        run: pnpm --filter @chirp/client-user exec -- vite build --mode ssr
+
+      - name: Lint (fast feedback)
+        run: pnpm -w -r run lint
+
+      - name: Typecheck (fast feedback)
+        run: pnpm -w -r run typecheck --no-cache
+        env:
+          TURBO_SKIP_PRUNE: "true"
+
+      - name: Unit tests
+        run: pnpm -w -r run test:unit
+
+  # Build: compile all packages
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: interviewQuestions/llm-web-refactoring-test-gogogo1024
+    timeout-minutes: 40
+    needs: [validate]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 9
+
+      - name: Install protoc
+        run: sudo apt-get update && sudo apt-get install -y protobuf-compiler
+
+      - name: Install dependencies
+        run: pnpm install -w --frozen-lockfile
+
+      - name: Generate proto definitions (protoc)
+        run: |
+          cd packages/proto
+          pnpm install --frozen-lockfile
+          pnpm exec protoc --plugin=protoc-gen-ts=./node_modules/.bin/protoc-gen-ts --ts_out=./generated --proto_path=./protos ./protos/*.proto
+
+      - name: Build proto and grpc-client packages
+        run: |
+          cd packages/proto && pnpm run build
+          cd ../grpc-client && pnpm run build
+
+      - name: Generate database migrations
+        run: pnpm --filter @chirp/api exec drizzle-kit generate
+
+      - name: Build (all packages)
+        run: pnpm -w -r run build
+
+      - name: Cache build outputs for E2E tests
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-outputs
+          path: |
+            interviewQuestions/llm-web-refactoring-test-gogogo1024/apps/*/dist
+            interviewQuestions/llm-web-refactoring-test-gogogo1024/apps/*/.output
+            interviewQuestions/llm-web-refactoring-test-gogogo1024/apps/*/.vinxi
+            interviewQuestions/llm-web-refactoring-test-gogogo1024/apps/*/.tanstack
+            interviewQuestions/llm-web-refactoring-test-gogogo1024/packages/*/dist
+          retention-days: 1
+
+  # E2E Tests
+  e2e-tests:
+    name: E2E Tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: interviewQuestions/llm-web-refactoring-test-gogogo1024
+    timeout-minutes: 180
+    needs: [build]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v2
@@ -30,18 +161,30 @@ jobs:
       - name: Install dependencies
         run: pnpm install -w --frozen-lockfile
 
+      - name: Install Playwright browsers
+        run: pnpm exec playwright install
 
-      - name: Lint (affected)
-        run: pnpm -w turbo run lint --since=origin/master
+      - name: Restore build outputs
+        uses: actions/download-artifact@v4
+        with:
+          name: build-outputs
 
-      - name: Typecheck (affected)
-        run: pnpm -w turbo run typecheck --since=origin/master
+      - name: Generate proto definitions (protoc)
+        run: |
+          cd packages/proto
+          pnpm install --frozen-lockfile
+          pnpm exec protoc --plugin=protoc-gen-ts=./node_modules/.bin/protoc-gen-ts --ts_out=./generated --proto_path=./protos ./protos/*.proto
 
-      - name: Unit tests (affected)
-        run: pnpm -w turbo run test:unit --since=origin/master
+      - name: Setup database
+        run: pnpm run db:generate && pnpm run db:migrate && pnpm run db:seed
 
-      - name: Build (affected)
-        run: pnpm -w turbo run build --since=origin/master
+      - name: E2E tests
+        run: pnpm run test:e2e:ci
 
-      - name: E2E (full)
-        run: pnpm run test:e2e
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: apps/*/playwright-report/
+          retention-days: 7

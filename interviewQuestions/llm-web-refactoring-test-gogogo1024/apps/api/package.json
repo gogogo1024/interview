@@ -12,9 +12,9 @@
 		"typecheck": "tsc --noEmit",
 		"test": "vitest run",
 		"test:watch": "vitest",
-		"db:generate": "drizzle-kit generate",
-		"db:migrate": "drizzle-kit migrate",
-		"db:studio": "drizzle-kit studio",
+		"db:generate": "pnpm exec drizzle-kit generate",
+		"db:migrate": "pnpm exec drizzle-kit migrate",
+		"db:studio": "pnpm exec drizzle-kit studio",
 		"db:seed": "tsx src/db/seed.ts"
 	},
 	"dependencies": {

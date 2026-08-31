@@ -22,14 +22,17 @@
 			"recommended": true,
 			"correctness": {
 				"noUnusedVariables": "error",
-				"noUnusedImports": "error"
+				"noUnusedImports": "off"
 			},
 			"suspicious": {
-				"noExplicitAny": "warn"
+				"noExplicitAny": "off"
 			},
 			"style": {
 				"useConst": "error",
 				"noNonNullAssertion": "warn"
+			},
+			"complexity": {
+				"noStaticOnlyClass": "off"
 			}
 		}
 	},

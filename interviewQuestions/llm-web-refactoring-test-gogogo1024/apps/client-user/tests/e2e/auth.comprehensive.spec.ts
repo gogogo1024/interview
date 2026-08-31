@@ -37,8 +37,9 @@ test.describe("Authentication - Comprehensive", () => {
 
 			await page.click('button[type="submit"]');
 
-			// Should show error for duplicate email
-			await expect(page.getByText(/already|exists|taken/i)).toBeVisible();
+			// Should show error for duplicate email - use first() to handle multiple matches
+			const errorMessage = page.getByText(/already|exists|taken/i).first();
+			await expect(errorMessage).toBeVisible();
 		});
 
 		test("should show error for existing username", async ({ page }) => {
@@ -53,8 +54,9 @@ test.describe("Authentication - Comprehensive", () => {
 
 			await page.click('button[type="submit"]');
 
-			// Should show error for duplicate username
-			await expect(page.getByText(/already|exists|taken/i)).toBeVisible();
+			// Should show error for duplicate username - use first() to handle multiple matches
+			const errorMessage = page.getByText(/already|exists|taken/i).first();
+			await expect(errorMessage).toBeVisible();
 		});
 
 		test("should validate password confirmation", async ({ page }) => {

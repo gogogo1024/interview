@@ -1,8 +1,24 @@
 import { type ChirpClient, createChirpClient } from "@chirp/grpc-client";
 import { getSessionData } from "./session.server";
 
-// gRPC API host
-const GRPC_HOST = process.env.GRPC_API_HOST || "localhost:50051";
+// gRPC API host (read at runtime using bracket access to avoid bundler inlining)
+const GRPC_HOST = (process as any).env?.GRPC_API_HOST || "localhost:50051";
+
+// Helpers to read env at runtime without allowing bundlers to inline values
+function readEnv(name: string): string | undefined {
+	const env = (process as any).env;
+	return env ? env[name] : undefined;
+}
+
+export function isGrpcSecureAtRuntime(): boolean {
+	const v = readEnv("GRPC_API_SECURE");
+	if (v !== undefined) {
+		return ["1", "true", "yes", "on"].includes(String(v).toLowerCase());
+	}
+	// fallback to NODE_ENV read at runtime
+	const nodeEnv = readEnv("NODE_ENV");
+	return nodeEnv === "production";
+}
 
 // Singleton gRPC client
 let grpcClient: ChirpClient | null = null;
@@ -14,7 +30,7 @@ export function getGrpcClient(): ChirpClient {
 	if (!grpcClient) {
 		grpcClient = createChirpClient({
 			host: GRPC_HOST,
-			secure: process.env.NODE_ENV === "production",
+			secure: isGrpcSecureAtRuntime(),
 		});
 	}
 	return grpcClient;
