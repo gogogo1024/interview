@@ -26,7 +26,7 @@
 		"@tanstack/react-router": "^1.132.0",
 		"@tanstack/react-router-devtools": "^1.132.0",
 		"@tanstack/react-router-ssr-query": "^1.131.7",
-		"@tanstack/react-start": "^1.132.0",
+		"@tanstack/react-start": "^1.168.60",
 		"@tanstack/router-plugin": "^1.132.0",
 		"clsx": "^2.1.1",
 		"jsonwebtoken": "^9.0.2",
